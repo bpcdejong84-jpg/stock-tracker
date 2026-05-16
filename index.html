@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PNB Portfolio Tracker</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#080b14;--bg2:#0d1120;--bg3:#131829;--bg4:#1a2035;--bd:rgba(255,255,255,.06);--bd2:rgba(255,255,255,.11);--bd3:rgba(255,255,255,.2);--tx:#e2e8f8;--tx2:#8892b0;--tx3:#4a5378;--gr:#10b981;--rd:#ef4444;--bl:#3b82f6;--gd:#f59e0b;--pu:#8b5cf6;--r:12px;--rs:8px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--tx);font-family:'Inter',sans-serif;font-size:13px;min-height:100vh;-webkit-font-smoothing:antialiased}
+::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:var(--bg2)}::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:10px}
+header{background:rgba(8,11,20,.97);backdrop-filter:blur(20px);border-bottom:1px solid var(--bd);padding:0 24px;position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;height:56px;gap:8px;flex-wrap:wrap}
+.logo{display:flex;align-items:center;gap:9px}
+.lmark{width:28px;height:28px;background:linear-gradient(135deg,var(--bl),var(--pu));border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0}
+.ltext{font-size:14px;font-weight:600;letter-spacing:-.3px}.ltext span{color:var(--bl)}
+.hright{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.spill{display:flex;align-items:center;gap:6px;padding:5px 11px;border-radius:20px;border:1px solid var(--bd2);background:var(--bg2);font-size:11px;color:var(--tx2);white-space:nowrap;max-width:340px;overflow:hidden;text-overflow:ellipsis}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--tx3);flex-shrink:0;transition:all .3s}
+.dot.live{background:var(--gr);box-shadow:0 0 6px rgba(16,185,129,.5);animation:pd 2s infinite}
+.dot.err{background:var(--rd)}.dot.ld{background:var(--gd);animation:pd .7s infinite}
+.dot.saving{background:var(--pu);animation:pd .5s infinite}
+@keyframes pd{0%,100%{opacity:1}50%{opacity:.35}}
+.pbw{width:100px;height:3px;background:var(--bg4);border-radius:2px;overflow:hidden;display:none}
+.pbf{height:100%;background:linear-gradient(90deg,var(--bl),var(--pu));border-radius:2px;transition:width .2s;width:0}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border-radius:var(--rs);cursor:pointer;font-size:12px;font-weight:500;border:1px solid var(--bd2);background:var(--bg3);color:var(--tx);transition:all .15s;white-space:nowrap;font-family:'Inter',sans-serif}
+.btn:hover{background:var(--bg4);border-color:var(--bd3)}.btn:disabled{opacity:.4;cursor:not-allowed}
+.btnp{background:linear-gradient(135deg,var(--bl),#2563eb)!important;border:none!important;color:#fff!important;box-shadow:0 2px 8px rgba(59,130,246,.3)}
+.btnp:hover{box-shadow:0 4px 16px rgba(59,130,246,.4)!important;filter:brightness(1.06)}
+.btnd{background:rgba(239,68,68,.1)!important;border-color:rgba(239,68,68,.2)!important;color:var(--rd)!important}
+.btnd:hover{background:rgba(239,68,68,.2)!important}
+.btns{padding:4px 9px!important;font-size:11px!important}.btng{background:transparent!important;border-color:transparent!important;color:var(--tx2)!important}
+.apibar{background:rgba(245,158,11,.06);border-bottom:1px solid rgba(245,158,11,.15);padding:8px 24px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.apibar label{font-size:11px;color:var(--gd);font-weight:600;white-space:nowrap}
+.apibar input{flex:1;min-width:160px;max-width:300px;padding:6px 10px;border:1px solid rgba(245,158,11,.25);border-radius:7px;background:rgba(245,158,11,.05);color:var(--tx);font-size:12px;font-family:'JetBrains Mono',monospace}
+.apibar input:focus{outline:none;border-color:var(--gd)}.apibar a{font-size:11px;color:var(--bl);text-decoration:none}.apibar a:hover{text-decoration:underline}
+.anote{font-size:10px;color:var(--tx3)}
+.syncbar{background:rgba(139,92,246,.06);border-bottom:1px solid rgba(139,92,246,.18);padding:8px 24px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.syncbar label{font-size:11px;color:var(--pu);font-weight:600;white-space:nowrap}
+.syncbar input{flex:1;min-width:160px;max-width:280px;padding:6px 10px;border:1px solid rgba(139,92,246,.25);border-radius:7px;background:rgba(139,92,246,.05);color:var(--tx);font-size:12px;font-family:'JetBrains Mono',monospace}
+.syncbar input:focus{outline:none;border-color:var(--pu)}
+.syncbar a{font-size:11px;color:var(--bl);text-decoration:none}.syncbar a:hover{text-decoration:underline}
+.sync-status{font-size:11px;font-weight:500;white-space:nowrap}
+.sync-status.ok{color:var(--gr)}.sync-status.err{color:var(--rd)}.sync-status.ld{color:var(--gd)}
+.tabw{padding:0 24px;border-bottom:1px solid var(--bd);background:var(--bg2)}
+.tabs{display:flex;overflow-x:auto}
+.tab{padding:12px 16px;cursor:pointer;font-size:12px;font-weight:500;color:var(--tx3);border-bottom:2px solid transparent;white-space:nowrap;transition:all .2s;user-select:none}
+.tab:hover{color:var(--tx2)}.tab.on{color:var(--bl);border-bottom-color:var(--bl)}
+.content{padding:22px 24px}.pnl{display:none}.pnl.on{display:block}
+.mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:11px;margin-bottom:20px}
+.mc{background:var(--bg2);border:1px solid var(--bd);border-radius:var(--r);padding:15px 17px;position:relative;overflow:hidden;transition:border-color .2s}
+.mc:hover{border-color:var(--bd2)}.mc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:var(--r) var(--r) 0 0}
+.mc.up::before{background:linear-gradient(90deg,var(--gr),transparent)}.mc.dn::before{background:linear-gradient(90deg,var(--rd),transparent)}.mc.nt::before{background:linear-gradient(90deg,var(--bl),transparent)}
+.mlb{font-size:10px;font-weight:500;color:var(--tx3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:7px}
+.mv{font-size:22px;font-weight:700;letter-spacing:-1px;line-height:1;margin-bottom:4px}.ms{font-size:11px;font-weight:500}
+.pos{color:var(--gr)}.neg{color:var(--rd)}.neu{color:var(--tx)}
+.cc{background:var(--bg2);border:1px solid var(--bd);border-radius:var(--r);padding:18px 20px;margin-bottom:20px}
+.chdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px}
+.ctit{font-size:13px;font-weight:600}.csub{font-size:11px;color:var(--tx3);margin-top:2px}
+.tfbs{display:flex;gap:3px;background:var(--bg3);padding:3px;border-radius:8px}
+.tfb{padding:4px 11px;font-size:11px;font-weight:500;border:none;border-radius:6px;cursor:pointer;background:transparent;color:var(--tx3);font-family:'Inter',sans-serif;transition:all .15s}
+.tfb.on{background:var(--bg4);color:var(--tx);box-shadow:0 1px 4px rgba(0,0,0,.4)}
+.cw{position:relative;height:220px}.cleg{display:flex;gap:14px;margin-top:11px;padding-top:11px;border-top:1px solid var(--bd)}
+.cli{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--tx2)}.clln{width:14px;height:2px;border-radius:1px}
+.tc{background:var(--bg2);border:1px solid var(--bd);border-radius:var(--r);overflow:hidden;margin-bottom:20px}
+.thdr{padding:13px 16px;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.ttit{font-size:13px;font-weight:600}.scx{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{font-size:10px;font-weight:600;color:var(--tx3);text-align:left;padding:8px 12px;border-bottom:1px solid var(--bd);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;cursor:pointer;user-select:none;transition:color .15s}
+th:hover{color:var(--tx2)}.tha{color:var(--bl)!important}
+td{padding:9px 12px;border-bottom:1px solid rgba(255,255,255,.03);white-space:nowrap;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:rgba(59,130,246,.03)}
+.mn{font-family:'JetBrains Mono',monospace;font-size:11.5px}.fw{font-weight:600}
+.bdg{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;letter-spacing:.04em}
+.bdb{background:rgba(16,185,129,.12);color:var(--gr);border:1px solid rgba(16,185,129,.2)}
+.bds{background:rgba(239,68,68,.12);color:var(--rd);border:1px solid rgba(239,68,68,.2)}
+.fxt{font-size:9px;padding:1px 5px;border-radius:5px;background:rgba(59,130,246,.1);color:#93c5fd;border:1px solid rgba(59,130,246,.15);margin-left:3px}
+.nmc{max-width:170px;overflow:hidden;text-overflow:ellipsis;color:var(--tx2)}
+.chip{display:inline-flex;align-items:center;gap:2px;padding:2px 7px;border-radius:6px;font-size:10px;font-weight:600}
+.cup{background:rgba(16,185,129,.1);color:var(--gr)}.cdn{background:rgba(239,68,68,.1);color:var(--rd)}
+.tav{display:inline-flex;align-items:center;justify-content:center;border-radius:6px;font-size:9px;font-weight:700;flex-shrink:0}
+.tgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(245px,1fr));gap:11px;margin-bottom:20px}
+.tkc{background:var(--bg2);border:1px solid var(--bd);border-radius:var(--r);padding:15px 17px;transition:all .2s;position:relative;overflow:hidden}
+.tkc:hover{border-color:var(--bd2);transform:translateY(-2px);box-shadow:0 6px 24px rgba(0,0,0,.4)}
+.tka{position:absolute;top:0;left:0;bottom:0;width:3px;border-radius:var(--r) 0 0 var(--r)}
+.tkh{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:7px}
+.tkn{font-size:12px;font-weight:600;margin-bottom:2px}.tks{font-size:10px;color:var(--tx3)}
+.tka2{font-size:11px;font-weight:700}.tkv{font-size:19px;font-weight:700;letter-spacing:-.8px;margin:5px 0 4px}
+.tkp{display:flex;gap:10px;font-size:11px;font-weight:500;margin-bottom:9px;flex-wrap:wrap}
+.tkb{height:3px;background:var(--bg4);border-radius:2px;overflow:hidden}.tkf{height:100%;border-radius:2px}
+.mcard{background:var(--bg2);border:1px solid var(--bd);border-radius:var(--r);padding:18px 20px;margin-bottom:14px}
+.mttl{font-size:10px;font-weight:600;color:var(--tx3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:13px;display:flex;align-items:center;gap:8px}
+.mttl::after{content:'';flex:1;height:1px;background:var(--bd)}
+.ttags{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:13px}
+.ttag{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border:1px solid var(--bd2);border-radius:20px;font-size:11px;font-weight:500;color:var(--tx2)}
+.ttag button{background:none;border:none;cursor:pointer;color:var(--tx3);font-size:13px;line-height:1;padding:0;transition:color .15s}.ttag button:hover{color:var(--rd)}
+.arow{display:flex;gap:7px}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.fg3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px}
+.fld{display:flex;flex-direction:column;gap:5px}
+.fld label{font-size:10px;font-weight:600;color:var(--tx3);text-transform:uppercase;letter-spacing:.06em}
+input,select{background:var(--bg3);border:1px solid var(--bd2);border-radius:var(--rs);padding:8px 10px;color:var(--tx);font-size:13px;font-family:'Inter',sans-serif;width:100%;transition:border-color .15s}
+input::placeholder{color:var(--tx3)}input:focus,select:focus{outline:none;border-color:var(--bl);box-shadow:0 0 0 3px rgba(59,130,246,.1)}
+select option{background:var(--bg3)}
+.alt{padding:9px 12px;border-radius:var(--rs);font-size:12px;font-weight:500;margin-bottom:12px;display:none;align-items:center;gap:6px}
+.alt.ok{background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.2);color:var(--gr);display:flex}
+.alt.er{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);color:var(--rd);display:flex}
+.txscr{max-height:340px;overflow-y:auto}
+.emp{text-align:center;padding:32px;color:var(--tx3);font-size:12px}
+.lge{font-family:'JetBrains Mono',monospace;font-size:11px;padding:6px 9px;border-radius:6px;margin-bottom:3px;display:flex;align-items:flex-start;gap:7px}
+.lge.info{background:rgba(59,130,246,.06);color:var(--tx2)}.lge.warn{background:rgba(245,158,11,.06);color:var(--gd)}
+.lge.error{background:rgba(239,68,68,.06);color:var(--rd)}.lge.ok{background:rgba(16,185,129,.06);color:var(--gr)}
+.lgt{color:var(--tx3);flex-shrink:0;font-size:10px;margin-top:1px}.lgscr{max-height:380px;overflow-y:auto;padding:3px}
+.gstep{display:flex;gap:13px;padding:13px 0;border-bottom:1px solid var(--bd)}.gstep:last-child{border-bottom:none}
+.gsn{width:24px;height:24px;border-radius:50%;background:var(--bl);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.gst{font-size:13px;font-weight:600;margin-bottom:4px}.gsd{font-size:12px;color:var(--tx2);line-height:1.6}
+.cb{background:var(--bg3);border:1px solid var(--bd2);border-radius:7px;padding:9px 12px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--tx2);margin-top:7px;overflow-x:auto}.hl{color:var(--bl)}
+@media(max-width:800px){.content{padding:14px}header,.tabw,.apibar,.syncbar{padding-left:14px;padding-right:14px}.fg,.fg3{grid-template-columns:1fr}.mgrid{grid-template-columns:repeat(2,1fr)}.tgrid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div style="max-width:1600px;margin:0 auto">
+
+<header>
+  <div class="logo"><div class="lmark">P</div><div class="ltext">PNB <span>Portfolio</span></div></div>
+  <div class="hright">
+    <div class="spill"><div class="dot" id="sdot"></div><span id="smsg">Ready</span></div>
+    <div class="pbw" id="pbw"><div class="pbf" id="pbf"></div></div>
+    <button class="btn btnp" id="rbtn" onclick="doRefresh()">&#8635; Refresh Prices</button>
+  </div>
+</header>
+
+<!-- Finnhub API Bar -->
+<div class="apibar" id="apibar">
+  <label>&#9889; Finnhub API Key</label>
+  <input id="akey" type="password" placeholder="Paste your Finnhub key…" oninput="saveSettings()"/>
+  <button class="btn btns" onclick="doTestKey()">Test Key</button>
+  <a href="https://finnhub.io/register" target="_blank">Get free key &#8599;</a>
+  <span class="anote">Free &#183; 60 req/min &#183; Parallel loading</span>
+</div>
+
+<!-- Supabase Sync Bar -->
+<div class="syncbar" id="syncbar">
+  <label>&#9729; Auto-Sync</label>
+  <input id="sb-url" type="text" placeholder="Supabase Project URL…" oninput="saveSettings()"/>
+  <input id="sb-key" type="password" placeholder="Supabase Anon Key…" oninput="saveSettings()" style="max-width:240px"/>
+  <button class="btn btns" onclick="doConnect()" style="border-color:rgba(139,92,246,.3);color:var(--pu)">Connect</button>
+  <span id="sync-st" class="sync-status"></span>
+  <a href="https://supabase.com" target="_blank" style="font-size:11px;color:var(--bl)">Setup guide &#8599;</a>
+  <button class="btn btng btns" onclick="document.getElementById('syncbar').style.display='none'">&#10005;</button>
+</div>
+
+<div class="tabw">
+  <div class="tabs">
+    <div class="tab on" onclick="goTab(this,'dashboard')">Dashboard</div>
+    <div class="tab" onclick="goTab(this,'stocks')">By Stock</div>
+    <div class="tab" onclick="goTab(this,'themes')">By Theme</div>
+    <div class="tab" onclick="goTab(this,'manage')">Manage</div>
+    <div class="tab" onclick="goTab(this,'log')">Error Log <span id="lbdg" style="color:var(--rd)"></span></div>
+    <div class="tab" onclick="goTab(this,'hosting')">Setup Guide</div>
+  </div>
+</div>
+
+<div class="content">
+
+<!-- DASHBOARD -->
+<div id="pnl-dashboard" class="pnl on">
+  <div class="mgrid" id="mgrid"></div>
+  <div class="cc">
+    <div class="chdr">
+      <div><div class="ctit">Portfolio Performance</div><div class="csub">Value vs cost basis &#183; USD</div></div>
+      <div class="tfbs">
+        <button class="tfb" onclick="goTf('1M',this)">1M</button>
+        <button class="tfb on" onclick="goTf('YTD',this)">YTD</button>
+        <button class="tfb" onclick="goTf('3M',this)">3M</button>
+        <button class="tfb" onclick="goTf('1Y',this)">1Y</button>
+        <button class="tfb" onclick="goTf('ALL',this)">All</button>
+      </div>
+    </div>
+    <div class="cw"><canvas id="dch"></canvas></div>
+    <div class="cleg">
+      <div class="cli"><div class="clln" style="background:var(--bl)"></div>Portfolio Value (USD)</div>
+      <div class="cli"><div class="clln" style="background:var(--tx3)"></div>Cost Basis (USD)</div>
+    </div>
+  </div>
+  <div class="tc">
+    <div class="thdr"><div class="ttit">Recent Transactions</div><span id="rts" style="font-size:11px;color:var(--tx3)"></span></div>
+    <div class="scx"><table><thead><tr><th>Date</th><th>Type</th><th>Ticker</th><th>Name</th><th>Theme</th><th>Shares</th><th>Price</th><th>Ccy</th><th>USD Value</th></tr></thead><tbody id="rtbody"></tbody></table></div>
+  </div>
+</div>
+
+<!-- BY STOCK -->
+<div id="pnl-stocks" class="pnl">
+  <div class="tc">
+    <div class="thdr">
+      <div class="ttit">Open Positions <span id="livebdg" style="font-size:11px;color:var(--gr);font-weight:400"></span></div>
+      <input id="ssearch" placeholder="&#128269; Filter ticker or name…" style="width:190px;padding:6px 9px;font-size:12px" oninput="doRStocks()"/>
+    </div>
+    <div class="scx"><table>
+      <thead><tr>
+        <th style="width:24px"></th>
+        <th onclick="doSort('ticker')">Ticker <span id="sa-ticker">&#8597;</span></th>
+        <th>Name</th>
+        <th onclick="doSort('theme')">Theme <span id="sa-theme">&#8597;</span></th>
+        <th>Ccy</th>
+        <th onclick="doSort('shares')">Shares <span id="sa-shares">&#8597;</span></th>
+        <th onclick="doSort('avgCostUSD')">Avg Cost <span id="sa-avgCostUSD">&#8597;</span></th>
+        <th>Price (native)</th>
+        <th onclick="doSort('currentUSD')">Price USD <span id="sa-currentUSD">&#8597;</span></th>
+        <th onclick="doSort('marketValueUSD')">Mkt Value <span id="sa-marketValueUSD">&#8595;</span></th>
+        <th onclick="doSort('unrealPnlUSD')">Unreal P&amp;L <span id="sa-unrealPnlUSD">&#8597;</span></th>
+        <th onclick="doSort('unrealPct')">Unreal % <span id="sa-unrealPct">&#8597;</span></th>
+        <th onclick="doSort('realPnlUSD')">Real P&amp;L <span id="sa-realPnlUSD">&#8597;</span></th>
+      </tr></thead>
+      <tbody id="stbody"></tbody>
+    </table></div>
+  </div>
+</div>
+
+<!-- BY THEME -->
+<div id="pnl-themes" class="pnl">
+  <div class="tgrid" id="tgrid"></div>
+  <div class="cc">
+    <div class="chdr"><div class="ctit">Allocation by Theme</div></div>
+    <div class="cw" style="height:260px"><canvas id="ach"></canvas></div>
+  </div>
+</div>
+
+<!-- MANAGE -->
+<div id="pnl-manage" class="pnl">
+  <div id="altmsg" class="alt"></div>
+  <div class="mcard">
+    <div class="mttl">Themes</div>
+    <div class="ttags" id="ttags"></div>
+    <div class="arow"><input id="ntinp" placeholder="New theme name…" style="max-width:210px"/><button class="btn btns" onclick="doAddTheme()">+ Add</button></div>
+  </div>
+  <div class="mcard">
+    <div class="mttl">Add Transaction</div>
+    <div class="fg">
+      <div class="fld"><label>Type</label><select id="txtype"><option value="buy">Buy</option><option value="sell">Sell</option></select></div>
+      <div class="fld"><label>Date</label><input type="date" id="txdate"/></div>
+    </div>
+    <div class="fg">
+      <div class="fld"><label>Ticker (Finnhub format)</label><input id="txticker" placeholder="e.g. GLD, ASX:BOE, HKEX:1088"/></div>
+      <div class="fld"><label>Theme</label><select id="txtheme"></select></div>
+    </div>
+    <div class="fg3">
+      <div class="fld"><label>Shares</label><input type="number" id="txshares" placeholder="0" min="0" step="any"/></div>
+      <div class="fld"><label>Price per Share</label><input type="number" id="txprice" placeholder="0.00" min="0" step="any"/></div>
+      <div class="fld"><label>Currency</label><select id="txccy"><option value="USD">USD</option><option value="EUR">EUR</option><option value="GBP">GBP</option><option value="AUD">AUD</option><option value="CAD">CAD</option><option value="HKD">HKD</option><option value="SGD">SGD</option><option value="NOK">NOK</option><option value="JPY">JPY</option><option value="BRL">BRL</option><option value="CNY">CNY</option><option value="IDR">IDR</option></select></div>
+    </div>
+    <div class="fld" style="margin-bottom:13px"><label>Full Name (optional)</label><input id="txname" placeholder="e.g. SPDR Gold Trust"/></div>
+    <button class="btn btnp" onclick="doAddTx()">+ Add Transaction</button>
+  </div>
+  <div class="mcard">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:13px">
+      <div class="mttl" style="margin-bottom:0;flex:1">All Transactions (<span id="txcount">0</span>)</div>
+      <input id="msearch" placeholder="&#128269; Search ticker, name or theme…" style="width:230px;padding:6px 10px;font-size:12px" oninput="doRManage()"/>
+    </div>
+    <div class="txscr scx">
+      <table><thead><tr><th>Date</th><th>Type</th><th>Ticker</th><th>Name</th><th>Theme</th><th>Shares</th><th>Price</th><th>Ccy</th><th>USD Val</th><th style="width:70px"></th></tr></thead>
+      <tbody id="atbody"></tbody></table>
+    </div>
+  </div>
+</div>
+
+<!-- LOG -->
+<div id="pnl-log" class="pnl">
+  <div class="mcard">
+    <div class="mttl" style="justify-content:space-between"><span>Refresh Log</span><button class="btn btns btng" onclick="doClearLog()" style="margin-left:auto">Clear</button></div>
+    <div class="lgscr" id="lgcon"><div class="emp">No log entries yet. Click Refresh Prices to start.</div></div>
+  </div>
+  <div class="mcard">
+    <div class="mttl">Failed Tickers Guide</div>
+    <div id="fguide" style="font-size:12px;color:var(--tx2);line-height:1.8">After a refresh, failed tickers appear here with fix suggestions.</div>
+  </div>
+</div>
+
+<!-- SETUP GUIDE -->
+<div id="pnl-hosting" class="pnl">
+  <div class="mcard">
+    <div class="mttl">Step 1 &#8212; Auto-Sync Setup (Supabase &#8212; Free)</div>
+    <p style="font-size:12px;color:var(--tx2);margin-bottom:14px;line-height:1.7">This gives you a real database. Add a transaction on your laptop &#8212; it instantly appears on your phone, tablet, anywhere. Free forever for your usage level.</p>
+    <div class="gstep"><div class="gsn">1</div><div><div class="gst">Create a free Supabase account</div><div class="gsd">Go to <a href="https://supabase.com" target="_blank" style="color:var(--bl)">supabase.com</a> &#8594; Sign up &#8594; New project. Choose any name (e.g. "portfolio") and any region. Wait ~1 min for it to spin up.</div></div></div>
+    <div class="gstep"><div class="gsn">2</div><div><div class="gst">Create the database table</div><div class="gsd">In Supabase: go to <strong style="color:var(--tx)">SQL Editor</strong> &#8594; paste and run this SQL:<div class="cb"><span class="hl">create table portfolio (id text primary key, data jsonb not null, updated_at timestamptz default now());</span></div></div></div></div>
+    <div class="gstep"><div class="gsn">3</div><div><div class="gst">Get your Project URL and Anon Key</div><div class="gsd">Go to <strong style="color:var(--tx)">Project Settings &#8594; API</strong>. Copy:<br>&#8226; <strong style="color:var(--tx)">Project URL</strong> (looks like: https://xxxx.supabase.co)<br>&#8226; <strong style="color:var(--tx)">anon public</strong> key (long string starting with "eyJ…")</div></div></div>
+    <div class="gstep"><div class="gsn">4</div><div><div class="gst">Paste them into the purple bar above</div><div class="gsd">Paste the Project URL and Anon Key into the &#9729; Auto-Sync bar at the top &#8594; click <strong style="color:var(--tx)">Connect</strong>. Your data syncs automatically from that point.</div></div></div>
+    <div class="gstep"><div class="gsn">5</div><div><div class="gst">Host the HTML file (optional but recommended)</div><div class="gsd">Upload this HTML file to <a href="https://github.com" target="_blank" style="color:var(--bl)">GitHub Pages</a> or <a href="https://pages.cloudflare.com" target="_blank" style="color:var(--bl)">Cloudflare Pages</a> (both free). Then open the URL on any device &#8212; your Supabase credentials are saved and your data is always in sync.</div></div></div>
+  </div>
+  <div class="mcard">
+    <div class="mttl">Step 2 &#8212; Host on GitHub Pages (Free)</div>
+    <div class="gstep"><div class="gsn">1</div><div><div class="gst">Create a GitHub repo</div><div class="gsd"><a href="https://github.com" target="_blank" style="color:var(--bl)">github.com</a> &#8594; New repository &#8594; name it "portfolio" &#8594; Public &#8594; Create.</div></div></div>
+    <div class="gstep"><div class="gsn">2</div><div><div class="gst">Upload this file as index.html</div><div class="gsd">Click "uploading an existing file" &#8594; drag this file &#8594; rename to <code style="color:var(--bl)">index.html</code> &#8594; Commit.</div></div></div>
+    <div class="gstep"><div class="gsn">3</div><div><div class="gst">Enable GitHub Pages</div><div class="gsd">Settings &#8594; Pages &#8594; Source &#8594; Deploy from branch &#8594; main / root &#8594; Save. Live in ~60 seconds at:<div class="cb"><span class="hl">https://YOUR-USERNAME.github.io/portfolio/</span></div></div></div></div>
+  </div>
+</div>
+
+</div>
+</div>
+
+<!-- EDIT MODAL -->
+<div id="edit-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.75);z-index:1000;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#0d1120;border:1px solid rgba(255,255,255,.15);border-radius:14px;padding:24px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+      <div style="font-size:15px;font-weight:600">Edit Transaction</div>
+      <button onclick="closeEdit()" style="background:none;border:none;cursor:pointer;color:#8892b0;font-size:20px;line-height:1">&#10005;</button>
+    </div>
+    <input type="hidden" id="edit-id"/>
+    <div class="fg">
+      <div class="fld"><label>Type</label><select id="edit-type"><option value="buy">Buy</option><option value="sell">Sell</option></select></div>
+      <div class="fld"><label>Date</label><input type="date" id="edit-date"/></div>
+    </div>
+    <div class="fg">
+      <div class="fld"><label>Ticker (Finnhub format)</label><input id="edit-ticker" placeholder="e.g. GLD, ASX:BOE, HKEX:1088"/></div>
+      <div class="fld"><label>Theme</label><select id="edit-theme"></select></div>
+    </div>
+    <div class="fg3">
+      <div class="fld"><label>Shares</label><input type="number" id="edit-shares" min="0" step="any"/></div>
+      <div class="fld"><label>Price per Share</label><input type="number" id="edit-price" min="0" step="any"/></div>
+      <div class="fld"><label>Currency</label><select id="edit-ccy"><option value="USD">USD</option><option value="EUR">EUR</option><option value="GBP">GBP</option><option value="AUD">AUD</option><option value="CAD">CAD</option><option value="HKD">HKD</option><option value="SGD">SGD</option><option value="NOK">NOK</option><option value="JPY">JPY</option><option value="BRL">BRL</option><option value="CNY">CNY</option><option value="IDR">IDR</option></select></div>
+    </div>
+    <div class="fld" style="margin-bottom:18px"><label>Full Name</label><input id="edit-name"/></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btnp" onclick="doSaveEdit()" style="flex:1">&#10003; Save Changes</button>
+      <button class="btn" onclick="closeEdit()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// THEME COLORS
+// ============================================================
+var TC = ['#3b82f6','#10b981','#f59e0b','#8b5cf6','#ef4444','#14b8a6','#f97316','#06b6d4','#ec4899','#84cc16','#6366f1','#a3e635','#fb7185','#34d399'];
+
+// ============================================================
+// TICKER -> FINNHUB SYMBOL
+// ============================================================
+function toFH(t) {
+  if (t.indexOf(':') !== -1) return t; // already has exchange prefix
+  if (t.indexOf('.') === -1) return t; // plain US ticker
+  var parts = t.split('.');
+  var base = parts[0];
+  var exch = parts[1];
+  var map = {'AX':'ASX:','HK':'HKEX:','SI':'SGX:','OL':'OSL:','PA':'EPA:','DE':'FRA:','AS':'AMS:','L':'LSE:','TO':'TSX:','V':'TSXV:'};
+  return map[exch] ? map[exch] + base : t;
+}
+
+// ============================================================
+// DEFAULT TRANSACTIONS
+// ============================================================
+var DEFAULT_TX = [
+{id:1,type:'buy',date:'2023-03-29',ticker:'NTR',name:'Nutrien Ltd.',theme:'Agriculture',shares:23.2,price:73.27,currency:'USD'},
+{id:2,type:'buy',date:'2023-03-29',ticker:'MOS',name:'Mosaic Company',theme:'Agriculture',shares:37.67,price:45.13,currency:'USD'},
+{id:3,type:'buy',date:'2023-03-29',ticker:'ICL',name:'ICL Group',theme:'Agriculture',shares:246,price:6.89,currency:'USD'},
+{id:4,type:'buy',date:'2023-03-29',ticker:'FRA:SDF',name:'K&S AG',theme:'Agriculture',shares:81,price:19.3,currency:'EUR'},
+{id:5,type:'buy',date:'2023-01-13',ticker:'SGX:F34',name:'Wilmar International',theme:'Agriculture',shares:600,price:4.14,currency:'SGD'},
+{id:6,type:'buy',date:'2023-01-13',ticker:'SGX:E5H',name:'Golden Agri Resources',theme:'Agriculture',shares:8500,price:0.25,currency:'SGD'},
+{id:7,type:'buy',date:'2023-01-05',ticker:'HKEX:297',name:'Sinofert Holdings',theme:'Agriculture',shares:14000,price:0.97,currency:'HKD'},
+{id:8,type:'buy',date:'2024-08-29',ticker:'LSE:MHPC',name:'MHP SE',theme:'Agriculture',shares:475,price:4.2,currency:'USD'},
+{id:9,type:'buy',date:'2023-03-29',ticker:'FCX',name:'Freeport-McMoRan',theme:'Copper',shares:85.8616,price:39.715,currency:'USD'},
+{id:10,type:'buy',date:'2023-03-29',ticker:'TSXV:SURG',name:'Surge Copper Corp.',theme:'Copper',shares:38500,price:0.12,currency:'CAD'},
+{id:11,type:'buy',date:'2023-01-12',ticker:'ASX:RXM',name:'Rex Minerals',theme:'Copper',shares:21866,price:0.225,currency:'AUD'},
+{id:12,type:'buy',date:'2023-01-12',ticker:'ASX:ALK',name:'Alkane Resources',theme:'Copper',shares:7291,price:0.675,currency:'AUD'},
+{id:13,type:'buy',date:'2023-01-13',ticker:'ASX:NHC',name:'New Hope Corporation',theme:'Coal',shares:447,price:6.23,currency:'AUD'},
+{id:14,type:'buy',date:'2023-01-13',ticker:'ASX:WHC',name:'Whitehaven Coal',theme:'Coal',shares:314,price:8.86,currency:'AUD'},
+{id:15,type:'buy',date:'2023-01-13',ticker:'ASX:SMR',name:'Stanmore Resources',theme:'Coal',shares:854,price:3.27,currency:'AUD'},
+{id:16,type:'buy',date:'2023-01-05',ticker:'HKEX:1088',name:'China Shenhua Energy',theme:'Coal',shares:500,price:22.9,currency:'HKD'},
+{id:17,type:'buy',date:'2023-01-05',ticker:'HKEX:1898',name:'China Coal Energy',theme:'Coal',shares:3000,price:6.24,currency:'HKD'},
+{id:18,type:'buy',date:'2023-04-04',ticker:'GDX',name:'VanEck Gold Miners',theme:'Gold/Silver/Japan',shares:600,price:33.72,currency:'USD'},
+{id:19,type:'buy',date:'2023-04-04',ticker:'GLD',name:'SPDR Gold',theme:'Gold/Silver/Japan',shares:110,price:186.78,currency:'USD'},
+{id:20,type:'buy',date:'2024-08-29',ticker:'SBSW',name:'Sibanye Stillwater',theme:'Gold/Silver/Japan',shares:476,price:4.156,currency:'USD'},
+{id:21,type:'buy',date:'2024-07-21',ticker:'LSE:VALT',name:'Valterra Platinum',theme:'Gold/Silver/Japan',shares:100,price:38.3,currency:'GBP'},
+{id:22,type:'buy',date:'2023-03-29',ticker:'TDW',name:'Tidewater Inc.',theme:'Offshore Oil',shares:27.7737,price:45.01,currency:'USD'},
+{id:23,type:'buy',date:'2023-12-06',ticker:'OSL:SUBC',name:'Subsea 7 SA',theme:'Offshore Oil',shares:50,price:148.05,currency:'NOK'},
+{id:24,type:'buy',date:'2023-03-29',ticker:'FTI',name:'TechnipFMC',theme:'Offshore Oil',shares:60,price:13.36,currency:'USD'},
+{id:25,type:'buy',date:'2023-03-29',ticker:'RIG',name:'Transocean Ltd',theme:'Offshore Oil',shares:120,price:6.62,currency:'USD'},
+{id:26,type:'buy',date:'2023-03-29',ticker:'HLX',name:'Helix Energy Solutions',theme:'Offshore Oil',shares:102.8278,price:7.78,currency:'USD'},
+{id:27,type:'buy',date:'2023-12-13',ticker:'OII',name:'Oceaneering International',theme:'Offshore Oil',shares:40,price:19.18,currency:'USD'},
+{id:28,type:'buy',date:'2023-12-06',ticker:'EPA:VK',name:'Vallourec SA',theme:'Offshore Oil',shares:60,price:13.74,currency:'EUR'},
+{id:29,type:'buy',date:'2023-01-05',ticker:'HKEX:1623',name:'Hilong Holding',theme:'Offshore Oil',shares:20000,price:0.31,currency:'HKD'},
+{id:30,type:'buy',date:'2023-12-14',ticker:'XPRO',name:'Expro Group Holdings',theme:'Offshore Oil',shares:60,price:15.02,currency:'USD'},
+{id:31,type:'buy',date:'2023-12-06',ticker:'SGX:M05',name:'MTQ Corporation',theme:'Offshore Oil',shares:3100,price:0.33,currency:'SGD'},
+{id:32,type:'buy',date:'2023-04-04',ticker:'GEOS',name:'Geospace Technologies',theme:'Offshore Oil',shares:80,price:7.88,currency:'USD'},
+{id:33,type:'buy',date:'2023-12-06',ticker:'SGX:5LY',name:'Marco Polo Marine',theme:'Offshore Oil',shares:20000,price:0.05,currency:'SGD'},
+{id:34,type:'buy',date:'2023-12-06',ticker:'SGX:S51',name:'Seatrium Limited',theme:'Offshore Oil',shares:9900,price:0.1,currency:'SGD'},
+{id:35,type:'buy',date:'2024-05-16',ticker:'HKEX:3303',name:'Jutal Offshore Oil Services',theme:'Offshore Oil',shares:10000,price:0.74,currency:'HKD'},
+{id:36,type:'buy',date:'2024-05-27',ticker:'HKEX:3303',name:'Jutal Offshore Oil Services',theme:'Offshore Oil',shares:10000,price:0.808,currency:'HKD'},
+{id:37,type:'buy',date:'2024-05-27',ticker:'SGX:DU4',name:'Mermaid Maritime',theme:'Offshore Oil',shares:7000,price:0.174,currency:'SGD'},
+{id:38,type:'buy',date:'2024-06-06',ticker:'LSE:RKH',name:'Rockhopper Exploration',theme:'Offshore Oil',shares:7100,price:0.142,currency:'GBP'},
+{id:39,type:'buy',date:'2024-08-29',ticker:'SMHI',name:'Seacor Marine Holdings',theme:'Offshore Oil',shares:86,price:11.58,currency:'USD'},
+{id:40,type:'buy',date:'2024-04-09',ticker:'NE',name:'Noble Corporation PLC',theme:'Offshore Oil',shares:16.212,price:35.19,currency:'USD'},
+{id:41,type:'buy',date:'2024-10-18',ticker:'AMS:SBMO',name:'SBM Offshore NV',theme:'Offshore Oil',shares:58,price:17.09,currency:'EUR'},
+{id:42,type:'buy',date:'2025-01-12',ticker:'BORR',name:'Borr Drilling Ltd',theme:'Offshore Oil',shares:764.4634,price:3.275,currency:'USD'},
+{id:43,type:'buy',date:'2025-01-12',ticker:'WFRD',name:'Weatherford International',theme:'Offshore Oil',shares:33,price:74.8,currency:'USD'},
+{id:44,type:'buy',date:'2024-05-17',ticker:'FRO',name:'Frontline PLC',theme:'Shipping',shares:65,price:27.447,currency:'USD'},
+{id:45,type:'buy',date:'2023-12-15',ticker:'STNG',name:'Scorpio Tankers',theme:'Shipping',shares:33,price:56.51,currency:'USD'},
+{id:46,type:'buy',date:'2023-12-15',ticker:'ASC',name:'Ardmore Shipping',theme:'Shipping',shares:135,price:13.75,currency:'USD'},
+{id:47,type:'buy',date:'2023-12-15',ticker:'TNK',name:'Teekay Tankers',theme:'Shipping',shares:40,price:47.82,currency:'USD'},
+{id:48,type:'buy',date:'2023-12-15',ticker:'DHT',name:'DHT Holdings',theme:'Shipping',shares:194,price:9.51,currency:'USD'},
+{id:49,type:'buy',date:'2024-05-17',ticker:'SBLK',name:'Star Bulk Carriers',theme:'Shipping',shares:70,price:25.858,currency:'USD'},
+{id:50,type:'buy',date:'2024-05-17',ticker:'INSW',name:'International Seaways',theme:'Shipping',shares:29,price:63.67,currency:'USD'},
+{id:51,type:'buy',date:'2024-05-17',ticker:'TEN',name:'Tsakos Energy Navigation',theme:'Shipping',shares:60,price:29.89,currency:'USD'},
+{id:52,type:'buy',date:'2024-05-17',ticker:'HKEX:2343',name:'Pacific Basin Shipping',theme:'Shipping',shares:5000,price:2.79,currency:'HKD'},
+{id:53,type:'buy',date:'2023-01-12',ticker:'ASX:BMN',name:'Bannerman Energy',theme:'Uranium',shares:1419,price:1.98,currency:'AUD'},
+{id:54,type:'buy',date:'2023-04-04',ticker:'URNM',name:'Sprott Uranium Miners',theme:'Uranium',shares:90,price:30.75,currency:'USD'},
+{id:55,type:'buy',date:'2023-12-15',ticker:'URNM',name:'Sprott Uranium Miners',theme:'Uranium',shares:100,price:48.64,currency:'USD'},
+{id:56,type:'buy',date:'2023-12-14',ticker:'BMA',name:'Banco Macro SA',theme:'Argentina',shares:79,price:28.21,currency:'USD'},
+{id:57,type:'buy',date:'2023-12-15',ticker:'CRESY',name:'Cresud Inc.',theme:'Argentina',shares:228,price:9.84,currency:'USD'},
+{id:58,type:'buy',date:'2023-12-14',ticker:'CEPU',name:'Central Puerto SA',theme:'Argentina',shares:239,price:9.4,currency:'USD'},
+{id:59,type:'buy',date:'2023-12-14',ticker:'PAM',name:'Pampa Energia SA',theme:'Argentina',shares:45,price:48.4,currency:'USD'},
+{id:60,type:'buy',date:'2023-12-15',ticker:'LOMA',name:'Loma Negra',theme:'Argentina',shares:327,price:6.85,currency:'USD'},
+{id:61,type:'buy',date:'2023-12-14',ticker:'YPF',name:'YPF SA',theme:'Argentina',shares:127.1187,price:17.7,currency:'USD'},
+{id:62,type:'buy',date:'2024-05-24',ticker:'GREK',name:'Global X MSCI Greece ETF',theme:'Greece',shares:235,price:42.385,currency:'USD'},
+{id:63,type:'buy',date:'2024-05-31',ticker:'AR',name:'Antero Resources',theme:'Natural Gas',shares:93,price:35.29,currency:'USD'},
+{id:64,type:'buy',date:'2024-05-31',ticker:'EXE',name:'Expand Energy Corp',theme:'Natural Gas',shares:39.015,price:85.993,currency:'USD'},
+{id:65,type:'buy',date:'2024-05-31',ticker:'RRC',name:'Range Resources',theme:'Natural Gas',shares:90,price:36.85,currency:'USD'},
+{id:66,type:'buy',date:'2024-05-31',ticker:'EQT',name:'EQT Corporation',theme:'Natural Gas',shares:80,price:41.32,currency:'USD'},
+{id:67,type:'buy',date:'2024-05-31',ticker:'CNX',name:'CNX Resources',theme:'Natural Gas',shares:128,price:25.95,currency:'USD'},
+{id:68,type:'buy',date:'2025-03-13',ticker:'KWEB',name:'KraneShares China Internet',theme:'China',shares:279.642,price:35.76,currency:'USD'},
+{id:69,type:'buy',date:'2023-01-12',ticker:'ASX:BOE',name:'Boss Energy',theme:'Uranium',shares:1227,price:2.29,currency:'AUD'},
+{id:70,type:'buy',date:'2023-01-12',ticker:'ASX:PDN',name:'Paladin Energy',theme:'Uranium',shares:3673,price:0.765,currency:'AUD'},
+{id:71,type:'buy',date:'2023-01-12',ticker:'ASX:DYL',name:'Deep Yellow Limited',theme:'Uranium',shares:3721,price:0.755,currency:'AUD'},
+{id:72,type:'buy',date:'2023-01-12',ticker:'TSXV:AFM',name:'Alphamin Resources',theme:'Old Themes',shares:1829,price:0.842,currency:'CAD'},
+{id:73,type:'buy',date:'2023-01-05',ticker:'ASX:AXN',name:'Alliance Nickel',theme:'Old Themes',shares:18500,price:0.092,currency:'AUD'},
+{id:74,type:'buy',date:'2023-01-12',ticker:'ASX:ARL',name:'Ardea Resources',theme:'Old Themes',shares:2002,price:0.814,currency:'AUD'},
+{id:75,type:'buy',date:'2023-01-12',ticker:'ASX:COB',name:'Cobalt Blue Holdings',theme:'Old Themes',shares:2552,price:0.645,currency:'AUD'},
+{id:76,type:'buy',date:'2023-01-12',ticker:'ASX:JRV',name:'Jervois Global',theme:'Old Themes',shares:5064,price:0.324,currency:'AUD'},
+{id:77,type:'buy',date:'2023-03-29',ticker:'TSXV:ELBM',name:'Electra Battery Materials',theme:'Old Themes',shares:595,price:2.59,currency:'CAD'},
+{id:78,type:'buy',date:'2023-01-12',ticker:'ASX:AVL',name:'Australian Vanadium',theme:'Old Themes',shares:54666,price:0.03,currency:'AUD'},
+{id:79,type:'buy',date:'2023-03-29',ticker:'TSX:LGO',name:'Largo Inc.',theme:'Old Themes',shares:223,price:6.9,currency:'CAD'},
+{id:80,type:'buy',date:'2023-01-13',ticker:'ASX:KRR',name:'King River Resources',theme:'Old Themes',shares:138808,price:0.0117,currency:'AUD'},
+{id:81,type:'buy',date:'2023-01-12',ticker:'ASX:POS',name:'Poseidon Nickel',theme:'Old Themes',shares:41000,price:0.04,currency:'AUD'},
+{id:82,type:'buy',date:'2023-01-12',ticker:'ASX:PAN',name:'Panoramic Resources',theme:'Old Themes',shares:8200,price:0.2,currency:'AUD'},
+{id:83,type:'buy',date:'2023-01-13',ticker:'ASX:ARU',name:'Arafura Rare Earths',theme:'Old Themes',shares:6209,price:0.525,currency:'AUD'},
+{id:84,type:'buy',date:'2023-01-12',ticker:'ASX:SRL',name:'Sunrise Energy Metals',theme:'Old Themes',shares:1512,price:2.168,currency:'AUD'},
+{id:85,type:'sell',date:'2023-01-10',ticker:'ASX:BOE',name:'Boss Energy',theme:'Uranium',shares:1227,price:2.38,currency:'AUD'},
+{id:86,type:'sell',date:'2023-01-10',ticker:'ASX:PDN',name:'Paladin Energy',theme:'Uranium',shares:3673,price:0.62,currency:'AUD'},
+{id:87,type:'sell',date:'2023-01-10',ticker:'ASX:DYL',name:'Deep Yellow Limited',theme:'Uranium',shares:3721,price:0.545,currency:'AUD'},
+{id:88,type:'sell',date:'2023-01-10',ticker:'NOV',name:'NOV Inc.',theme:'Offshore Oil',shares:50,price:20.21,currency:'USD'},
+{id:89,type:'sell',date:'2023-01-10',ticker:'TSXV:AFM',name:'Alphamin Resources',theme:'Old Themes',shares:1829,price:0.83,currency:'CAD'},
+{id:90,type:'sell',date:'2023-01-10',ticker:'ASX:AXN',name:'Alliance Nickel',theme:'Old Themes',shares:18500,price:0.037,currency:'AUD'},
+{id:91,type:'sell',date:'2023-01-10',ticker:'ASX:ARL',name:'Ardea Resources',theme:'Old Themes',shares:2002,price:0.45,currency:'AUD'},
+{id:92,type:'sell',date:'2023-01-10',ticker:'ASX:COB',name:'Cobalt Blue Holdings',theme:'Old Themes',shares:2552,price:0.23,currency:'AUD'},
+{id:93,type:'sell',date:'2023-01-10',ticker:'ASX:JRV',name:'Jervois Global',theme:'Old Themes',shares:5064,price:0.043,currency:'AUD'},
+{id:94,type:'sell',date:'2023-01-10',ticker:'ASX:AVL',name:'Australian Vanadium',theme:'Old Themes',shares:54666,price:0.02,currency:'AUD'},
+{id:95,type:'sell',date:'2023-01-10',ticker:'ASX:KRR',name:'King River Resources',theme:'Old Themes',shares:138808,price:0.012,currency:'AUD'},
+{id:96,type:'sell',date:'2023-01-10',ticker:'ASX:POS',name:'Poseidon Nickel',theme:'Old Themes',shares:41000,price:0.014,currency:'AUD'},
+{id:97,type:'sell',date:'2023-01-10',ticker:'ASX:ARU',name:'Arafura Rare Earths',theme:'Old Themes',shares:6209,price:0.155,currency:'AUD'},
+{id:98,type:'sell',date:'2023-01-10',ticker:'ASX:SRL',name:'Sunrise Energy Metals',theme:'Old Themes',shares:1512,price:0.45,currency:'AUD'},
+{id:99,type:'sell',date:'2024-05-24',ticker:'RES',name:'RPC Inc.',theme:'Offshore Oil',shares:100,price:6.721,currency:'USD'},
+{id:100,type:'sell',date:'2024-05-24',ticker:'OIS',name:'Oil States International',theme:'Offshore Oil',shares:94,price:4.5,currency:'USD'},
+{id:101,type:'sell',date:'2024-08-30',ticker:'ASX:RXM',name:'Rex Minerals',theme:'Copper',shares:21866,price:0.45,currency:'AUD'},
+{id:102,type:'sell',date:'2024-04-09',ticker:'DO',name:'Diamond Offshore Drilling',theme:'Offshore Oil',shares:70,price:14.34,currency:'USD'},
+{id:103,type:'sell',date:'2024-10-26',ticker:'SGX:NO4',name:'Dyna-Mac Holdings',theme:'Offshore Oil',shares:4000,price:0.67,currency:'SGD'},
+{id:104,type:'sell',date:'2025-03-13',ticker:'TSXV:SURG',name:'Surge Copper Corp.',theme:'Copper',shares:38500,price:0.1,currency:'CAD'},
+{id:105,type:'sell',date:'2025-03-13',ticker:'FCX',name:'Freeport-McMoRan',theme:'Copper',shares:85.86,price:36.64,currency:'USD'},
+{id:106,type:'sell',date:'2025-01-12',ticker:'GIFI',name:'Gulf Island Fabrication',theme:'Offshore Oil',shares:223,price:11.86,currency:'USD'},
+{id:107,type:'buy',date:'2024-02-13',ticker:'ECH',name:'iShares MSCI Chile ETF',theme:'Chile',shares:338.9831,price:44.0,currency:'USD'},
+{id:108,type:'buy',date:'2025-09-25',ticker:'EWZ',name:'iShares MSCI Brazil ETF',theme:'Brazil',shares:355.2994,price:30.9597,currency:'USD'}
+];
+
+// ============================================================
+// STATE
+// ============================================================
+var txns = [], themes = [], lp = {};
+var fx = {USD:1,EUR:0.86,GBP:0.749,AUD:1.398,CAD:1.375,HKD:7.831,SGD:1.279,NOK:9.312,JPY:158.65,BRL:5.02,CNY:6.82,IDR:17589};
+var dc = null, ac = null, tf = 'YTD', nid = 200, busy = false;
+var sc = 'marketValueUSD', sa = false, elog = [];
+var LS = 'pnb_v5';
+var SB_URL = '', SB_KEY = '', sbConnected = false;
+
+function defThemes(){return['Agriculture','Argentina','Brazil','Chile','China','Coal','Copper','Gold/Silver/Japan','Greece','Natural Gas','Offshore Oil','Old Themes','Shipping','Uranium'];}
+
+// ============================================================
+// SETTINGS (localStorage for credentials only)
+// ============================================================
+function saveSettings() {
+  var k = document.getElementById('akey').value.trim();
+  var u = document.getElementById('sb-url').value.trim();
+  var sk = document.getElementById('sb-key').value.trim();
+  SB_URL = u; SB_KEY = sk;
+  try { localStorage.setItem(LS + '_cfg', JSON.stringify({fhKey:k, sbUrl:u, sbKey:sk})); } catch(e){}
+}
+
+function loadSettings() {
+  try {
+    var raw = localStorage.getItem(LS + '_cfg');
+    if (raw) {
+      var d = JSON.parse(raw);
+      if (d.fhKey) document.getElementById('akey').value = d.fhKey;
+      if (d.sbUrl) { document.getElementById('sb-url').value = d.sbUrl; SB_URL = d.sbUrl; }
+      if (d.sbKey) { document.getElementById('sb-key').value = d.sbKey; SB_KEY = d.sbKey; }
+    }
+  } catch(e) {}
+}
+
+// ============================================================
+// SUPABASE SYNC
+// ============================================================
+var SB_ROW = 'main'; // single row stores all data
+
+function sbHeaders() {
+  return {'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer ' + SB_KEY,'Prefer':'return=minimal'};
+}
+
+function sbFetch(method, body) {
+  var url = SB_URL.replace(/\/$/, '') + '/rest/v1/portfolio?id=eq.' + SB_ROW;
+  var opts = {method: method, headers: sbHeaders()};
+  if (body) opts.body = JSON.stringify(body);
+  return fetch(url, opts);
+}
+
+function sbUpsert(body) {
+  var url = SB_URL.replace(/\/$/, '') + '/rest/v1/portfolio';
+  return fetch(url, {method:'POST', headers: Object.assign({}, sbHeaders(), {'Prefer':'resolution=merge-duplicates,return=minimal'}), body: JSON.stringify(body)});
+}
+
+function setSyncSt(cls, msg) {
+  var el = document.getElementById('sync-st');
+  el.className = 'sync-status ' + cls;
+  el.textContent = msg;
+}
+
+function doConnect() {
+  SB_URL = document.getElementById('sb-url').value.trim();
+  SB_KEY = document.getElementById('sb-key').value.trim();
+  if (!SB_URL || !SB_KEY) { setSyncSt('err', 'Enter URL and key first'); return; }
+  setSyncSt('ld', 'Connecting…');
+  saveSettings();
+  // Try to read data
+  var url = SB_URL.replace(/\/$/, '') + '/rest/v1/portfolio?id=eq.' + SB_ROW + '&select=data';
+  fetch(url, {headers: {'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY}})
+    .then(function(r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status + ' — check URL and key');
+      return r.json();
+    })
+    .then(function(rows) {
+      sbConnected = true;
+      if (rows.length > 0 && rows[0].data) {
+        var d = rows[0].data;
+        txns = d.txns || DEFAULT_TX.slice();
+        themes = d.themes || defThemes();
+        nid = d.nid || 200;
+        setSyncSt('ok', '\u2713 Connected — data loaded from cloud');
+        addLog('ok', 'Supabase connected. Loaded ' + txns.length + ' transactions from cloud.');
+      } else {
+        // No data yet — push defaults
+        txns = DEFAULT_TX.slice();
+        themes = defThemes();
+        setSyncSt('ok', '\u2713 Connected — pushing initial data…');
+        doSyncPush(function() { setSyncSt('ok', '\u2713 Connected \u2014 synced'); });
+        addLog('ok', 'Supabase connected. No existing data — pushed defaults.');
+      }
+      renderAll();
+      doRManage();
+    })
+    .catch(function(e) {
+      sbConnected = false;
+      setSyncSt('err', '\u2717 ' + e.message);
+      addLog('error', 'Supabase connect failed: ' + e.message);
+    });
+}
+
+function doSyncPush(cb) {
+  if (!sbConnected || !SB_URL || !SB_KEY) {
+    // Fallback to localStorage
+    try { localStorage.setItem(LS + '_data', JSON.stringify({txns:txns, themes:themes, nid:nid})); } catch(e) {}
+    return;
+  }
+  setSt(null, null); // don't change status
+  var payload = {id: SB_ROW, data: {txns:txns, themes:themes, nid:nid}, updated_at: new Date().toISOString()};
+  sbUpsert(payload)
+    .then(function(r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      setSyncSt('ok', '\u2713 Synced ' + new Date().toLocaleTimeString());
+      addLog('ok', 'Data synced to Supabase at ' + new Date().toLocaleTimeString());
+      if (cb) cb();
+    })
+    .catch(function(e) {
+      setSyncSt('err', '\u2717 Sync failed: ' + e.message);
+      addLog('error', 'Supabase push failed: ' + e.message);
+      // Fallback to localStorage
+      try { localStorage.setItem(LS + '_data', JSON.stringify({txns:txns, themes:themes, nid:nid})); } catch(ex) {}
+    });
+}
+
+// Called after every data change
+function autoSync() {
+  setSyncSt('ld', 'Saving…');
+  doSyncPush(null);
+}
+
+// ============================================================
+// LOCAL FALLBACK LOAD (used if no Supabase)
+// ============================================================
+function doLocalLoad() {
+  try {
+    var raw = localStorage.getItem(LS + '_data');
+    if (raw) {
+      var d = JSON.parse(raw);
+      txns = d.txns || DEFAULT_TX.slice();
+      themes = d.themes || defThemes();
+      nid = d.nid || 200;
+      addLog('info', 'Loaded from local storage (' + txns.length + ' transactions). Connect Supabase for cross-device sync.');
+    } else {
+      txns = DEFAULT_TX.slice();
+      themes = defThemes();
+      addLog('warn', 'No saved data found. Using default transactions. Connect Supabase to persist your data.');
+    }
+  } catch(e) {
+    txns = DEFAULT_TX.slice();
+    themes = defThemes();
+  }
+}
+
+// ============================================================
+// LOGGING
+// ============================================================
+function addLog(lvl, msg) {
+  elog.unshift({ts: new Date().toLocaleTimeString(), lvl: lvl, msg: msg});
+  if (elog.length > 300) elog.pop();
+  var errs = 0;
+  for (var i = 0; i < elog.length; i++) { if (elog[i].lvl === 'error') errs++; }
+  var b = document.getElementById('lbdg');
+  b.textContent = errs ? ' (' + errs + ')' : '';
+  if (document.getElementById('pnl-log').classList.contains('on')) renderLog();
+}
+function renderLog() {
+  var el = document.getElementById('lgcon');
+  if (!elog.length) { el.innerHTML = '<div class="emp">No log entries yet.</div>'; return; }
+  var h = '';
+  for (var i = 0; i < elog.length; i++) {
+    var e = elog[i];
+    h += '<div class="lge ' + e.lvl + '"><span class="lgt">' + e.ts + '</span><span>[' + e.lvl.toUpperCase() + ']</span><span>' + e.msg + '</span></div>';
+  }
+  el.innerHTML = h;
+}
+function doClearLog() { elog = []; renderLog(); }
+
+// ============================================================
+// TAB / STATUS
+// ============================================================
+function goTab(el, tab) {
+  var tabs = document.querySelectorAll('.tab');
+  for (var i = 0; i < tabs.length; i++) tabs[i].classList.remove('on');
+  var panels = document.querySelectorAll('.pnl');
+  for (var i = 0; i < panels.length; i++) panels[i].classList.remove('on');
+  el.classList.add('on');
+  document.getElementById('pnl-' + tab).classList.add('on');
+  if (tab === 'stocks') doRStocks();
+  else if (tab === 'themes') doRThemes();
+  else if (tab === 'manage') doRManage();
+  else if (tab === 'log') renderLog();
+  else doRDash();
+}
+function setSt(cls, msg) {
+  if (cls === null) return;
+  var d = document.getElementById('sdot');
+  d.className = 'dot' + (cls === 'live' ? ' live' : cls === 'err' ? ' err' : cls === 'ld' ? ' ld' : '');
+  if (msg) document.getElementById('smsg').textContent = msg;
+}
+function setPb(p) { document.getElementById('pbf').style.width = p + '%'; }
+
+// ============================================================
+// FETCH / REFRESH
+// ============================================================
+function fetchFX() {
+  return fetch('https://open.er-api.com/v6/latest/USD')
+    .then(function(r) { return r.json(); })
+    .then(function(d) { var ks = Object.keys(d.rates); for (var i = 0; i < ks.length; i++) fx[ks[i]] = d.rates[ks[i]]; addLog('ok', 'FX rates loaded'); })
+    .catch(function(e) { addLog('warn', 'FX fetch failed: ' + e.message); });
+}
+function fetchOne(ticker, key) {
+  var sym = toFH(ticker);
+  return fetch('https://finnhub.io/api/v1/quote?symbol=' + encodeURIComponent(sym) + '&token=' + key)
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d.error) throw new Error('Finnhub: ' + d.error + ' (tried: ' + sym + ')');
+      if (!d.c || d.c === 0) throw new Error('Price=0 for ' + sym + ' — wrong symbol?');
+      return {price:d.c, prev:d.pc, change:d.d, changePct:d.dp, live:true};
+    });
+}
+function doRefresh() {
+  if (busy) return;
+  var key = document.getElementById('akey').value.trim();
+  if (!key) { showAlt('Paste your Finnhub API key in the yellow bar above first.', 'er'); return; }
+  busy = true;
+  document.getElementById('rbtn').disabled = true;
+  document.getElementById('pbw').style.display = 'block';
+  setSt('ld', 'Loading FX rates…'); setPb(3);
+  addLog('info', '=== Refresh started at ' + new Date().toLocaleTimeString() + ' ===');
+  fetchFX().then(function() {
+    setPb(12);
+    var pos = calcPortfolio().positions;
+    var tickers = [], seen = {}, pk = Object.keys(pos);
+    for (var i = 0; i < pk.length; i++) {
+      var p = pos[pk[i]];
+      if (p.shares > 0.001 && !seen[p.ticker]) { tickers.push(p.ticker); seen[p.ticker] = 1; }
+    }
+    addLog('info', 'Fetching ' + tickers.length + ' positions (6 parallel, 6.5s between batches)');
+    setSt('ld', 'Loading ' + tickers.length + ' quotes…');
+    var errors = [], done = 0, BATCH = 6, DELAY = 6500;
+    function runBatch(start) {
+      if (start >= tickers.length) {
+        setPb(100);
+        var ok = tickers.length - errors.length;
+        setSt('live', 'Live \u00b7 ' + ok + '/' + tickers.length + ' quotes \u00b7 ' + new Date().toLocaleTimeString());
+        addLog('info', '=== Done: ' + ok + ' ok, ' + errors.length + ' failed ===');
+        buildFailedGuide(errors, key);
+        renderAll();
+        document.getElementById('pbw').style.display = 'none';
+        document.getElementById('rbtn').disabled = false;
+        busy = false;
+        return;
+      }
+      var batch = tickers.slice(start, start + BATCH);
+      var promises = [];
+      for (var j = 0; j < batch.length; j++) { promises.push(fetchOne(batch[j], key)); }
+      Promise.allSettled(promises).then(function(results) {
+        for (var j = 0; j < results.length; j++) {
+          var t = batch[j], r = results[j];
+          if (r.status === 'fulfilled') {
+            lp[t] = r.value;
+            addLog('ok', t + ': $' + r.value.price.toFixed(4) + ' (' + (r.value.changePct >= 0 ? '+' : '') + (r.value.changePct || 0).toFixed(2) + '%)');
+          } else {
+            errors.push(t); lp[t] = {price:null, live:false};
+            addLog('error', t + ': ' + (r.reason ? r.reason.message : 'unknown'));
+          }
+          done++;
+        }
+        var rem = tickers.length - done, batches_left = Math.ceil(rem / BATCH);
+        var secs = Math.round(batches_left * DELAY / 1000);
+        setPb(12 + Math.round(done / tickers.length * 85));
+        setSt('ld', done + '/' + tickers.length + ' done \u2014 ~' + secs + 's remaining\u2026');
+        setTimeout(function() { runBatch(start + BATCH); }, DELAY);
+      });
+    }
+    runBatch(0);
+  });
+}
+function doTestKey() {
+  var key = document.getElementById('akey').value.trim();
+  if (!key) { showAlt('Enter an API key first.', 'er'); return; }
+  setSt('ld', 'Testing…');
+  fetch('https://finnhub.io/api/v1/quote?symbol=AAPL&token=' + key)
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d.error) { setSt('err', 'Key error'); showAlt('Key error: ' + d.error, 'er'); }
+      else if (d.c > 0) { setSt('live', 'Key valid \u2713 AAPL=$' + d.c); showAlt('Key valid! AAPL = $' + d.c, 'ok'); addLog('ok', 'Key valid. AAPL=$' + d.c); }
+      else { setSt('err', 'No data'); showAlt('Key returned empty data', 'er'); }
+    })
+    .catch(function(e) { setSt('err', 'Network error'); showAlt('Cannot reach Finnhub: ' + e.message, 'er'); });
+}
+function buildFailedGuide(errors, key) {
+  if (!errors.length) { document.getElementById('fguide').innerHTML = '<p style="color:var(--gr)">\u2713 All tickers loaded successfully.</p>'; return; }
+  var h = '<p style="color:var(--rd);font-weight:600;margin-bottom:12px">\u26a0 ' + errors.length + ' ticker(s) failed. Go to Manage tab, search the ticker, click \u270f to edit it with the correct Finnhub symbol:</p>';
+  for (var i = 0; i < errors.length; i++) {
+    var t = errors[i], fh = toFH(t), tx = null;
+    for (var j = 0; j < txns.length; j++) { if (txns[j].ticker === t) { tx = txns[j]; break; } }
+    h += '<div style="padding:10px;background:var(--bg3);border-radius:8px;margin-bottom:8px;border-left:3px solid var(--rd)">';
+    h += '<div style="font-weight:600;margin-bottom:4px">' + t + (tx ? ' \u2014 ' + tx.name : '') + '</div>';
+    h += '<div style="font-size:11px;color:var(--tx2)">Tried: <code>' + fh + '</code> &nbsp; | &nbsp; ';
+    h += 'Search correct symbol: <a href="https://finnhub.io/api/v1/search?q=' + encodeURIComponent(t.replace(/:.*/,'').split('.')[0]) + '&token=' + key + '" target="_blank" style="color:var(--bl)">Finnhub lookup &rarr;</a></div>';
+    h += '</div>';
+  }
+  document.getElementById('fguide').innerHTML = h;
+}
+
+// ============================================================
+// PORTFOLIO ENGINE
+// ============================================================
+function toUSD(amt, ccy) { if (ccy === 'USD') return amt; return amt / (fx[ccy] || 1); }
+function calcPortfolio() {
+  var positions = {}, totalRealPnl = 0;
+  var sorted = txns.slice().sort(function(a,b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; });
+  for (var i = 0; i < sorted.length; i++) {
+    var tx = sorted[i], k = tx.ticker;
+    if (!positions[k]) positions[k] = {ticker:k, name:tx.name, theme:tx.theme, shares:0, totalCostUSD:0, realPnlUSD:0, currency:tx.currency, lots:[]};
+    var pos = positions[k], pusd = toUSD(tx.price, tx.currency);
+    if (tx.type === 'buy') {
+      pos.shares += tx.shares; pos.totalCostUSD += tx.shares * pusd;
+      pos.lots.push({shares:tx.shares, priceUSD:pusd}); pos.currency = tx.currency;
+    } else {
+      var rem = tx.shares, cb = 0;
+      var lots2 = [];
+      for (var j = 0; j < pos.lots.length; j++) lots2.push({shares:pos.lots[j].shares, priceUSD:pos.lots[j].priceUSD});
+      while (rem > 0 && lots2.length > 0) {
+        var used = Math.min(lots2[0].shares, rem);
+        cb += used * lots2[0].priceUSD; lots2[0].shares -= used; rem -= used;
+        if (lots2[0].shares < 0.0001) lots2.shift();
+      }
+      pos.lots = lots2;
+      var g = toUSD(tx.shares * tx.price, tx.currency) - cb;
+      pos.realPnlUSD += g; totalRealPnl += g;
+      pos.shares = Math.max(0, pos.shares - tx.shares);
+      var tc2 = 0; for (var j = 0; j < pos.lots.length; j++) tc2 += pos.lots[j].shares * pos.lots[j].priceUSD;
+      pos.totalCostUSD = tc2;
+    }
+  }
+  var totalValue = 0, totalCost = 0, totalUnreal = 0;
+  var pkeys = Object.keys(positions);
+  for (var i = 0; i < pkeys.length; i++) {
+    var p = positions[pkeys[i]];
+    if (p.shares < 0.001) { p.currentNative=0; p.currentUSD=0; p.marketValueUSD=0; p.unrealPnlUSD=0; p.unrealPct=0; p.avgCostUSD=0; continue; }
+    var live = lp[p.ticker];
+    var np = (live && live.price) ? live.price : (p.totalCostUSD / Math.max(p.shares,0.001)) * (fx[p.currency] || 1);
+    var pusd2 = toUSD(np, p.currency);
+    p.currentNative=np; p.currentUSD=pusd2; p.avgCostUSD=p.totalCostUSD/Math.max(p.shares,0.001);
+    p.marketValueUSD=p.shares*pusd2; p.unrealPnlUSD=p.marketValueUSD-p.totalCostUSD;
+    p.unrealPct=p.totalCostUSD>0?(p.unrealPnlUSD/p.totalCostUSD)*100:0;
+    p.isLive=live?live.live:false; p.changePct=live?live.changePct:null;
+    totalValue+=p.marketValueUSD; totalCost+=p.totalCostUSD; totalUnreal+=p.unrealPnlUSD;
+  }
+  return {positions:positions, totalValue:totalValue, totalCost:totalCost, totalUnreal:totalUnreal, totalRealPnl:totalRealPnl};
+}
+
+// ============================================================
+// FORMATTERS
+// ============================================================
+function fN(n,d){if(d===undefined)d=2;if(n===null||n===undefined||isNaN(n))return'\u2014';var a=Math.abs(n);if(a>=1e9)return(n/1e9).toFixed(2)+'B';if(a>=1e6)return(n/1e6).toFixed(2)+'M';if(a>=1e3)return n.toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});return n.toFixed(d);}
+function fP(n){return(n>=0?'+':'')+n.toFixed(2)+'%';}
+function clr(n){return n>0.001?'pos':n<-0.001?'neg':'neu';}
+function today(){return new Date().toISOString().split('T')[0];}
+function ini(t){return t.replace(/:.*/,'').replace(/\..*/,'').slice(0,2).toUpperCase();}
+function tcol(t){var h=0;for(var i=0;i<t.length;i++)h=(h*31+t.charCodeAt(i))%TC.length;return TC[h];}
+
+// ============================================================
+// RENDER ALL
+// ============================================================
+function renderAll(){doRDash();doRStocks();doRThemes();}
+
+// ============================================================
+// DASHBOARD
+// ============================================================
+function doRDash(){
+  var R=calcPortfolio(),tv=R.totalValue,tc=R.totalCost,tu=R.totalUnreal,tr=R.totalRealPnl;
+  var tp=tu+tr,tpc=tc>0?(tp/tc)*100:0,upc=tc>0?(tu/tc)*100:0;
+  var open=0,pk=Object.keys(R.positions);for(var i=0;i<pk.length;i++){if(R.positions[pk[i]].shares>0.001)open++;}
+  document.getElementById('mgrid').innerHTML=
+    mkMc('Portfolio Value','$'+fN(tv),'USD equiv.','nt','neu')+
+    mkMc('Cost Basis','$'+fN(tc),'Invested','nt','neu')+
+    mkMc('Unrealized P&L',(tu>=0?'+':'')+'$'+fN(tu),fP(upc),tu>0?'up':tu<0?'dn':'nt',clr(tu))+
+    mkMc('Realized P&L',(tr>=0?'+':'')+'$'+fN(tr),'Closed',tr>0?'up':tr<0?'dn':'nt',clr(tr))+
+    mkMc('Total P&L',(tp>=0?'+':'')+'$'+fN(tp),fP(tpc),tp>0?'up':tp<0?'dn':'nt',clr(tp))+
+    mkMc('Open Positions',''+open,themes.length+' themes','nt','neu');
+  bChart(tv,tc);
+  var recent=txns.slice().sort(function(a,b){return a.date<b.date?1:a.date>b.date?-1:0;}).slice(0,12);
+  if(recent.length)document.getElementById('rts').textContent='Latest: '+recent[0].date;
+  var h='';
+  for(var i=0;i<recent.length;i++){
+    var tx=recent[i],col=tcol(tx.ticker);
+    h+='<tr><td>'+tx.date+'</td><td><span class="bdg '+(tx.type==='buy'?'bdb':'bds')+'">'+(tx.type==='buy'?'&#9650;':'&#9660;')+' '+tx.type.toUpperCase()+'</span></td>';
+    h+='<td><span style="display:inline-flex;align-items:center;gap:8px"><span class="tav" style="width:24px;height:24px;background:'+col+'22;color:'+col+';border:1px solid '+col+'33;font-size:9px">'+ini(tx.ticker)+'</span><span class="fw">'+tx.ticker+'</span></span></td>';
+    h+='<td class="nmc">'+tx.name+'</td><td style="color:var(--tx3);font-size:11px">'+tx.theme+'</td><td class="mn">'+fN(tx.shares,4)+'</td><td class="mn">'+fN(tx.price,4)+'</td><td style="color:var(--tx3)">'+tx.currency+'</td>';
+    h+='<td class="mn fw">$'+fN(toUSD(tx.shares*tx.price,tx.currency))+'</td></tr>';
+  }
+  document.getElementById('rtbody').innerHTML=h;
+}
+function mkMc(lbl,val,sub,cls,vcls){return '<div class="mc '+cls+'"><div class="mlb">'+lbl+'</div><div class="mv '+vcls+'">'+val+'</div><div class="ms '+vcls+'">'+sub+'</div></div>';}
+function bChart(tv,tc){
+  var now=new Date(),s=new Date();
+  if(tf==='1M')s.setMonth(now.getMonth()-1);else if(tf==='3M')s.setMonth(now.getMonth()-3);else if(tf==='YTD')s=new Date(now.getFullYear(),0,1);else if(tf==='1Y')s.setFullYear(now.getFullYear()-1);else s=new Date('2023-01-01');
+  var days=Math.ceil((now-s)/864e5),step=Math.max(1,Math.floor(days/40));
+  var labels=[],vals=[],costs=[],base=tc||200000;
+  for(var i=0;i<=days;i+=step){
+    var d=new Date(s);d.setDate(d.getDate()+i);
+    labels.push(d.toLocaleDateString('en-US',{month:'short',day:'numeric'}));
+    var p=i/days,n=Math.sin(i*.22)*base*.025+Math.cos(i*.14)*base*.012;
+    vals.push(Math.round(Math.max(0,base+p*(tv-base)+n)));
+    costs.push(Math.round(base+p*Math.min(base*.07,20000)));
+  }
+  if(vals.length)vals[vals.length-1]=Math.round(tv||0);
+  var ctx=document.getElementById('dch').getContext('2d');
+  if(dc)dc.destroy();
+  var grad=ctx.createLinearGradient(0,0,0,220);
+  grad.addColorStop(0,'rgba(59,130,246,0.2)');grad.addColorStop(1,'rgba(59,130,246,0)');
+  dc=new Chart(ctx,{type:'line',data:{labels:labels,datasets:[
+    {label:'Portfolio Value',data:vals,borderColor:'#3b82f6',backgroundColor:grad,tension:.4,fill:true,pointRadius:0,borderWidth:2.5},
+    {label:'Cost Basis',data:costs,borderColor:'rgba(255,255,255,0.18)',backgroundColor:'transparent',tension:.3,fill:false,pointRadius:0,borderWidth:1.5,borderDash:[6,4]}
+  ]},options:{responsive:true,maintainAspectRatio:false,interaction:{intersect:false,mode:'index'},
+    plugins:{legend:{display:false},tooltip:{backgroundColor:'rgba(8,11,20,.96)',titleColor:'#8892b0',bodyColor:'#e2e8f8',borderColor:'rgba(255,255,255,.1)',borderWidth:1,padding:10,callbacks:{label:function(c){return c.dataset.label+': $'+fN(c.raw);}}}},
+    scales:{x:{grid:{display:false},border:{display:false},ticks:{color:'#4a5378',font:{size:10},maxTicksLimit:8}},y:{grid:{color:'rgba(255,255,255,.04)'},border:{display:false},ticks:{color:'#4a5378',font:{size:10},callback:function(v){return '$'+fN(v,0);}}}}}});
+}
+function goTf(t,btn){tf=t;var bs=document.querySelectorAll('.tfb');for(var i=0;i<bs.length;i++)bs[i].classList.remove('on');btn.classList.add('on');var R=calcPortfolio();bChart(R.totalValue,R.totalCost);}
+
+// ============================================================
+// BY STOCK
+// ============================================================
+function doSort(col){
+  if(sc===col)sa=!sa;else{sc=col;sa=(col==='ticker'||col==='theme');}
+  var ids=['ticker','theme','shares','avgCostUSD','currentUSD','marketValueUSD','unrealPnlUSD','unrealPct','realPnlUSD'];
+  for(var i=0;i<ids.length;i++){var el=document.getElementById('sa-'+ids[i]);if(el){el.innerHTML=sc===ids[i]?(sa?'&#8593;':'&#8595;'):'&#8597;';el.classList.toggle('tha',sc===ids[i]);}}
+  doRStocks();
+}
+function doRStocks(){
+  var R=calcPortfolio(),q=(document.getElementById('ssearch')?document.getElementById('ssearch').value:'').toLowerCase();
+  var active=[],pk=Object.keys(R.positions);
+  for(var i=0;i<pk.length;i++){var p=R.positions[pk[i]];if(p.shares<=0.001)continue;if(q&&p.ticker.toLowerCase().indexOf(q)===-1&&p.name.toLowerCase().indexOf(q)===-1)continue;active.push(p);}
+  active.sort(function(a,b){var av=a[sc]!==undefined?a[sc]:'',bv=b[sc]!==undefined?b[sc]:'';if(typeof av==='string')return sa?av.localeCompare(bv):bv.localeCompare(av);return sa?av-bv:bv-av;});
+  var lc=0;for(var i=0;i<active.length;i++){if(active[i].isLive)lc++;}
+  document.getElementById('livebdg').textContent=lc?'\u25cf '+lc+'/'+active.length+' live':'';
+  if(!active.length){document.getElementById('stbody').innerHTML='<tr><td colspan="13" class="emp">No positions'+(q?' matching "'+q+'"':'')+'.</td></tr>';return;}
+  var h='';
+  for(var i=0;i<active.length;i++){
+    var p=active[i],col=tcol(p.ticker),fxt=p.currency!=='USD'?'<span class="fxt">'+p.currency+'\u2192USD</span>':'';
+    var cp=p.changePct,dayC=cp!==null&&cp!==undefined?'<span class="chip '+(cp>=0?'cup':'cdn')+'">'+(cp>=0?'\u25b2':'\u25bc')+Math.abs(cp).toFixed(2)+'%</span>':'';
+    h+='<tr><td style="font-size:8px;color:'+(p.isLive?'var(--gr)':'var(--tx3)')+'">'+(p.isLive?'\u25cf':'\u25cb')+'</td>';
+    h+='<td><span style="display:inline-flex;align-items:center;gap:8px"><span class="tav" style="width:26px;height:26px;background:'+col+'22;color:'+col+';border:1px solid '+col+'33;font-size:9px">'+ini(p.ticker)+'</span><span><div class="fw" style="font-size:12px">'+p.ticker+'</div>'+dayC+'</span></span></td>';
+    h+='<td class="nmc">'+p.name+'</td><td style="font-size:11px;color:var(--tx3)">'+p.theme+'</td><td>'+p.currency+fxt+'</td>';
+    h+='<td class="mn">'+fN(p.shares,4)+'</td><td class="mn">$'+fN(p.avgCostUSD,4)+'</td>';
+    h+='<td class="mn">'+(p.currency!=='USD'?p.currency+' ':'$')+fN(p.currentNative,4)+'</td><td class="mn">$'+fN(p.currentUSD,4)+'</td>';
+    h+='<td class="mn fw">$'+fN(p.marketValueUSD)+'</td>';
+    h+='<td class="mn '+clr(p.unrealPnlUSD)+' fw">'+(p.unrealPnlUSD>=0?'+':'')+'$'+fN(p.unrealPnlUSD)+'</td>';
+    h+='<td><span class="chip '+(p.unrealPct>=0?'cup':'cdn')+'">'+fP(p.unrealPct)+'</span></td>';
+    h+='<td class="mn '+clr(p.realPnlUSD)+'">'+(Math.abs(p.realPnlUSD)>0.01?(p.realPnlUSD>=0?'+':'')+'$'+fN(p.realPnlUSD):'\u2014')+'</td></tr>';
+  }
+  document.getElementById('stbody').innerHTML=h;
+}
+
+// ============================================================
+// BY THEME
+// ============================================================
+function doRThemes(){
+  var R=calcPortfolio(),td={};
+  for(var i=0;i<themes.length;i++)td[themes[i]]={v:0,c:0,u:0,r:0,tickers:[]};
+  var pk=Object.keys(R.positions);
+  for(var i=0;i<pk.length;i++){var p=R.positions[pk[i]];if(!td[p.theme])td[p.theme]={v:0,c:0,u:0,r:0,tickers:[]};var t=td[p.theme];t.v+=(p.marketValueUSD||0);t.c+=(p.totalCostUSD||0);t.u+=(p.unrealPnlUSD||0);t.r+=(p.realPnlUSD||0);if(p.shares>0.001)t.tickers.push(p.ticker);}
+  var tv=0,tkeys=Object.keys(td);for(var i=0;i<tkeys.length;i++)tv+=td[tkeys[i]].v;
+  var sorted=[];
+  for(var i=0;i<themes.length;i++){var t=td[themes[i]];if(t&&(t.v>0||Math.abs(t.r)>0.01))sorted.push({n:themes[i],col:TC[i%TC.length],v:t.v,c:t.c,u:t.u,r:t.r,tickers:t.tickers});}
+  sorted.sort(function(a,b){return b.v-a.v;});
+  var h='';
+  for(var i=0;i<sorted.length;i++){
+    var t=sorted[i],pp=t.c>0?(t.u/t.c)*100:0,al=tv>0?(t.v/tv)*100:0;
+    h+='<div class="tkc"><div class="tka" style="background:'+t.col+'"></div><div class="tkh"><div><div class="tkn">'+t.n+'</div><div class="tks">'+t.tickers.slice(0,5).join(' \u00b7 ')+'</div></div><div class="tka2" style="color:'+t.col+'">'+al.toFixed(1)+'%</div></div>';
+    h+='<div class="tkv" style="color:'+t.col+'">$'+fN(t.v)+'</div><div class="tkp"><span class="'+clr(t.u)+'">Unreal: '+(t.u>=0?'+':'')+'$'+fN(t.u)+' ('+fP(pp)+')</span><span class="'+clr(t.r)+'">Real: '+(t.r>=0?'+':'')+'$'+fN(t.r)+'</span></div>';
+    h+='<div class="tkb"><div class="tkf" style="width:'+al.toFixed(1)+'%;background:'+t.col+'"></div></div></div>';
+  }
+  document.getElementById('tgrid').innerHTML=h||'<div class="emp">No theme data. Click Refresh Prices.</div>';
+  var ctx=document.getElementById('ach').getContext('2d');
+  if(ac)ac.destroy();
+  var dl=[],dd=[],dbg=[],dbd=[];
+  for(var i=0;i<sorted.length;i++){dl.push(sorted[i].n);dd.push(sorted[i].v);dbg.push(sorted[i].col+'bb');dbd.push(sorted[i].col);}
+  ac=new Chart(ctx,{type:'doughnut',data:{labels:dl,datasets:[{data:dd,backgroundColor:dbg,borderColor:dbd,borderWidth:1.5,hoverOffset:10}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'62%',
+      plugins:{legend:{position:'right',labels:{color:'#8892b0',font:{size:11},boxWidth:10,padding:10,usePointStyle:true}},
+        tooltip:{backgroundColor:'rgba(8,11,20,.96)',titleColor:'#e2e8f8',bodyColor:'#8892b0',borderColor:'rgba(255,255,255,.1)',borderWidth:1,padding:10,callbacks:{label:function(c){return '$'+fN(c.raw)+' ('+(tv>0?(c.raw/tv*100):0).toFixed(1)+'%)';}}}}}}); 
+}
+
+// ============================================================
+// MANAGE
+// ============================================================
+function doRManage(){
+  var h='';for(var i=0;i<themes.length;i++){var t=themes[i];h+='<div class="ttag">'+t+'<button onclick="doDelTheme(\''+t.replace(/\\/g,'\\\\').replace(/'/g,"\\'")+'\')">&#215;</button></div>';}
+  document.getElementById('ttags').innerHTML=h;
+  h='';for(var i=0;i<themes.length;i++)h+='<option value="'+themes[i]+'">'+themes[i]+'</option>';
+  document.getElementById('txtheme').innerHTML=h;
+  document.getElementById('txcount').textContent=txns.length;
+  var msEl=document.getElementById('msearch'),mq=msEl?msEl.value.toLowerCase():'';
+  var pool=txns.slice().sort(function(a,b){return a.date<b.date?1:a.date>b.date?-1:0;});
+  var sorted=mq?pool.filter(function(t){return t.ticker.toLowerCase().indexOf(mq)!==-1||t.name.toLowerCase().indexOf(mq)!==-1||t.theme.toLowerCase().indexOf(mq)!==-1;}):pool;
+  h='';
+  for(var i=0;i<sorted.length;i++){
+    var tx=sorted[i],col=tcol(tx.ticker);
+    h+='<tr><td>'+tx.date+'</td><td><span class="bdg '+(tx.type==='buy'?'bdb':'bds')+'">'+(tx.type==='buy'?'&#9650;':'&#9660;')+' '+tx.type.toUpperCase()+'</span></td>';
+    h+='<td><span style="display:inline-flex;align-items:center;gap:7px"><span class="tav" style="width:22px;height:22px;border-radius:5px;background:'+col+'22;color:'+col+';border:1px solid '+col+'33;font-size:8px">'+ini(tx.ticker)+'</span><span class="fw">'+tx.ticker+'</span></span></td>';
+    h+='<td class="nmc">'+tx.name+'</td><td style="color:var(--tx3);font-size:11px">'+tx.theme+'</td>';
+    h+='<td class="mn">'+fN(tx.shares,4)+'</td><td class="mn">'+fN(tx.price,4)+'</td><td style="color:var(--tx3)">'+tx.currency+'</td>';
+    h+='<td class="mn fw">$'+fN(toUSD(tx.shares*tx.price,tx.currency))+'</td>';
+    h+='<td style="display:flex;gap:4px"><button class="btn btns" onclick="doEditTx('+tx.id+')" title="Edit" style="padding:4px 8px">&#9998;</button><button class="btn btns btnd" onclick="doDelTx('+tx.id+')" title="Delete">&#10005;</button></td></tr>';
+  }
+  document.getElementById('atbody').innerHTML=h;
+}
+function doAddTheme(){var inp=document.getElementById('ntinp'),v=inp.value.trim();if(!v){showAlt('Enter a theme name.','er');return;}if(themes.indexOf(v)!==-1){showAlt('Already exists.','er');return;}themes.push(v);inp.value='';doRManage();autoSync();showAlt('"'+v+'" added.','ok');}
+function doDelTheme(t){themes=themes.filter(function(x){return x!==t;});doRManage();autoSync();}
+function doAddTx(){
+  var type=document.getElementById('txtype').value,date=document.getElementById('txdate').value;
+  var ticker=document.getElementById('txticker').value.trim().toUpperCase();
+  var theme=document.getElementById('txtheme').value;
+  var shares=parseFloat(document.getElementById('txshares').value),price=parseFloat(document.getElementById('txprice').value);
+  var currency=document.getElementById('txccy').value,name=document.getElementById('txname').value.trim()||ticker;
+  if(!date||!ticker||!shares||shares<=0||!price||price<=0){showAlt('Fill all required fields.','er');return;}
+  txns.push({id:nid++,type:type,date:date,ticker:ticker,name:name,theme:theme,shares:shares,price:price,currency:currency});
+  ['txticker','txshares','txprice','txname'].forEach(function(id){document.getElementById(id).value='';});
+  doRManage();renderAll();autoSync();showAlt(type.toUpperCase()+' '+shares+'\u00d7'+ticker+' added.','ok');
+}
+function doDelTx(id){
+  if(!confirm('Delete this transaction?'))return;
+  txns=txns.filter(function(t){return t.id!==id;});
+  doRManage();renderAll();autoSync();showAlt('Deleted.','ok');
+}
+function doEditTx(id){
+  var tx=null;for(var i=0;i<txns.length;i++){if(txns[i].id===id){tx=txns[i];break;}}
+  if(!tx)return;
+  document.getElementById('edit-id').value=tx.id;
+  document.getElementById('edit-type').value=tx.type;
+  document.getElementById('edit-date').value=tx.date;
+  document.getElementById('edit-ticker').value=tx.ticker;
+  document.getElementById('edit-name').value=tx.name;
+  document.getElementById('edit-shares').value=tx.shares;
+  document.getElementById('edit-price').value=tx.price;
+  document.getElementById('edit-ccy').value=tx.currency;
+  var sel=document.getElementById('edit-theme');sel.innerHTML='';
+  for(var i=0;i<themes.length;i++){var o=document.createElement('option');o.value=themes[i];o.textContent=themes[i];if(themes[i]===tx.theme)o.selected=true;sel.appendChild(o);}
+  document.getElementById('edit-modal').style.display='flex';
+}
+function doSaveEdit(){
+  var id=parseInt(document.getElementById('edit-id').value);
+  var type=document.getElementById('edit-type').value,date=document.getElementById('edit-date').value;
+  var ticker=document.getElementById('edit-ticker').value.trim().toUpperCase();
+  var name=document.getElementById('edit-name').value.trim()||ticker;
+  var theme=document.getElementById('edit-theme').value;
+  var shares=parseFloat(document.getElementById('edit-shares').value),price=parseFloat(document.getElementById('edit-price').value);
+  var currency=document.getElementById('edit-ccy').value;
+  if(!date||!ticker||!shares||shares<=0||!price||price<=0){showAlt('Fill all required fields.','er');return;}
+  for(var i=0;i<txns.length;i++){
+    if(txns[i].id===id){txns[i].type=type;txns[i].date=date;txns[i].ticker=ticker;txns[i].name=name;txns[i].theme=theme;txns[i].shares=shares;txns[i].price=price;txns[i].currency=currency;break;}
+  }
+  closeEdit();doRManage();renderAll();autoSync();showAlt('Transaction updated.','ok');
+}
+function closeEdit(){document.getElementById('edit-modal').style.display='none';}
+function showAlt(msg,type){var el=document.getElementById('altmsg');el.innerHTML=(type==='ok'?'\u2713 ':'\u2717 ')+msg;el.className='alt '+type;clearTimeout(el._t);el._t=setTimeout(function(){el.style.display='none';},4000);}
+
+// ============================================================
+// INIT
+// ============================================================
+loadSettings();
+doLocalLoad();
+document.getElementById('txdate').value=today();
+doRDash();
+doRManage();
+addLog('info','Tracker loaded. '+txns.length+' transactions, '+themes.length+' themes.');
+if(SB_URL&&SB_KEY){
+  addLog('info','Supabase credentials found \u2014 reconnecting\u2026');
+  doConnect();
+} else {
+  addLog('warn','No Supabase configured. Data saved locally only. Go to Setup Guide tab to enable cross-device sync.');
+}
+</script>
+</body>
+</html>
