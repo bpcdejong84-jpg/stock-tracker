@@ -516,6 +516,10 @@ select option { background: #fff; }
       <div class="fld"><label>Currency</label><select id="edit-ccy"><option value="USD">USD</option><option value="EUR">EUR</option><option value="GBP">GBP</option><option value="AUD">AUD</option><option value="CAD">CAD</option><option value="HKD">HKD</option><option value="SGD">SGD</option><option value="NOK">NOK</option><option value="JPY">JPY</option><option value="BRL">BRL</option><option value="CNY">CNY</option><option value="IDR">IDR</option></select></div>
     </div>
     <div class="fld" style="margin-bottom:18px"><label>Full Name</label><input id="edit-name"/></div>
+    <div class="fld" style="margin-bottom:18px">
+      <label>Manual Price Override (native currency) <span style="color:var(--tx3);font-weight:400;text-transform:none">— for stocks Finnhub can't fetch</span></label>
+      <input type="number" id="edit-manual-price" placeholder="Leave blank to use live price" min="0" step="any"/>
+    </div>
     <div style="display:flex;gap:8px">
       <button class="btn btnp" onclick="doSaveEdit()" style="flex:1">&#10003; Save Changes</button>
       <button class="btn" onclick="closeEdit()">Cancel</button>
@@ -627,20 +631,20 @@ var DEFAULT_TX = [
 {id:82,type:'buy',date:'2023-01-12',ticker:'PAN.AX',name:'Panoramic Resources',theme:'Old Themes',shares:8200,price:0.2,currency:'AUD'},
 {id:83,type:'buy',date:'2023-01-13',ticker:'ARU.AX',name:'Arafura Rare Earths',theme:'Old Themes',shares:6209,price:0.525,currency:'AUD'},
 {id:84,type:'buy',date:'2023-01-12',ticker:'SRL.AX',name:'Sunrise Energy Metals',theme:'Old Themes',shares:1512,price:2.168,currency:'AUD'},
-{id:85,type:'sell',date:'2023-01-10',ticker:'BOE.AX',name:'Boss Energy',theme:'Uranium',shares:1227,price:2.38,currency:'AUD'},
-{id:86,type:'sell',date:'2023-01-10',ticker:'PDN.AX',name:'Paladin Energy',theme:'Uranium',shares:3673,price:0.62,currency:'AUD'},
-{id:87,type:'sell',date:'2023-01-10',ticker:'DYL.AX',name:'Deep Yellow Limited',theme:'Uranium',shares:3721,price:0.545,currency:'AUD'},
-{id:88,type:'sell',date:'2023-01-10',ticker:'NOV',name:'NOV Inc.',theme:'Offshore Oil',shares:50,price:20.21,currency:'USD'},
-{id:89,type:'sell',date:'2023-01-10',ticker:'AFM.V',name:'Alphamin Resources',theme:'Old Themes',shares:1829,price:0.83,currency:'CAD'},
-{id:90,type:'sell',date:'2023-01-10',ticker:'AXN.AX',name:'Alliance Nickel',theme:'Old Themes',shares:18500,price:0.037,currency:'AUD'},
-{id:91,type:'sell',date:'2023-01-10',ticker:'ARL.AX',name:'Ardea Resources',theme:'Old Themes',shares:2002,price:0.45,currency:'AUD'},
-{id:92,type:'sell',date:'2023-01-10',ticker:'COB.AX',name:'Cobalt Blue Holdings',theme:'Old Themes',shares:2552,price:0.23,currency:'AUD'},
-{id:93,type:'sell',date:'2023-01-10',ticker:'JRV.AX',name:'Jervois Global',theme:'Old Themes',shares:5064,price:0.043,currency:'AUD'},
-{id:94,type:'sell',date:'2023-01-10',ticker:'AVL.AX',name:'Australian Vanadium',theme:'Old Themes',shares:54666,price:0.02,currency:'AUD'},
-{id:95,type:'sell',date:'2023-01-10',ticker:'KRR.AX',name:'King River Resources',theme:'Old Themes',shares:138808,price:0.012,currency:'AUD'},
-{id:96,type:'sell',date:'2023-01-10',ticker:'POS.AX',name:'Poseidon Nickel',theme:'Old Themes',shares:41000,price:0.014,currency:'AUD'},
-{id:97,type:'sell',date:'2023-01-10',ticker:'ARU.AX',name:'Arafura Rare Earths',theme:'Old Themes',shares:6209,price:0.155,currency:'AUD'},
-{id:98,type:'sell',date:'2023-01-10',ticker:'SRL.AX',name:'Sunrise Energy Metals',theme:'Old Themes',shares:1512,price:0.45,currency:'AUD'},
+{id:85,type:'sell',date:'2024-01-10',ticker:'BOE.AX',name:'Boss Energy',theme:'Uranium',shares:1227,price:2.38,currency:'AUD'},
+{id:86,type:'sell',date:'2024-01-10',ticker:'PDN.AX',name:'Paladin Energy',theme:'Uranium',shares:3673,price:0.62,currency:'AUD'},
+{id:87,type:'sell',date:'2024-01-10',ticker:'DYL.AX',name:'Deep Yellow Limited',theme:'Uranium',shares:3721,price:0.545,currency:'AUD'},
+{id:88,type:'sell',date:'2024-01-10',ticker:'NOV',name:'NOV Inc.',theme:'Offshore Oil',shares:50,price:20.21,currency:'USD'},
+{id:89,type:'sell',date:'2024-01-10',ticker:'AFM.V',name:'Alphamin Resources',theme:'Old Themes',shares:1829,price:0.83,currency:'CAD'},
+{id:90,type:'sell',date:'2024-01-10',ticker:'AXN.AX',name:'Alliance Nickel',theme:'Old Themes',shares:18500,price:0.037,currency:'AUD'},
+{id:91,type:'sell',date:'2024-01-10',ticker:'ARL.AX',name:'Ardea Resources',theme:'Old Themes',shares:2002,price:0.45,currency:'AUD'},
+{id:92,type:'sell',date:'2024-01-10',ticker:'COB.AX',name:'Cobalt Blue Holdings',theme:'Old Themes',shares:2552,price:0.23,currency:'AUD'},
+{id:93,type:'sell',date:'2024-01-10',ticker:'JRV.AX',name:'Jervois Global',theme:'Old Themes',shares:5064,price:0.043,currency:'AUD'},
+{id:94,type:'sell',date:'2024-01-10',ticker:'AVL.AX',name:'Australian Vanadium',theme:'Old Themes',shares:54666,price:0.02,currency:'AUD'},
+{id:95,type:'sell',date:'2024-01-10',ticker:'KRR.AX',name:'King River Resources',theme:'Old Themes',shares:138808,price:0.012,currency:'AUD'},
+{id:96,type:'sell',date:'2024-01-10',ticker:'POS.AX',name:'Poseidon Nickel',theme:'Old Themes',shares:41000,price:0.014,currency:'AUD'},
+{id:97,type:'sell',date:'2024-01-10',ticker:'ARU.AX',name:'Arafura Rare Earths',theme:'Old Themes',shares:6209,price:0.155,currency:'AUD'},
+{id:98,type:'sell',date:'2024-01-10',ticker:'SRL.AX',name:'Sunrise Energy Metals',theme:'Old Themes',shares:1512,price:0.45,currency:'AUD'},
 {id:99,type:'sell',date:'2024-05-24',ticker:'RES',name:'RPC Inc.',theme:'Offshore Oil',shares:100,price:6.721,currency:'USD'},
 {id:100,type:'sell',date:'2024-05-24',ticker:'OIS',name:'Oil States International',theme:'Offshore Oil',shares:94,price:4.5,currency:'USD'},
 {id:101,type:'sell',date:'2024-08-30',ticker:'RXM.AX',name:'Rex Minerals',theme:'Copper',shares:21866,price:0.45,currency:'AUD'},
@@ -662,6 +666,7 @@ var dc = null, ac = null, tf = 'YTD', nid = 200, busy = false;
 var sc = 'marketValueUSD', sa = false, elog = [];
 var LS = 'pnb_v5';
 var SB_URL = '', SB_KEY = '', sbConnected = false;
+var manualPrices = {}; // {ticker: price} for stocks Finnhub can't fetch
 
 function defThemes(){return['Agriculture','Argentina','Brazil','Chile','China','Coal','Copper','Gold/Silver/Japan','Greece','Natural Gas','Offshore Oil','Old Themes','Shipping','Uranium'];}
 
@@ -685,6 +690,11 @@ function loadSettings() {
       if (d.sbUrl) { document.getElementById('sb-url').value = d.sbUrl; SB_URL = d.sbUrl; }
       if (d.sbKey) { document.getElementById('sb-key').value = d.sbKey; SB_KEY = d.sbKey; }
     }
+  } catch(e) {}
+  // Load manual price overrides
+  try {
+    var mp = localStorage.getItem(LS + '_manual_prices');
+    if (mp) manualPrices = JSON.parse(mp);
   } catch(e) {}
 }
 
@@ -871,14 +881,49 @@ function fetchFX() {
     .then(function(d) { var ks = Object.keys(d.rates); for (var i = 0; i < ks.length; i++) fx[ks[i]] = d.rates[ks[i]]; addLog('ok', 'FX rates loaded'); })
     .catch(function(e) { addLog('warn', 'FX fetch failed: ' + e.message); });
 }
+// Yahoo Finance via allorigins CORS proxy (fallback for stocks not on Finnhub free tier)
+function fetchYahoo(ticker) {
+  var yTicker = ticker; // Yahoo uses same format as we store (BOE.AX, SUBC.OL etc.)
+  var yahooUrl = 'https://query2.finance.yahoo.com/v8/finance/chart/' + encodeURIComponent(yTicker) + '?interval=1d&range=1d';
+  var proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(yahooUrl);
+  return fetch(proxyUrl)
+    .then(function(r) { return r.json(); })
+    .then(function(outer) {
+      var d = JSON.parse(outer.contents);
+      if (d.chart.error) throw new Error('Yahoo: ' + (d.chart.error.description || 'no data'));
+      if (!d.chart.result || !d.chart.result[0]) throw new Error('Yahoo: no result for ' + yTicker);
+      var m = d.chart.result[0].meta;
+      if (!m.regularMarketPrice || m.regularMarketPrice === 0) throw new Error('Yahoo: price=0 for ' + yTicker);
+      return {price: m.regularMarketPrice, prev: m.chartPreviousClose,
+              change: m.regularMarketPrice - m.chartPreviousClose,
+              changePct: ((m.regularMarketPrice - m.chartPreviousClose) / m.chartPreviousClose) * 100,
+              live: true, src: 'yahoo'};
+    });
+}
+
 function fetchOne(ticker, key) {
   var sym = toFH(ticker);
   return fetch('https://finnhub.io/api/v1/quote?symbol=' + encodeURIComponent(sym) + '&token=' + key)
     .then(function(r) { return r.json(); })
     .then(function(d) {
+      if (d.error && d.error.indexOf('access') !== -1) {
+        // Finnhub access restriction — fallback to Yahoo Finance silently
+        return fetchYahoo(ticker).then(function(q) {
+          q.src = 'yahoo_fallback';
+          return q;
+        });
+      }
       if (d.error) throw new Error('Finnhub: ' + d.error + ' (tried: ' + sym + ')');
-      if (!d.c || d.c === 0) throw new Error('Price=0 for ' + sym + ' — wrong symbol?');
-      return {price:d.c, prev:d.pc, change:d.d, changePct:d.dp, live:true};
+      if (!d.c || d.c === 0) {
+        // Price=0 — also try Yahoo as fallback
+        return fetchYahoo(ticker).then(function(q) {
+          q.src = 'yahoo_fallback';
+          return q;
+        }).catch(function() {
+          throw new Error('Price=0 for ' + sym + ' — also failed on Yahoo');
+        });
+      }
+      return {price:d.c, prev:d.pc, change:d.d, changePct:d.dp, live:true, src:'finnhub'};
     });
 }
 function doRefresh() {
@@ -922,7 +967,8 @@ function doRefresh() {
           var t = batch[j], r = results[j];
           if (r.status === 'fulfilled') {
             lp[t] = r.value;
-            addLog('ok', t + ': $' + r.value.price.toFixed(4) + ' (' + (r.value.changePct >= 0 ? '+' : '') + (r.value.changePct || 0).toFixed(2) + '%)');
+            var src = r.value.src === 'yahoo_fallback' ? ' [Yahoo]' : '';
+            addLog('ok', t + ': $' + r.value.price.toFixed(4) + ' (' + (r.value.changePct >= 0 ? '+' : '') + (r.value.changePct || 0).toFixed(2) + '%)' + src);
           } else {
             errors.push(t); lp[t] = {price:null, live:false};
             addLog('error', t + ': ' + (r.reason ? r.reason.message : 'unknown'));
@@ -1018,15 +1064,26 @@ function calcPortfolio() {
     var p = positions[pkeys[i]];
     if (p.shares < 0.001) { p.currentNative=0; p.currentUSD=0; p.marketValueUSD=0; p.unrealPnlUSD=0; p.unrealPct=0; p.avgCostUSD=0; continue; }
     var live = lp[p.ticker];
-    var np = (live && live.price) ? live.price : (p.totalCostUSD / Math.max(p.shares,0.001)) * (fx[p.currency] || 1);
+    var manP = manualPrices[p.ticker]; // manual override price (native currency)
+    var np = (live && live.price) ? live.price : (manP ? manP : (p.totalCostUSD / Math.max(p.shares,0.001)) * (fx[p.currency] || 1));
+    var priceSource = (live && live.price) ? 'live' : (manP ? 'manual' : 'cost');
     var pusd2 = toUSD(np, p.currency);
     p.currentNative=np; p.currentUSD=pusd2; p.avgCostUSD=p.totalCostUSD/Math.max(p.shares,0.001);
     p.marketValueUSD=p.shares*pusd2; p.unrealPnlUSD=p.marketValueUSD-p.totalCostUSD;
     p.unrealPct=p.totalCostUSD>0?(p.unrealPnlUSD/p.totalCostUSD)*100:0;
-    p.isLive=live?live.live:false; p.changePct=live?live.changePct:null;
+    p.isLive=live?live.live:false; p.isManual=((!live||!live.price)&&!!manP); p.changePct=live?live.changePct:null; p.priceSource=priceSource;
     totalValue+=p.marketValueUSD; totalCost+=p.totalCostUSD; totalUnreal+=p.unrealPnlUSD;
   }
-  return {positions:positions, totalValue:totalValue, totalCost:totalCost, totalUnreal:totalUnreal, totalRealPnl:totalRealPnl};
+  // Separate closed positions for display
+  var closedPositions = {};
+  var pkeys2 = Object.keys(positions);
+  for (var i = 0; i < pkeys2.length; i++) {
+    var p = positions[pkeys2[i]];
+    if (p.shares < 0.001 && Math.abs(p.realPnlUSD) > 0.01) {
+      closedPositions[pkeys2[i]] = p;
+    }
+  }
+  return {positions:positions, closedPositions:closedPositions, totalValue:totalValue, totalCost:totalCost, totalUnreal:totalUnreal, totalRealPnl:totalRealPnl};
 }
 
 // ============================================================
@@ -1111,26 +1168,69 @@ function doSort(col){
 }
 function doRStocks(){
   var R=calcPortfolio(),q=(document.getElementById('ssearch')?document.getElementById('ssearch').value:'').toLowerCase();
+
+  // -- Open positions --
   var active=[],pk=Object.keys(R.positions);
   for(var i=0;i<pk.length;i++){var p=R.positions[pk[i]];if(p.shares<=0.001)continue;if(q&&p.ticker.toLowerCase().indexOf(q)===-1&&p.name.toLowerCase().indexOf(q)===-1)continue;active.push(p);}
   active.sort(function(a,b){var av=a[sc]!==undefined?a[sc]:'',bv=b[sc]!==undefined?b[sc]:'';if(typeof av==='string')return sa?av.localeCompare(bv):bv.localeCompare(av);return sa?av-bv:bv-av;});
-  var lc=0;for(var i=0;i<active.length;i++){if(active[i].isLive)lc++;}
-  document.getElementById('livebdg').textContent=lc?'\u25cf '+lc+'/'+active.length+' live':'';
-  if(!active.length){document.getElementById('stbody').innerHTML='<tr><td colspan="13" class="emp">No positions'+(q?' matching "'+q+'"':'')+'.</td></tr>';return;}
+  var lc=0,mc=0;for(var i=0;i<active.length;i++){if(active[i].isLive)lc++;if(active[i].isManual)mc++;}
+  var badge=lc?'● '+lc+'/'+active.length+' live':'';
+  if(mc)badge+=' ◆ '+mc+' manual';
+  document.getElementById('livebdg').textContent=badge;
+
   var h='';
-  for(var i=0;i<active.length;i++){
-    var p=active[i],col=tcol(p.ticker),fxt=p.currency!=='USD'?'<span class="fxt">'+p.currency+'\u2192USD</span>':'';
-    var cp=p.changePct,dayC=cp!==null&&cp!==undefined?'<span class="chip '+(cp>=0?'cup':'cdn')+'">'+(cp>=0?'\u25b2':'\u25bc')+Math.abs(cp).toFixed(2)+'%</span>':'';
-    h+='<tr><td style="font-size:8px;color:'+(p.isLive?'var(--gr)':'var(--tx3)')+'">'+(p.isLive?'\u25cf':'\u25cb')+'</td>';
-    h+='<td><span style="display:inline-flex;align-items:center;gap:8px"><span class="tav" style="width:26px;height:26px;background:'+col+'22;color:'+col+';border:1px solid '+col+'33;font-size:9px">'+ini(p.ticker)+'</span><span><div class="fw" style="font-size:12px">'+p.ticker+'</div>'+dayC+'</span></span></td>';
-    h+='<td class="nmc">'+p.name+'</td><td style="font-size:11px;color:var(--tx3)">'+p.theme+'</td><td>'+p.currency+fxt+'</td>';
-    h+='<td class="mn">'+fN(p.shares,4)+'</td><td class="mn">$'+fN(p.avgCostUSD,4)+'</td>';
-    h+='<td class="mn">'+(p.currency!=='USD'?p.currency+' ':'$')+fN(p.currentNative,4)+'</td><td class="mn">$'+fN(p.currentUSD,4)+'</td>';
-    h+='<td class="mn fw">$'+fN(p.marketValueUSD)+'</td>';
-    h+='<td class="mn '+clr(p.unrealPnlUSD)+' fw">'+(p.unrealPnlUSD>=0?'+':'')+'$'+fN(p.unrealPnlUSD)+'</td>';
-    h+='<td><span class="chip '+(p.unrealPct>=0?'cup':'cdn')+'">'+fP(p.unrealPct)+'</span></td>';
-    h+='<td class="mn '+clr(p.realPnlUSD)+'">'+(Math.abs(p.realPnlUSD)>0.01?(p.realPnlUSD>=0?'+':'')+'$'+fN(p.realPnlUSD):'\u2014')+'</td></tr>';
+  // Open positions section header
+  h+='<tr><td colspan="13" style="padding:7px 14px;background:var(--green-bg);border-bottom:1px solid var(--green-bd)">';
+  h+='<span style="font-size:10px;font-weight:700;color:var(--gr);text-transform:uppercase;letter-spacing:.07em">';
+  h+='● Open Positions ('+active.length+')</span></td></tr>';
+
+  if(!active.length){
+    h+='<tr><td colspan="13" class="emp" style="color:var(--tx3)">No open positions'+(q?' matching "'+q+'"':'')+'.</td></tr>';
+  } else {
+    for(var i=0;i<active.length;i++){
+      var p=active[i],col=tcol(p.ticker),fxt=p.currency!=='USD'?'<span class="fxt">'+p.currency+'→USD</span>':'';
+      var cp=p.changePct,dayC=cp!==null&&cp!==undefined?'<span class="chip '+(cp>=0?'cup':'cdn')+'">'+(cp>=0?'▲':'▼')+Math.abs(cp).toFixed(2)+'%</span>':'';
+      var srcIcon=p.isLive?'<span style="color:var(--gr);font-size:9px" title="Live">●</span>':(p.isManual?'<span style="color:var(--pu);font-size:9px" title="Manual price">◆</span>':'<span style="color:var(--tx3);font-size:9px" title="Cost estimate">○</span>');
+      h+='<tr>';
+      h+='<td>'+srcIcon+'</td>';
+      h+='<td><span style="display:inline-flex;align-items:center;gap:8px"><span class="tav" style="width:26px;height:26px;background:'+col+'22;color:'+col+';border:1px solid '+col+'33;font-size:9px">'+ini(p.ticker)+'</span><span><div class="fw" style="font-size:12px">'+p.ticker+'</div>'+dayC+'</span></span></td>';
+      h+='<td class="nmc">'+p.name+'</td><td style="font-size:11px;color:var(--tx3)">'+p.theme+'</td><td>'+p.currency+fxt+'</td>';
+      h+='<td class="mn">'+fN(p.shares,4)+'</td><td class="mn">$'+fN(p.avgCostUSD,4)+'</td>';
+      h+='<td class="mn">'+(p.currency!=='USD'?p.currency+' ':'$')+fN(p.currentNative,4)+'</td><td class="mn">$'+fN(p.currentUSD,4)+'</td>';
+      h+='<td class="mn fw">$'+fN(p.marketValueUSD)+'</td>';
+      h+='<td class="mn '+clr(p.unrealPnlUSD)+' fw">'+(p.unrealPnlUSD>=0?'+':'')+'$'+fN(p.unrealPnlUSD)+'</td>';
+      h+='<td><span class="chip '+(p.unrealPct>=0?'cup':'cdn')+'">'+fP(p.unrealPct)+'</span></td>';
+      h+='<td class="mn '+clr(p.realPnlUSD)+'">'+(Math.abs(p.realPnlUSD)>0.01?(p.realPnlUSD>=0?'+':'')+'$'+fN(p.realPnlUSD):'—')+'</td></tr>';
+    }
   }
+
+  // -- Closed positions --
+  var closed=[],cpk=Object.keys(R.closedPositions);
+  for(var i=0;i<cpk.length;i++){var p=R.closedPositions[cpk[i]];if(q&&p.ticker.toLowerCase().indexOf(q)===-1&&p.name.toLowerCase().indexOf(q)===-1)continue;closed.push(p);}
+  closed.sort(function(a,b){return Math.abs(b.realPnlUSD)-Math.abs(a.realPnlUSD);});
+
+  if(closed.length){
+    h+='<tr><td colspan="13" style="padding:7px 14px;background:var(--bg4);border-top:2px solid var(--bd2);border-bottom:1px solid var(--bd)">';
+    h+='<span style="font-size:10px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.07em">';
+    h+='■ Closed Positions ('+closed.length+') — Realized P&amp;L only</span></td></tr>';
+    for(var i=0;i<closed.length;i++){
+      var p=closed[i],col=tcol(p.ticker);
+      h+='<tr style="background:var(--bg3)">';
+      h+='<td><span style="color:var(--tx3);font-size:9px">■</span></td>';
+      h+='<td><span style="display:inline-flex;align-items:center;gap:8px"><span class="tav" style="width:26px;height:26px;background:'+col+'11;color:'+col+'66;border:1px solid '+col+'22;font-size:9px">'+ini(p.ticker)+'</span>';
+      h+='<span><div style="font-size:12px;font-weight:600;color:var(--tx2)">'+p.ticker+'</div>';
+      h+='<span style="font-size:9px;padding:1px 5px;border-radius:4px;background:var(--bg4);color:var(--tx3)">CLOSED</span></span></span></td>';
+      h+='<td class="nmc" style="color:var(--tx3)">'+p.name+'</td>';
+      h+='<td style="font-size:11px;color:var(--tx3)">'+p.theme+'</td>';
+      h+='<td style="color:var(--tx3)">'+p.currency+'</td>';
+      h+='<td class="mn" style="color:var(--tx3)">—</td>';
+      h+='<td class="mn" style="color:var(--tx3)">$'+fN(p.avgCostUSD,4)+'</td>';
+      h+='<td colspan="3" style="color:var(--tx3);font-size:11px;font-style:italic">Position fully closed</td>';
+      h+='<td colspan="2" style="color:var(--tx3)"></td>';
+      h+='<td class="mn fw '+clr(p.realPnlUSD)+'">'+(p.realPnlUSD>=0?'+':'')+'$'+fN(p.realPnlUSD)+'</td></tr>';
+    }
+  }
+
   document.getElementById('stbody').innerHTML=h;
 }
 
@@ -1141,16 +1241,26 @@ function doRThemes(){
   var R=calcPortfolio(),td={};
   for(var i=0;i<themes.length;i++)td[themes[i]]={v:0,c:0,u:0,r:0,tickers:[]};
   var pk=Object.keys(R.positions);
-  for(var i=0;i<pk.length;i++){var p=R.positions[pk[i]];if(!td[p.theme])td[p.theme]={v:0,c:0,u:0,r:0,tickers:[]};var t=td[p.theme];t.v+=(p.marketValueUSD||0);t.c+=(p.totalCostUSD||0);t.u+=(p.unrealPnlUSD||0);t.r+=(p.realPnlUSD||0);if(p.shares>0.001)t.tickers.push(p.ticker);}
+  for(var i=0;i<pk.length;i++){var p=R.positions[pk[i]];if(!td[p.theme])td[p.theme]={v:0,c:0,u:0,r:0,tickers:[],closed:0};var t=td[p.theme];t.v+=(p.marketValueUSD||0);t.c+=(p.totalCostUSD||0);t.u+=(p.unrealPnlUSD||0);t.r+=(p.realPnlUSD||0);if(p.shares>0.001){t.tickers.push(p.ticker);}else if(Math.abs(p.realPnlUSD)>0.01){t.closed++;}}
+  // Add realized P&L from closedPositions
+  var cpk2=Object.keys(R.closedPositions);
+  for(var i=0;i<cpk2.length;i++){var p=R.closedPositions[cpk2[i]];if(!td[p.theme])td[p.theme]={v:0,c:0,u:0,r:0,tickers:[],closed:0};td[p.theme].r+=(p.realPnlUSD||0);td[p.theme].closed++;}
   var tv=0,tkeys=Object.keys(td);for(var i=0;i<tkeys.length;i++)tv+=td[tkeys[i]].v;
   var sorted=[];
-  for(var i=0;i<themes.length;i++){var t=td[themes[i]];if(t&&(t.v>0||Math.abs(t.r)>0.01))sorted.push({n:themes[i],col:TC[i%TC.length],v:t.v,c:t.c,u:t.u,r:t.r,tickers:t.tickers});}
+  for(var i=0;i<themes.length;i++){var t=td[themes[i]];if(t&&(t.v>0||Math.abs(t.r)>0.01))sorted.push({n:themes[i],col:TC[i%TC.length],v:t.v,c:t.c,u:t.u,r:t.r,tickers:t.tickers,closed:t.closed||0});}
   sorted.sort(function(a,b){return b.v-a.v;});
   var h='';
   for(var i=0;i<sorted.length;i++){
     var t=sorted[i],pp=t.c>0?(t.u/t.c)*100:0,al=tv>0?(t.v/tv)*100:0;
     h+='<div class="tkc"><div class="tka" style="background:'+t.col+'"></div><div class="tkh"><div><div class="tkn">'+t.n+'</div><div class="tks">'+t.tickers.slice(0,5).join(' \u00b7 ')+'</div></div><div class="tka2" style="color:'+t.col+'">'+al.toFixed(1)+'%</div></div>';
-    h+='<div class="tkv" style="color:'+t.col+'">$'+fN(t.v)+'</div><div class="tkp"><span class="'+clr(t.u)+'">Unreal: '+(t.u>=0?'+':'')+'$'+fN(t.u)+' ('+fP(pp)+')</span><span class="'+clr(t.r)+'">Real: '+(t.r>=0?'+':'')+'$'+fN(t.r)+'</span></div>';
+    var tp=t.u+t.r;
+    h+='<div class="tkv" style="color:'+t.col+'">$'+fN(t.v)+'</div>';
+    h+='<div class="tkp">';
+    if(t.v>0)h+='<span class="'+clr(t.u)+'">Unreal: '+(t.u>=0?'+':'')+'$'+fN(t.u)+' ('+fP(pp)+')</span>';
+    if(Math.abs(t.r)>0.01)h+='<span class="'+clr(t.r)+'">Real: '+(t.r>=0?'+':'')+'$'+fN(t.r)+'</span>';
+    var tp=t.u+t.r;h+='<span class="'+clr(tp)+'" style="font-weight:700">Total: '+(tp>=0?'+':'')+'$'+fN(tp)+'</span>';
+    h+='</div>';
+    if(t.closed>0)h+='<div style="font-size:10px;color:var(--tx3);margin-bottom:5px">■ '+t.closed+' closed position'+(t.closed>1?'s':'')+'</div>';
     h+='<div class="tkb"><div class="tkf" style="width:'+al.toFixed(1)+'%;background:'+t.col+'"></div></div></div>';
   }
   document.getElementById('tgrid').innerHTML=h||'<div class="emp">No theme data. Click Refresh Prices.</div>';
@@ -1221,6 +1331,8 @@ function doEditTx(id){
   document.getElementById('edit-ccy').value=tx.currency;
   var sel=document.getElementById('edit-theme');sel.innerHTML='';
   for(var i=0;i<themes.length;i++){var o=document.createElement('option');o.value=themes[i];o.textContent=themes[i];if(themes[i]===tx.theme)o.selected=true;sel.appendChild(o);}
+  var mp = manualPrices[tx.ticker] || '';
+  document.getElementById('edit-manual-price').value = mp ? mp : '';
   document.getElementById('edit-modal').style.display='flex';
 }
 function doSaveEdit(){
@@ -1235,6 +1347,14 @@ function doSaveEdit(){
   for(var i=0;i<txns.length;i++){
     if(txns[i].id===id){txns[i].type=type;txns[i].date=date;txns[i].ticker=ticker;txns[i].name=name;txns[i].theme=theme;txns[i].shares=shares;txns[i].price=price;txns[i].currency=currency;break;}
   }
+  // Save manual price override
+  var mp = parseFloat(document.getElementById('edit-manual-price').value);
+  if (!isNaN(mp) && mp > 0) {
+    manualPrices[ticker] = mp;
+  } else {
+    delete manualPrices[ticker];
+  }
+  try { localStorage.setItem(LS + '_manual_prices', JSON.stringify(manualPrices)); } catch(e) {}
   closeEdit();doRManage();renderAll();autoSync();showAlt('Transaction updated.','ok');
 }
 function closeEdit(){document.getElementById('edit-modal').style.display='none';}
