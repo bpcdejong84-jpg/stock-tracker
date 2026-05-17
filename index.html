@@ -534,13 +534,9 @@ var TC = ['#3b82f6','#10b981','#f59e0b','#8b5cf6','#ef4444','#14b8a6','#f97316',
 // TICKER -> FINNHUB SYMBOL
 // ============================================================
 function toFH(t) {
-  if (t.indexOf(':') !== -1) return t; // already has exchange prefix
-  if (t.indexOf('.') === -1) return t; // plain US ticker
-  var parts = t.split('.');
-  var base = parts[0];
-  var exch = parts[1];
-  var map = {'AX':'ASX:','HK':'HKEX:','SI':'SGX:','OL':'OSL:','PA':'EPA:','DE':'FRA:','AS':'AMS:','L':'LSE:','TO':'TSX:','V':'TSXV:'};
-  return map[exch] ? map[exch] + base : t;
+  // Tickers are stored in Finnhub format directly (e.g. BOE.AX, SUBC.OL, 1088.HK)
+  // No conversion needed - return as-is
+  return t;
 }
 
 // ============================================================
@@ -550,44 +546,44 @@ var DEFAULT_TX = [
 {id:1,type:'buy',date:'2023-03-29',ticker:'NTR',name:'Nutrien Ltd.',theme:'Agriculture',shares:23.2,price:73.27,currency:'USD'},
 {id:2,type:'buy',date:'2023-03-29',ticker:'MOS',name:'Mosaic Company',theme:'Agriculture',shares:37.67,price:45.13,currency:'USD'},
 {id:3,type:'buy',date:'2023-03-29',ticker:'ICL',name:'ICL Group',theme:'Agriculture',shares:246,price:6.89,currency:'USD'},
-{id:4,type:'buy',date:'2023-03-29',ticker:'FRA:SDF',name:'K&S AG',theme:'Agriculture',shares:81,price:19.3,currency:'EUR'},
-{id:5,type:'buy',date:'2023-01-13',ticker:'SGX:F34',name:'Wilmar International',theme:'Agriculture',shares:600,price:4.14,currency:'SGD'},
-{id:6,type:'buy',date:'2023-01-13',ticker:'SGX:E5H',name:'Golden Agri Resources',theme:'Agriculture',shares:8500,price:0.25,currency:'SGD'},
-{id:7,type:'buy',date:'2023-01-05',ticker:'HKEX:297',name:'Sinofert Holdings',theme:'Agriculture',shares:14000,price:0.97,currency:'HKD'},
-{id:8,type:'buy',date:'2024-08-29',ticker:'LSE:MHPC',name:'MHP SE',theme:'Agriculture',shares:475,price:4.2,currency:'USD'},
+{id:4,type:'buy',date:'2023-03-29',ticker:'SDF.DE',name:'K&S AG',theme:'Agriculture',shares:81,price:19.3,currency:'EUR'},
+{id:5,type:'buy',date:'2023-01-13',ticker:'F34.SI',name:'Wilmar International',theme:'Agriculture',shares:600,price:4.14,currency:'SGD'},
+{id:6,type:'buy',date:'2023-01-13',ticker:'E5H.SI',name:'Golden Agri Resources',theme:'Agriculture',shares:8500,price:0.25,currency:'SGD'},
+{id:7,type:'buy',date:'2023-01-05',ticker:'297.HK',name:'Sinofert Holdings',theme:'Agriculture',shares:14000,price:0.97,currency:'HKD'},
+{id:8,type:'buy',date:'2024-08-29',ticker:'MHPC.L',name:'MHP SE',theme:'Agriculture',shares:475,price:4.2,currency:'USD'},
 {id:9,type:'buy',date:'2023-03-29',ticker:'FCX',name:'Freeport-McMoRan',theme:'Copper',shares:85.8616,price:39.715,currency:'USD'},
 {id:10,type:'buy',date:'2023-03-29',ticker:'TSXV:SURG',name:'Surge Copper Corp.',theme:'Copper',shares:38500,price:0.12,currency:'CAD'},
-{id:11,type:'buy',date:'2023-01-12',ticker:'ASX:RXM',name:'Rex Minerals',theme:'Copper',shares:21866,price:0.225,currency:'AUD'},
-{id:12,type:'buy',date:'2023-01-12',ticker:'ASX:ALK',name:'Alkane Resources',theme:'Copper',shares:7291,price:0.675,currency:'AUD'},
-{id:13,type:'buy',date:'2023-01-13',ticker:'ASX:NHC',name:'New Hope Corporation',theme:'Coal',shares:447,price:6.23,currency:'AUD'},
-{id:14,type:'buy',date:'2023-01-13',ticker:'ASX:WHC',name:'Whitehaven Coal',theme:'Coal',shares:314,price:8.86,currency:'AUD'},
-{id:15,type:'buy',date:'2023-01-13',ticker:'ASX:SMR',name:'Stanmore Resources',theme:'Coal',shares:854,price:3.27,currency:'AUD'},
-{id:16,type:'buy',date:'2023-01-05',ticker:'HKEX:1088',name:'China Shenhua Energy',theme:'Coal',shares:500,price:22.9,currency:'HKD'},
-{id:17,type:'buy',date:'2023-01-05',ticker:'HKEX:1898',name:'China Coal Energy',theme:'Coal',shares:3000,price:6.24,currency:'HKD'},
+{id:11,type:'buy',date:'2023-01-12',ticker:'RXM.AX',name:'Rex Minerals',theme:'Copper',shares:21866,price:0.225,currency:'AUD'},
+{id:12,type:'buy',date:'2023-01-12',ticker:'ALK.AX',name:'Alkane Resources',theme:'Copper',shares:7291,price:0.675,currency:'AUD'},
+{id:13,type:'buy',date:'2023-01-13',ticker:'NHC.AX',name:'New Hope Corporation',theme:'Coal',shares:447,price:6.23,currency:'AUD'},
+{id:14,type:'buy',date:'2023-01-13',ticker:'WHC.AX',name:'Whitehaven Coal',theme:'Coal',shares:314,price:8.86,currency:'AUD'},
+{id:15,type:'buy',date:'2023-01-13',ticker:'SMR.AX',name:'Stanmore Resources',theme:'Coal',shares:854,price:3.27,currency:'AUD'},
+{id:16,type:'buy',date:'2023-01-05',ticker:'1088.HK',name:'China Shenhua Energy',theme:'Coal',shares:500,price:22.9,currency:'HKD'},
+{id:17,type:'buy',date:'2023-01-05',ticker:'1898.HK',name:'China Coal Energy',theme:'Coal',shares:3000,price:6.24,currency:'HKD'},
 {id:18,type:'buy',date:'2023-04-04',ticker:'GDX',name:'VanEck Gold Miners',theme:'Gold/Silver/Japan',shares:600,price:33.72,currency:'USD'},
 {id:19,type:'buy',date:'2023-04-04',ticker:'GLD',name:'SPDR Gold',theme:'Gold/Silver/Japan',shares:110,price:186.78,currency:'USD'},
 {id:20,type:'buy',date:'2024-08-29',ticker:'SBSW',name:'Sibanye Stillwater',theme:'Gold/Silver/Japan',shares:476,price:4.156,currency:'USD'},
-{id:21,type:'buy',date:'2024-07-21',ticker:'LSE:VALT',name:'Valterra Platinum',theme:'Gold/Silver/Japan',shares:100,price:38.3,currency:'GBP'},
+{id:21,type:'buy',date:'2024-07-21',ticker:'VAL.JO',name:'Valterra Platinum',theme:'Gold/Silver/Japan',shares:100,price:38.3,currency:'GBP'},
 {id:22,type:'buy',date:'2023-03-29',ticker:'TDW',name:'Tidewater Inc.',theme:'Offshore Oil',shares:27.7737,price:45.01,currency:'USD'},
-{id:23,type:'buy',date:'2023-12-06',ticker:'OSL:SUBC',name:'Subsea 7 SA',theme:'Offshore Oil',shares:50,price:148.05,currency:'NOK'},
+{id:23,type:'buy',date:'2023-12-06',ticker:'SUBC.OL',name:'Subsea 7 SA',theme:'Offshore Oil',shares:50,price:148.05,currency:'NOK'},
 {id:24,type:'buy',date:'2023-03-29',ticker:'FTI',name:'TechnipFMC',theme:'Offshore Oil',shares:60,price:13.36,currency:'USD'},
 {id:25,type:'buy',date:'2023-03-29',ticker:'RIG',name:'Transocean Ltd',theme:'Offshore Oil',shares:120,price:6.62,currency:'USD'},
 {id:26,type:'buy',date:'2023-03-29',ticker:'HLX',name:'Helix Energy Solutions',theme:'Offshore Oil',shares:102.8278,price:7.78,currency:'USD'},
 {id:27,type:'buy',date:'2023-12-13',ticker:'OII',name:'Oceaneering International',theme:'Offshore Oil',shares:40,price:19.18,currency:'USD'},
-{id:28,type:'buy',date:'2023-12-06',ticker:'EPA:VK',name:'Vallourec SA',theme:'Offshore Oil',shares:60,price:13.74,currency:'EUR'},
-{id:29,type:'buy',date:'2023-01-05',ticker:'HKEX:1623',name:'Hilong Holding',theme:'Offshore Oil',shares:20000,price:0.31,currency:'HKD'},
+{id:28,type:'buy',date:'2023-12-06',ticker:'VK.PA',name:'Vallourec SA',theme:'Offshore Oil',shares:60,price:13.74,currency:'EUR'},
+{id:29,type:'buy',date:'2023-01-05',ticker:'1623.HK',name:'Hilong Holding',theme:'Offshore Oil',shares:20000,price:0.31,currency:'HKD'},
 {id:30,type:'buy',date:'2023-12-14',ticker:'XPRO',name:'Expro Group Holdings',theme:'Offshore Oil',shares:60,price:15.02,currency:'USD'},
-{id:31,type:'buy',date:'2023-12-06',ticker:'SGX:M05',name:'MTQ Corporation',theme:'Offshore Oil',shares:3100,price:0.33,currency:'SGD'},
+{id:31,type:'buy',date:'2023-12-06',ticker:'M05.SI',name:'MTQ Corporation',theme:'Offshore Oil',shares:3100,price:0.33,currency:'SGD'},
 {id:32,type:'buy',date:'2023-04-04',ticker:'GEOS',name:'Geospace Technologies',theme:'Offshore Oil',shares:80,price:7.88,currency:'USD'},
-{id:33,type:'buy',date:'2023-12-06',ticker:'SGX:5LY',name:'Marco Polo Marine',theme:'Offshore Oil',shares:20000,price:0.05,currency:'SGD'},
-{id:34,type:'buy',date:'2023-12-06',ticker:'SGX:S51',name:'Seatrium Limited',theme:'Offshore Oil',shares:9900,price:0.1,currency:'SGD'},
-{id:35,type:'buy',date:'2024-05-16',ticker:'HKEX:3303',name:'Jutal Offshore Oil Services',theme:'Offshore Oil',shares:10000,price:0.74,currency:'HKD'},
-{id:36,type:'buy',date:'2024-05-27',ticker:'HKEX:3303',name:'Jutal Offshore Oil Services',theme:'Offshore Oil',shares:10000,price:0.808,currency:'HKD'},
-{id:37,type:'buy',date:'2024-05-27',ticker:'SGX:DU4',name:'Mermaid Maritime',theme:'Offshore Oil',shares:7000,price:0.174,currency:'SGD'},
-{id:38,type:'buy',date:'2024-06-06',ticker:'LSE:RKH',name:'Rockhopper Exploration',theme:'Offshore Oil',shares:7100,price:0.142,currency:'GBP'},
+{id:33,type:'buy',date:'2023-12-06',ticker:'5LY.SI',name:'Marco Polo Marine',theme:'Offshore Oil',shares:20000,price:0.05,currency:'SGD'},
+{id:34,type:'buy',date:'2023-12-06',ticker:'5E2.SI',name:'Seatrium Limited',theme:'Offshore Oil',shares:9900,price:0.1,currency:'SGD'},
+{id:35,type:'buy',date:'2024-05-16',ticker:'3303.HK',name:'Jutal Offshore Oil Services',theme:'Offshore Oil',shares:10000,price:0.74,currency:'HKD'},
+{id:36,type:'buy',date:'2024-05-27',ticker:'3303.HK',name:'Jutal Offshore Oil Services',theme:'Offshore Oil',shares:10000,price:0.808,currency:'HKD'},
+{id:37,type:'buy',date:'2024-05-27',ticker:'DU4.SI',name:'Mermaid Maritime',theme:'Offshore Oil',shares:7000,price:0.174,currency:'SGD'},
+{id:38,type:'buy',date:'2024-06-06',ticker:'RKH.L',name:'Rockhopper Exploration',theme:'Offshore Oil',shares:7100,price:0.142,currency:'GBP'},
 {id:39,type:'buy',date:'2024-08-29',ticker:'SMHI',name:'Seacor Marine Holdings',theme:'Offshore Oil',shares:86,price:11.58,currency:'USD'},
 {id:40,type:'buy',date:'2024-04-09',ticker:'NE',name:'Noble Corporation PLC',theme:'Offshore Oil',shares:16.212,price:35.19,currency:'USD'},
-{id:41,type:'buy',date:'2024-10-18',ticker:'AMS:SBMO',name:'SBM Offshore NV',theme:'Offshore Oil',shares:58,price:17.09,currency:'EUR'},
+{id:41,type:'buy',date:'2024-10-18',ticker:'SBMO.AS',name:'SBM Offshore NV',theme:'Offshore Oil',shares:58,price:17.09,currency:'EUR'},
 {id:42,type:'buy',date:'2025-01-12',ticker:'BORR',name:'Borr Drilling Ltd',theme:'Offshore Oil',shares:764.4634,price:3.275,currency:'USD'},
 {id:43,type:'buy',date:'2025-01-12',ticker:'WFRD',name:'Weatherford International',theme:'Offshore Oil',shares:33,price:74.8,currency:'USD'},
 {id:44,type:'buy',date:'2024-05-17',ticker:'FRO',name:'Frontline PLC',theme:'Shipping',shares:65,price:27.447,currency:'USD'},
@@ -598,8 +594,8 @@ var DEFAULT_TX = [
 {id:49,type:'buy',date:'2024-05-17',ticker:'SBLK',name:'Star Bulk Carriers',theme:'Shipping',shares:70,price:25.858,currency:'USD'},
 {id:50,type:'buy',date:'2024-05-17',ticker:'INSW',name:'International Seaways',theme:'Shipping',shares:29,price:63.67,currency:'USD'},
 {id:51,type:'buy',date:'2024-05-17',ticker:'TEN',name:'Tsakos Energy Navigation',theme:'Shipping',shares:60,price:29.89,currency:'USD'},
-{id:52,type:'buy',date:'2024-05-17',ticker:'HKEX:2343',name:'Pacific Basin Shipping',theme:'Shipping',shares:5000,price:2.79,currency:'HKD'},
-{id:53,type:'buy',date:'2023-01-12',ticker:'ASX:BMN',name:'Bannerman Energy',theme:'Uranium',shares:1419,price:1.98,currency:'AUD'},
+{id:52,type:'buy',date:'2024-05-17',ticker:'2343.HK',name:'Pacific Basin Shipping',theme:'Shipping',shares:5000,price:2.79,currency:'HKD'},
+{id:53,type:'buy',date:'2023-01-12',ticker:'BMN.AX',name:'Bannerman Energy',theme:'Uranium',shares:1419,price:1.98,currency:'AUD'},
 {id:54,type:'buy',date:'2023-04-04',ticker:'URNM',name:'Sprott Uranium Miners',theme:'Uranium',shares:90,price:30.75,currency:'USD'},
 {id:55,type:'buy',date:'2023-12-15',ticker:'URNM',name:'Sprott Uranium Miners',theme:'Uranium',shares:100,price:48.64,currency:'USD'},
 {id:56,type:'buy',date:'2023-12-14',ticker:'BMA',name:'Banco Macro SA',theme:'Argentina',shares:79,price:28.21,currency:'USD'},
@@ -615,39 +611,39 @@ var DEFAULT_TX = [
 {id:66,type:'buy',date:'2024-05-31',ticker:'EQT',name:'EQT Corporation',theme:'Natural Gas',shares:80,price:41.32,currency:'USD'},
 {id:67,type:'buy',date:'2024-05-31',ticker:'CNX',name:'CNX Resources',theme:'Natural Gas',shares:128,price:25.95,currency:'USD'},
 {id:68,type:'buy',date:'2025-03-13',ticker:'KWEB',name:'KraneShares China Internet',theme:'China',shares:279.642,price:35.76,currency:'USD'},
-{id:69,type:'buy',date:'2023-01-12',ticker:'ASX:BOE',name:'Boss Energy',theme:'Uranium',shares:1227,price:2.29,currency:'AUD'},
-{id:70,type:'buy',date:'2023-01-12',ticker:'ASX:PDN',name:'Paladin Energy',theme:'Uranium',shares:3673,price:0.765,currency:'AUD'},
-{id:71,type:'buy',date:'2023-01-12',ticker:'ASX:DYL',name:'Deep Yellow Limited',theme:'Uranium',shares:3721,price:0.755,currency:'AUD'},
-{id:72,type:'buy',date:'2023-01-12',ticker:'TSXV:AFM',name:'Alphamin Resources',theme:'Old Themes',shares:1829,price:0.842,currency:'CAD'},
-{id:73,type:'buy',date:'2023-01-05',ticker:'ASX:AXN',name:'Alliance Nickel',theme:'Old Themes',shares:18500,price:0.092,currency:'AUD'},
-{id:74,type:'buy',date:'2023-01-12',ticker:'ASX:ARL',name:'Ardea Resources',theme:'Old Themes',shares:2002,price:0.814,currency:'AUD'},
-{id:75,type:'buy',date:'2023-01-12',ticker:'ASX:COB',name:'Cobalt Blue Holdings',theme:'Old Themes',shares:2552,price:0.645,currency:'AUD'},
-{id:76,type:'buy',date:'2023-01-12',ticker:'ASX:JRV',name:'Jervois Global',theme:'Old Themes',shares:5064,price:0.324,currency:'AUD'},
-{id:77,type:'buy',date:'2023-03-29',ticker:'TSXV:ELBM',name:'Electra Battery Materials',theme:'Old Themes',shares:595,price:2.59,currency:'CAD'},
-{id:78,type:'buy',date:'2023-01-12',ticker:'ASX:AVL',name:'Australian Vanadium',theme:'Old Themes',shares:54666,price:0.03,currency:'AUD'},
-{id:79,type:'buy',date:'2023-03-29',ticker:'TSX:LGO',name:'Largo Inc.',theme:'Old Themes',shares:223,price:6.9,currency:'CAD'},
-{id:80,type:'buy',date:'2023-01-13',ticker:'ASX:KRR',name:'King River Resources',theme:'Old Themes',shares:138808,price:0.0117,currency:'AUD'},
-{id:81,type:'buy',date:'2023-01-12',ticker:'ASX:POS',name:'Poseidon Nickel',theme:'Old Themes',shares:41000,price:0.04,currency:'AUD'},
-{id:82,type:'buy',date:'2023-01-12',ticker:'ASX:PAN',name:'Panoramic Resources',theme:'Old Themes',shares:8200,price:0.2,currency:'AUD'},
-{id:83,type:'buy',date:'2023-01-13',ticker:'ASX:ARU',name:'Arafura Rare Earths',theme:'Old Themes',shares:6209,price:0.525,currency:'AUD'},
-{id:84,type:'buy',date:'2023-01-12',ticker:'ASX:SRL',name:'Sunrise Energy Metals',theme:'Old Themes',shares:1512,price:2.168,currency:'AUD'},
-{id:85,type:'sell',date:'2023-01-10',ticker:'ASX:BOE',name:'Boss Energy',theme:'Uranium',shares:1227,price:2.38,currency:'AUD'},
-{id:86,type:'sell',date:'2023-01-10',ticker:'ASX:PDN',name:'Paladin Energy',theme:'Uranium',shares:3673,price:0.62,currency:'AUD'},
-{id:87,type:'sell',date:'2023-01-10',ticker:'ASX:DYL',name:'Deep Yellow Limited',theme:'Uranium',shares:3721,price:0.545,currency:'AUD'},
+{id:69,type:'buy',date:'2023-01-12',ticker:'BOE.AX',name:'Boss Energy',theme:'Uranium',shares:1227,price:2.29,currency:'AUD'},
+{id:70,type:'buy',date:'2023-01-12',ticker:'PDN.AX',name:'Paladin Energy',theme:'Uranium',shares:3673,price:0.765,currency:'AUD'},
+{id:71,type:'buy',date:'2023-01-12',ticker:'DYL.AX',name:'Deep Yellow Limited',theme:'Uranium',shares:3721,price:0.755,currency:'AUD'},
+{id:72,type:'buy',date:'2023-01-12',ticker:'AFM.V',name:'Alphamin Resources',theme:'Old Themes',shares:1829,price:0.842,currency:'CAD'},
+{id:73,type:'buy',date:'2023-01-05',ticker:'AXN.AX',name:'Alliance Nickel',theme:'Old Themes',shares:18500,price:0.092,currency:'AUD'},
+{id:74,type:'buy',date:'2023-01-12',ticker:'ARL.AX',name:'Ardea Resources',theme:'Old Themes',shares:2002,price:0.814,currency:'AUD'},
+{id:75,type:'buy',date:'2023-01-12',ticker:'COB.AX',name:'Cobalt Blue Holdings',theme:'Old Themes',shares:2552,price:0.645,currency:'AUD'},
+{id:76,type:'buy',date:'2023-01-12',ticker:'JRV.AX',name:'Jervois Global',theme:'Old Themes',shares:5064,price:0.324,currency:'AUD'},
+{id:77,type:'buy',date:'2023-03-29',ticker:'ELBM.V',name:'Electra Battery Materials',theme:'Old Themes',shares:595,price:2.59,currency:'CAD'},
+{id:78,type:'buy',date:'2023-01-12',ticker:'AVL.AX',name:'Australian Vanadium',theme:'Old Themes',shares:54666,price:0.03,currency:'AUD'},
+{id:79,type:'buy',date:'2023-03-29',ticker:'LGO.TO',name:'Largo Inc.',theme:'Old Themes',shares:223,price:6.9,currency:'CAD'},
+{id:80,type:'buy',date:'2023-01-13',ticker:'KRR.AX',name:'King River Resources',theme:'Old Themes',shares:138808,price:0.0117,currency:'AUD'},
+{id:81,type:'buy',date:'2023-01-12',ticker:'POS.AX',name:'Poseidon Nickel',theme:'Old Themes',shares:41000,price:0.04,currency:'AUD'},
+{id:82,type:'buy',date:'2023-01-12',ticker:'PAN.AX',name:'Panoramic Resources',theme:'Old Themes',shares:8200,price:0.2,currency:'AUD'},
+{id:83,type:'buy',date:'2023-01-13',ticker:'ARU.AX',name:'Arafura Rare Earths',theme:'Old Themes',shares:6209,price:0.525,currency:'AUD'},
+{id:84,type:'buy',date:'2023-01-12',ticker:'SRL.AX',name:'Sunrise Energy Metals',theme:'Old Themes',shares:1512,price:2.168,currency:'AUD'},
+{id:85,type:'sell',date:'2023-01-10',ticker:'BOE.AX',name:'Boss Energy',theme:'Uranium',shares:1227,price:2.38,currency:'AUD'},
+{id:86,type:'sell',date:'2023-01-10',ticker:'PDN.AX',name:'Paladin Energy',theme:'Uranium',shares:3673,price:0.62,currency:'AUD'},
+{id:87,type:'sell',date:'2023-01-10',ticker:'DYL.AX',name:'Deep Yellow Limited',theme:'Uranium',shares:3721,price:0.545,currency:'AUD'},
 {id:88,type:'sell',date:'2023-01-10',ticker:'NOV',name:'NOV Inc.',theme:'Offshore Oil',shares:50,price:20.21,currency:'USD'},
-{id:89,type:'sell',date:'2023-01-10',ticker:'TSXV:AFM',name:'Alphamin Resources',theme:'Old Themes',shares:1829,price:0.83,currency:'CAD'},
-{id:90,type:'sell',date:'2023-01-10',ticker:'ASX:AXN',name:'Alliance Nickel',theme:'Old Themes',shares:18500,price:0.037,currency:'AUD'},
-{id:91,type:'sell',date:'2023-01-10',ticker:'ASX:ARL',name:'Ardea Resources',theme:'Old Themes',shares:2002,price:0.45,currency:'AUD'},
-{id:92,type:'sell',date:'2023-01-10',ticker:'ASX:COB',name:'Cobalt Blue Holdings',theme:'Old Themes',shares:2552,price:0.23,currency:'AUD'},
-{id:93,type:'sell',date:'2023-01-10',ticker:'ASX:JRV',name:'Jervois Global',theme:'Old Themes',shares:5064,price:0.043,currency:'AUD'},
-{id:94,type:'sell',date:'2023-01-10',ticker:'ASX:AVL',name:'Australian Vanadium',theme:'Old Themes',shares:54666,price:0.02,currency:'AUD'},
-{id:95,type:'sell',date:'2023-01-10',ticker:'ASX:KRR',name:'King River Resources',theme:'Old Themes',shares:138808,price:0.012,currency:'AUD'},
-{id:96,type:'sell',date:'2023-01-10',ticker:'ASX:POS',name:'Poseidon Nickel',theme:'Old Themes',shares:41000,price:0.014,currency:'AUD'},
-{id:97,type:'sell',date:'2023-01-10',ticker:'ASX:ARU',name:'Arafura Rare Earths',theme:'Old Themes',shares:6209,price:0.155,currency:'AUD'},
-{id:98,type:'sell',date:'2023-01-10',ticker:'ASX:SRL',name:'Sunrise Energy Metals',theme:'Old Themes',shares:1512,price:0.45,currency:'AUD'},
+{id:89,type:'sell',date:'2023-01-10',ticker:'AFM.V',name:'Alphamin Resources',theme:'Old Themes',shares:1829,price:0.83,currency:'CAD'},
+{id:90,type:'sell',date:'2023-01-10',ticker:'AXN.AX',name:'Alliance Nickel',theme:'Old Themes',shares:18500,price:0.037,currency:'AUD'},
+{id:91,type:'sell',date:'2023-01-10',ticker:'ARL.AX',name:'Ardea Resources',theme:'Old Themes',shares:2002,price:0.45,currency:'AUD'},
+{id:92,type:'sell',date:'2023-01-10',ticker:'COB.AX',name:'Cobalt Blue Holdings',theme:'Old Themes',shares:2552,price:0.23,currency:'AUD'},
+{id:93,type:'sell',date:'2023-01-10',ticker:'JRV.AX',name:'Jervois Global',theme:'Old Themes',shares:5064,price:0.043,currency:'AUD'},
+{id:94,type:'sell',date:'2023-01-10',ticker:'AVL.AX',name:'Australian Vanadium',theme:'Old Themes',shares:54666,price:0.02,currency:'AUD'},
+{id:95,type:'sell',date:'2023-01-10',ticker:'KRR.AX',name:'King River Resources',theme:'Old Themes',shares:138808,price:0.012,currency:'AUD'},
+{id:96,type:'sell',date:'2023-01-10',ticker:'POS.AX',name:'Poseidon Nickel',theme:'Old Themes',shares:41000,price:0.014,currency:'AUD'},
+{id:97,type:'sell',date:'2023-01-10',ticker:'ARU.AX',name:'Arafura Rare Earths',theme:'Old Themes',shares:6209,price:0.155,currency:'AUD'},
+{id:98,type:'sell',date:'2023-01-10',ticker:'SRL.AX',name:'Sunrise Energy Metals',theme:'Old Themes',shares:1512,price:0.45,currency:'AUD'},
 {id:99,type:'sell',date:'2024-05-24',ticker:'RES',name:'RPC Inc.',theme:'Offshore Oil',shares:100,price:6.721,currency:'USD'},
 {id:100,type:'sell',date:'2024-05-24',ticker:'OIS',name:'Oil States International',theme:'Offshore Oil',shares:94,price:4.5,currency:'USD'},
-{id:101,type:'sell',date:'2024-08-30',ticker:'ASX:RXM',name:'Rex Minerals',theme:'Copper',shares:21866,price:0.45,currency:'AUD'},
+{id:101,type:'sell',date:'2024-08-30',ticker:'RXM.AX',name:'Rex Minerals',theme:'Copper',shares:21866,price:0.45,currency:'AUD'},
 {id:102,type:'sell',date:'2024-04-09',ticker:'DO',name:'Diamond Offshore Drilling',theme:'Offshore Oil',shares:70,price:14.34,currency:'USD'},
 {id:103,type:'sell',date:'2024-10-26',ticker:'SGX:NO4',name:'Dyna-Mac Holdings',theme:'Offshore Oil',shares:4000,price:0.67,currency:'SGD'},
 {id:104,type:'sell',date:'2025-03-13',ticker:'TSXV:SURG',name:'Surge Copper Corp.',theme:'Copper',shares:38500,price:0.1,currency:'CAD'},
@@ -977,7 +973,15 @@ function buildFailedGuide(errors, key) {
 function toUSD(amt, ccy) { if (ccy === 'USD') return amt; return amt / (fx[ccy] || 1); }
 function calcPortfolio() {
   var positions = {}, totalRealPnl = 0;
-  var sorted = txns.slice().sort(function(a,b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; });
+  // Sort by date; on same date buys come before sells to ensure correct FIFO
+  var sorted = txns.slice().sort(function(a,b) {
+    if (a.date < b.date) return -1;
+    if (a.date > b.date) return 1;
+    // Same date: buys before sells
+    if (a.type === 'buy' && b.type === 'sell') return -1;
+    if (a.type === 'sell' && b.type === 'buy') return 1;
+    return 0;
+  });
   for (var i = 0; i < sorted.length; i++) {
     var tx = sorted[i], k = tx.ticker;
     if (!positions[k]) positions[k] = {ticker:k, name:tx.name, theme:tx.theme, shares:0, totalCostUSD:0, realPnlUSD:0, currency:tx.currency, lots:[]};
@@ -995,6 +999,12 @@ function calcPortfolio() {
         if (lots2[0].shares < 0.0001) lots2.shift();
       }
       pos.lots = lots2;
+      // If cb==0 and we had shares to sell, use average cost as fallback
+      // This handles edge cases where sell date precedes buy date in data
+      if (cb === 0 && pos.totalCostUSD > 0 && pos.shares > 0) {
+        var avgCost = pos.totalCostUSD / pos.shares;
+        cb = tx.shares * avgCost;
+      }
       var g = toUSD(tx.shares * tx.price, tx.currency) - cb;
       pos.realPnlUSD += g; totalRealPnl += g;
       pos.shares = Math.max(0, pos.shares - tx.shares);
