@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Stock Portfolio Tracker v1.4</title>
+<title>Stock Portfolio Tracker v1.5</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -325,7 +325,7 @@ select option { background: #fff; }
 <header>
   <div class="logo">
     <div class="lmark">P</div>
-    <div class="ltext">Stock <span>Portfolio</span> <span style="font-size:10px;color:var(--tx3);font-weight:400;margin-left:2px">v1.4</span></div>
+    <div class="ltext">Stock <span>Portfolio</span> <span style="font-size:10px;color:var(--tx3);font-weight:400;margin-left:2px">v1.5</span></div>
   </div>
   <div class="hright">
     <div class="spill"><div class="dot" id="sdot"></div><span id="smsg">Ready</span></div>
@@ -1278,7 +1278,7 @@ function bChart(tv,tc){
     costs.push(Math.round(base+p*Math.min(base*.07,20000)));
   }
   if(vals.length)vals[vals.length-1]=Math.round(tv||0);
-  var ctx=document.getElementById('dch').getContext('2d');
+  var _dch=document.getElementById('dch');if(!_dch)return;var ctx=_dch.getContext('2d');
   if(dc)dc.destroy();
   var grad=ctx.createLinearGradient(0,0,0,220);
   grad.addColorStop(0,'rgba(59,130,246,0.2)');grad.addColorStop(1,'rgba(59,130,246,0)');
