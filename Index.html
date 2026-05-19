@@ -1,0 +1,2705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stock Portfolio Tracker v1.4</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ── LIGHT THEME DESIGN SYSTEM ─────────────────────────────── */
+:root {
+  /* Backgrounds */
+  --bg:      #f0f2f7;
+  --bg2:     #ffffff;
+  --bg3:     #f7f8fc;
+  --bg4:     #eef0f6;
+
+  /* Borders */
+  --bd:      rgba(0,0,0,.07);
+  --bd2:     rgba(0,0,0,.12);
+  --bd3:     rgba(0,0,0,.2);
+
+  /* Text */
+  --tx:      #1a1f36;
+  --tx2:     #4f566b;
+  --tx3:     #97a0b4;
+
+  /* Brand */
+  --bl:      #4361ee;
+  --bl2:     #3451d1;
+  --pu:      #7c3aed;
+  --gr:      #0ca678;
+  --rd:      #e03e3e;
+  --gd:      #e58c00;
+  --teal:    #0891b2;
+
+  /* Semantic surfaces */
+  --green-bg:  #f0fdf4;
+  --green-bd:  #bbf7d0;
+  --red-bg:    #fff5f5;
+  --red-bd:    #fed7d7;
+  --blue-bg:   #eff6ff;
+  --blue-bd:   #bfdbfe;
+  --gold-bg:   #fffbeb;
+  --gold-bd:   #fde68a;
+  --pu-bg:     #f5f3ff;
+  --pu-bd:     #ddd6fe;
+
+  --r:   12px;
+  --rs:  8px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.04);
+  --shadow:    0 4px 16px rgba(0,0,0,.08);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,.12);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--tx); font-family: 'Inter', sans-serif; font-size: 13px; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--bg3); }
+::-webkit-scrollbar-thumb { background: var(--bd2); border-radius: 10px; }
+
+/* ── HEADER ──────────────────────────────────────────────────── */
+header {
+  background: #fff;
+  border-bottom: 1px solid var(--bd);
+  padding: 0 24px;
+  position: sticky; top: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 58px; gap: 10px; flex-wrap: wrap;
+  box-shadow: var(--shadow-sm);
+}
+.logo { display: flex; align-items: center; gap: 10px; }
+.lmark {
+  width: 30px; height: 30px;
+  background: linear-gradient(135deg, var(--bl), var(--pu));
+  border-radius: 8px; display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0;
+}
+.ltext { font-size: 15px; font-weight: 700; letter-spacing: -.3px; color: var(--tx); }
+.ltext span { color: var(--bl); }
+.hright { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+/* Status pill */
+.spill {
+  display: flex; align-items: center; gap: 6px;
+  padding: 5px 12px; border-radius: 20px;
+  border: 1px solid var(--bd2); background: var(--bg3);
+  font-size: 11px; color: var(--tx2); white-space: nowrap;
+  max-width: 300px; overflow: hidden; text-overflow: ellipsis;
+}
+.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--tx3); flex-shrink: 0; transition: all .3s; }
+.dot.live { background: var(--gr); box-shadow: 0 0 0 3px rgba(12,166,120,.15); animation: pd 2s infinite; }
+.dot.err  { background: var(--rd); }
+.dot.ld   { background: var(--gd); animation: pd .7s infinite; }
+@keyframes pd { 0%,100% { opacity:1; } 50% { opacity:.35; } }
+
+.pbw { width: 100px; height: 3px; background: var(--bg4); border-radius: 2px; overflow: hidden; display: none; }
+.pbf { height: 100%; background: linear-gradient(90deg, var(--bl), var(--pu)); border-radius: 2px; transition: width .2s; width: 0; }
+
+/* ── BUTTONS ─────────────────────────────────────────────────── */
+.btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 7px 14px; border-radius: var(--rs);
+  cursor: pointer; font-size: 12px; font-weight: 500;
+  border: 1px solid var(--bd2); background: #fff;
+  color: var(--tx); transition: all .15s; white-space: nowrap;
+  font-family: 'Inter', sans-serif; box-shadow: var(--shadow-sm);
+}
+.btn:hover { background: var(--bg3); border-color: var(--bd3); }
+.btn:disabled { opacity: .4; cursor: not-allowed; }
+.btnp {
+  background: linear-gradient(135deg, var(--bl), var(--bl2)) !important;
+  border: none !important; color: #fff !important;
+  box-shadow: 0 2px 8px rgba(67,97,238,.3) !important;
+}
+.btnp:hover { box-shadow: 0 4px 16px rgba(67,97,238,.4) !important; filter: brightness(1.06); }
+.btnd { background: var(--red-bg) !important; border-color: var(--red-bd) !important; color: var(--rd) !important; box-shadow: none !important; }
+.btnd:hover { background: #fee2e2 !important; }
+.btns { padding: 5px 10px !important; font-size: 11px !important; }
+.btng { background: transparent !important; border-color: transparent !important; color: var(--tx2) !important; box-shadow: none !important; }
+
+/* ── API BAR ─────────────────────────────────────────────────── */
+.apibar {
+  background: var(--gold-bg); border-bottom: 1px solid var(--gold-bd);
+  padding: 8px 24px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+}
+.apibar label { font-size: 11px; color: var(--gd); font-weight: 600; white-space: nowrap; }
+.apibar input {
+  flex: 1; min-width: 180px; max-width: 300px;
+  padding: 6px 10px; border: 1px solid var(--gold-bd); border-radius: 7px;
+  background: #fff; color: var(--tx); font-size: 12px; font-family: 'JetBrains Mono', monospace;
+}
+.apibar input:focus { outline: none; border-color: var(--gd); box-shadow: 0 0 0 3px rgba(229,140,0,.12); }
+.apibar a { font-size: 11px; color: var(--bl); text-decoration: none; }
+.apibar a:hover { text-decoration: underline; }
+.anote { font-size: 10px; color: var(--tx3); }
+
+/* ── SYNC BAR ────────────────────────────────────────────────── */
+.syncbar {
+  background: var(--pu-bg); border-bottom: 1px solid var(--pu-bd);
+  padding: 8px 24px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+}
+.syncbar label { font-size: 11px; color: var(--pu); font-weight: 600; white-space: nowrap; }
+.syncbar input {
+  flex: 1; min-width: 160px; max-width: 280px;
+  padding: 6px 10px; border: 1px solid var(--pu-bd); border-radius: 7px;
+  background: #fff; color: var(--tx); font-size: 12px; font-family: 'JetBrains Mono', monospace;
+}
+.syncbar input:focus { outline: none; border-color: var(--pu); box-shadow: 0 0 0 3px rgba(124,58,237,.12); }
+.syncbar a { font-size: 11px; color: var(--bl); text-decoration: none; }
+.sync-status { font-size: 11px; font-weight: 500; white-space: nowrap; }
+.sync-status.ok  { color: var(--gr); }
+.sync-status.err { color: var(--rd); }
+.sync-status.ld  { color: var(--gd); }
+
+/* ── TABS ────────────────────────────────────────────────────── */
+.tabw { padding: 0 24px; border-bottom: 1px solid var(--bd); background: #fff; }
+.tabs { display: flex; overflow-x: auto; }
+.tab {
+  padding: 14px 18px; cursor: pointer; font-size: 12px; font-weight: 500;
+  color: var(--tx3); border-bottom: 2px solid transparent;
+  white-space: nowrap; transition: all .2s; user-select: none;
+}
+.tab:hover { color: var(--tx2); }
+.tab.on { color: var(--bl); border-bottom-color: var(--bl); }
+
+/* ── CONTENT ─────────────────────────────────────────────────── */
+.content { padding: 24px; }
+.pnl { display: none; }
+.pnl.on { display: block; }
+
+/* ── METRIC CARDS ────────────────────────────────────────────── */
+.mgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(155px, 1fr)); gap: 14px; margin-bottom: 24px; }
+.mc {
+  background: #fff; border: 1px solid var(--bd); border-radius: var(--r);
+  padding: 18px 20px; position: relative; overflow: hidden;
+  transition: all .2s; box-shadow: var(--shadow-sm);
+}
+.mc:hover { box-shadow: var(--shadow); transform: translateY(-1px); }
+.mc::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  border-radius: var(--r) var(--r) 0 0;
+}
+.mc.up::before  { background: linear-gradient(90deg, var(--gr), transparent); }
+.mc.dn::before  { background: linear-gradient(90deg, var(--rd), transparent); }
+.mc.nt::before  { background: linear-gradient(90deg, var(--bl), transparent); }
+.mlb { font-size: 10px; font-weight: 600; color: var(--tx3); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 8px; }
+.mv  { font-size: 24px; font-weight: 700; letter-spacing: -1px; line-height: 1; margin-bottom: 5px; }
+.ms  { font-size: 11px; font-weight: 500; }
+.pos { color: var(--gr); } .neg { color: var(--rd); } .neu { color: var(--tx); }
+
+/* ── CHART CARD ──────────────────────────────────────────────── */
+.cc {
+  background: #fff; border: 1px solid var(--bd); border-radius: var(--r);
+  padding: 20px 22px; margin-bottom: 22px; box-shadow: var(--shadow-sm);
+}
+.chdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; flex-wrap: wrap; gap: 10px; }
+.ctit { font-size: 14px; font-weight: 600; color: var(--tx); }
+.csub { font-size: 11px; color: var(--tx3); margin-top: 2px; }
+.tfbs { display: flex; gap: 2px; background: var(--bg3); padding: 3px; border-radius: 8px; border: 1px solid var(--bd); }
+.tfb {
+  padding: 4px 12px; font-size: 11px; font-weight: 500; border: none;
+  border-radius: 6px; cursor: pointer; background: transparent;
+  color: var(--tx3); font-family: 'Inter', sans-serif; transition: all .15s;
+}
+.tfb.on { background: #fff; color: var(--bl); box-shadow: var(--shadow-sm); font-weight: 600; }
+.cw { position: relative; height: 230px; }
+.cleg { display: flex; gap: 16px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--bd); }
+.cli { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--tx2); }
+.clln { width: 16px; height: 2px; border-radius: 1px; }
+
+/* ── TABLE CARD ──────────────────────────────────────────────── */
+.tc { background: #fff; border: 1px solid var(--bd); border-radius: var(--r); overflow: hidden; margin-bottom: 22px; box-shadow: var(--shadow-sm); }
+.thdr { padding: 14px 18px; border-bottom: 1px solid var(--bd); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+.ttit { font-size: 14px; font-weight: 600; color: var(--tx); }
+.scx { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 12px; }
+th {
+  font-size: 10px; font-weight: 600; color: var(--tx3); text-align: left;
+  padding: 10px 14px; border-bottom: 1px solid var(--bd);
+  text-transform: uppercase; letter-spacing: .06em; white-space: nowrap;
+  cursor: pointer; user-select: none; transition: color .15s;
+  background: var(--bg3);
+}
+th:hover { color: var(--tx2); }
+.tha { color: var(--bl) !important; }
+td { padding: 10px 14px; border-bottom: 1px solid var(--bd); white-space: nowrap; vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+tbody tr { transition: background .1s; }
+tbody tr:hover td { background: var(--blue-bg); }
+.mn { font-family: 'JetBrains Mono', monospace; font-size: 11.5px; }
+.fw { font-weight: 600; }
+.bdg { display: inline-flex; align-items: center; gap: 3px; font-size: 9px; font-weight: 700; padding: 2px 8px; border-radius: 10px; letter-spacing: .04em; }
+.bdb { background: var(--green-bg); color: var(--gr); border: 1px solid var(--green-bd); }
+.bds { background: var(--red-bg); color: var(--rd); border: 1px solid var(--red-bd); }
+.fxt { font-size: 9px; padding: 1px 5px; border-radius: 5px; background: var(--blue-bg); color: var(--bl); border: 1px solid var(--blue-bd); margin-left: 3px; }
+.nmc { max-width: 180px; overflow: hidden; text-overflow: ellipsis; color: var(--tx2); }
+.chip { display: inline-flex; align-items: center; gap: 2px; padding: 2px 8px; border-radius: 6px; font-size: 10px; font-weight: 600; }
+.cup { background: var(--green-bg); color: var(--gr); }
+.cdn { background: var(--red-bg); color: var(--rd); }
+.tav { display: inline-flex; align-items: center; justify-content: center; border-radius: 7px; font-size: 9px; font-weight: 700; flex-shrink: 0; }
+
+/* ── THEME GRID ──────────────────────────────────────────────── */
+.tgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px; margin-bottom: 22px; }
+.tkc {
+  background: #fff; border: 1px solid var(--bd); border-radius: var(--r);
+  padding: 16px 18px; transition: all .2s; position: relative; overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+.tkc:hover { box-shadow: var(--shadow); transform: translateY(-2px); border-color: var(--bd2); }
+.tka { position: absolute; top: 0; left: 0; bottom: 0; width: 4px; border-radius: var(--r) 0 0 var(--r); }
+.tkh { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 8px; }
+.tkn { font-size: 12px; font-weight: 600; margin-bottom: 2px; color: var(--tx); }
+.tks { font-size: 10px; color: var(--tx3); }
+.tka2 { font-size: 11px; font-weight: 700; }
+.tkv { font-size: 20px; font-weight: 700; letter-spacing: -.8px; margin: 6px 0 5px; }
+.tkp { display: flex; gap: 10px; font-size: 11px; font-weight: 500; margin-bottom: 10px; flex-wrap: wrap; }
+.tkb { height: 4px; background: var(--bg4); border-radius: 2px; overflow: hidden; }
+.tkf { height: 100%; border-radius: 2px; transition: width .5s cubic-bezier(.4,0,.2,1); }
+
+/* ── MANAGE ──────────────────────────────────────────────────── */
+.mcard { background: #fff; border: 1px solid var(--bd); border-radius: var(--r); padding: 20px 22px; margin-bottom: 16px; box-shadow: var(--shadow-sm); }
+.mttl { font-size: 10px; font-weight: 700; color: var(--tx3); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+.mttl::after { content: ''; flex: 1; height: 1px; background: var(--bd); }
+.ttags { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 14px; }
+.ttag {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 11px; border: 1px solid var(--bd2); border-radius: 20px;
+  font-size: 11px; font-weight: 500; color: var(--tx2); background: var(--bg3);
+}
+.ttag button { background: none; border: none; cursor: pointer; color: var(--tx3); font-size: 13px; line-height: 1; padding: 0; transition: color .15s; }
+.ttag button:hover { color: var(--rd); }
+.arow { display: flex; gap: 7px; }
+.fg  { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+.fg3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+.fld { display: flex; flex-direction: column; gap: 5px; }
+.fld label { font-size: 10px; font-weight: 600; color: var(--tx3); text-transform: uppercase; letter-spacing: .06em; }
+input, select {
+  background: #fff; border: 1px solid var(--bd2); border-radius: var(--rs);
+  padding: 8px 11px; color: var(--tx); font-size: 13px;
+  font-family: 'Inter', sans-serif; width: 100%; transition: all .15s;
+}
+input::placeholder { color: var(--tx3); }
+input:focus, select:focus { outline: none; border-color: var(--bl); box-shadow: 0 0 0 3px rgba(67,97,238,.1); }
+select option { background: #fff; }
+
+/* Alerts */
+.alt { padding: 10px 13px; border-radius: var(--rs); font-size: 12px; font-weight: 500; margin-bottom: 14px; display: none; align-items: center; gap: 6px; }
+.alt.ok { background: var(--green-bg); border: 1px solid var(--green-bd); color: var(--gr); display: flex; }
+.alt.er { background: var(--red-bg);   border: 1px solid var(--red-bd);   color: var(--rd); display: flex; }
+
+.txscr { max-height: 340px; overflow-y: auto; }
+.emp { text-align: center; padding: 36px; color: var(--tx3); font-size: 12px; }
+
+/* Selection bar */
+.sel-bar-el {
+  display: none; align-items: center; gap: 10px;
+  padding: 10px 14px; background: var(--blue-bg); border: 1px solid var(--blue-bd);
+  border-radius: var(--rs); margin-bottom: 12px; flex-wrap: wrap;
+}
+
+/* ── LOG ─────────────────────────────────────────────────────── */
+.lge { font-family: 'JetBrains Mono', monospace; font-size: 11px; padding: 6px 10px; border-radius: 6px; margin-bottom: 3px; display: flex; align-items: flex-start; gap: 8px; }
+.lge.info  { background: var(--blue-bg); color: var(--tx2); }
+.lge.warn  { background: var(--gold-bg); color: var(--gd); }
+.lge.error { background: var(--red-bg); color: var(--rd); }
+.lge.ok    { background: var(--green-bg); color: var(--gr); }
+.lgt { color: var(--tx3); flex-shrink: 0; font-size: 10px; margin-top: 1px; }
+.lgscr { max-height: 400px; overflow-y: auto; padding: 3px; }
+
+@media(max-width:900px) {
+  .content { padding: 14px; }
+  header, .tabw, .apibar, .syncbar { padding-left: 14px; padding-right: 14px; }
+  .fg, .fg3 { grid-template-columns: 1fr; }
+  .mgrid { grid-template-columns: repeat(2, 1fr); }
+  .tgrid { grid-template-columns: 1fr; }
+  .twoCol { grid-template-columns: 1fr !important; }
+}
+</style>
+</head>
+<body>
+<div style="max-width:1600px;margin:0 auto">
+
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    <div class="lmark">P</div>
+    <div class="ltext">Stock <span>Portfolio</span> <span style="font-size:10px;color:var(--tx3);font-weight:400;margin-left:2px">v1.4</span></div>
+  </div>
+  <div class="hright">
+    <div class="spill"><div class="dot" id="sdot"></div><span id="smsg">Ready</span></div>
+    <div class="pbw" id="pbw"><div class="pbf" id="pbf"></div></div>
+    <button class="btn btnp" id="rbtn" onclick="doRefresh()">&#8635; Refresh Prices</button>
+  </div>
+</header>
+
+<!-- Finnhub API Bar -->
+<div class="apibar">
+  <label>&#9889; Finnhub API Key</label>
+  <input id="akey" type="password" placeholder="Paste your Finnhub key…" oninput="saveSettings()"/>
+  <button class="btn btns" onclick="doTestKey()">Test Key</button>
+  <a href="https://finnhub.io/register" target="_blank">Get free key &#8599;</a>
+  <span class="anote">Free &#183; 60 req/min &#183; Parallel loading</span>
+</div>
+
+<!-- Supabase Sync Bar -->
+<div class="syncbar">
+  <label>&#9729; Auto-Sync</label>
+  <input id="sb-url" type="text" placeholder="Supabase Project URL…" oninput="saveSettings()"/>
+  <input id="sb-key" type="password" placeholder="Supabase Anon Key (eyJ…)" oninput="saveSettings()" style="max-width:240px"/>
+  <button class="btn btns" onclick="doConnect()" style="border-color:var(--pu-bd);color:var(--pu)">Connect</button>
+  <span id="sync-st" class="sync-status"></span>
+  <a href="https://supabase.com" target="_blank" style="font-size:11px;color:var(--bl)">Setup guide &#8599;</a>
+  <button class="btn btng btns" onclick="document.getElementById('syncbar').style.display='none'">&#10005;</button>
+</div>
+
+<!-- TABS -->
+<div class="tabw">
+  <div class="tabs">
+    <div class="tab on"  onclick="goTab(this,'dashboard')">Dashboard</div>
+    <div class="tab" onclick="goTab(this,'stocks')">By Stock</div>
+    <div class="tab" onclick="goTab(this,'themes')">By Theme</div>
+    <div class="tab" onclick="goTab(this,'manage')">Manage</div>
+    <div class="tab" onclick="goTab(this,'log')">Error Log <span id="lbdg" style="color:var(--rd)"></span></div>
+    <div class="tab" onclick="goTab(this,'history')">Snapshots</div>
+  </div>
+</div>
+
+<div class="content">
+
+<!-- DASHBOARD -->
+<div id="pnl-dashboard" class="pnl on">
+
+  <!-- Metric Cards -->
+  <div class="mgrid" id="mgrid"></div>
+
+  <!-- 1. Portfolio Performance Chart -->
+  <div class="cc">
+    <div class="chdr">
+      <div><div class="ctit">Portfolio Performance</div><div class="csub">Total value vs cost basis &#183; Real historical data</div></div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <div class="tfbs" id="port-tfs">
+          <button class="tfb" onclick="setDTf('1M',this)">1M</button>
+          <button class="tfb" onclick="setDTf('3M',this)">3M</button>
+          <button class="tfb on" onclick="setDTf('YTD',this)">YTD</button>
+          <button class="tfb" onclick="setDTf('1Y',this)">1Y</button>
+          <button class="tfb" onclick="setDTf('ALL',this)">All</button>
+        </div>
+      </div>
+    </div>
+    <div class="cw" style="height:240px"><canvas id="dPortChart"></canvas></div>
+    <div class="cleg">
+      <div class="cli"><div class="clln" style="background:var(--bl)"></div>Portfolio Value</div>
+      <div class="cli"><div class="clln" style="background:var(--tx3)"></div>Cost Basis</div>
+      <div class="cli"><div class="clln" style="background:var(--gr)"></div>Total P&amp;L</div>
+    </div>
+  </div>
+
+  <!-- 2. Theme + Stock Performance side by side -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:0" class="twoCol">
+
+    <!-- 2a. Performance by Theme -->
+    <div class="cc" style="margin-bottom:0">
+      <div class="chdr">
+        <div><div class="ctit">Performance by Theme</div><div class="csub">USD value over time from snapshots</div></div>
+      </div>
+      <div class="cw" style="height:210px"><canvas id="dThemeChart"></canvas></div>
+      <div id="dThemeLeg" style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px"></div>
+    </div>
+
+    <!-- 2b. Performance by Stock -->
+    <div class="cc" style="margin-bottom:0">
+      <div class="chdr">
+        <div><div class="ctit">Performance by Stock</div><div class="csub">Select a stock to view history</div></div>
+        <select id="dStockSel" onchange="renderDStockChart()" style="width:160px;padding:5px 8px;font-size:11px">
+          <option value="">-- Select stock --</option>
+        </select>
+      </div>
+      <div class="cw" style="height:210px"><canvas id="dStockChart"></canvas></div>
+    </div>
+
+  </div>
+
+  <!-- 3. Performance by Theme -> Individual Stocks -->
+  <div class="cc">
+    <div class="chdr">
+      <div><div class="ctit">Stocks within Theme</div><div class="csub">Select a theme to compare individual stock performance</div></div>
+      <select id="dThemeStockSel" onchange="renderDThemeStocksChart()" style="width:180px;padding:5px 8px;font-size:11px">
+        <option value="">-- Select theme --</option>
+      </select>
+    </div>
+    <div class="cw" style="height:210px"><canvas id="dThemeStocksChart"></canvas></div>
+  </div>
+
+  <!-- 4. Top Performers -->
+  <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px" class="twoCol">
+
+    <!-- 4a. Top 10 stocks -->
+    <div class="cc" style="margin-bottom:0">
+      <div class="chdr">
+        <div><div class="ctit">Top 10 Performing Stocks</div><div class="csub">% change in portfolio value for the selected period</div></div>
+        <div class="tfbs">
+          <button class="tfb on" onclick="setTopTf('1W',this)">1W</button>
+          <button class="tfb" onclick="setTopTf('1M',this)">1M</button>
+          <button class="tfb" onclick="setTopTf('3M',this)">3M</button>
+        </div>
+      </div>
+      <div id="dTopStocks" style="min-height:180px"></div>
+    </div>
+
+    <!-- 4b. Top 3 themes -->
+    <div class="cc" style="margin-bottom:0">
+      <div class="chdr">
+        <div><div class="ctit">Top Themes</div><div class="csub">% change for period</div></div>
+      </div>
+      <div id="dTopThemes" style="min-height:180px"></div>
+    </div>
+
+  </div>
+
+  <!-- Recent Transactions -->
+  <div class="tc" style="margin-top:16px">
+    <div class="thdr"><div class="ttit">Recent Transactions</div><span id="rts" style="font-size:11px;color:var(--tx3)"></span></div>
+    <div class="scx"><table><thead><tr><th>Date</th><th>Type</th><th>Ticker</th><th>Name</th><th>Theme</th><th>Shares</th><th>Price</th><th>Ccy</th><th>USD Value</th></tr></thead><tbody id="rtbody"></tbody></table></div>
+  </div>
+
+</div>
+
+<div id="pnl-stocks" class="pnl">
+  <div class="tc">
+    <div class="thdr">
+      <div class="ttit">Open Positions <span id="livebdg" style="font-size:11px;color:var(--gr);font-weight:400"></span></div>
+      <input id="ssearch" placeholder="&#128269; Filter ticker or name…" style="width:200px;padding:6px 10px;font-size:12px" oninput="doRStocks()"/>
+    </div>
+    <div class="scx"><table>
+      <thead><tr>
+        <th style="width:24px"></th>
+        <th onclick="doSort('ticker')">Ticker <span id="sa-ticker">&#8597;</span></th>
+        <th>Name</th>
+        <th onclick="doSort('theme')">Theme <span id="sa-theme">&#8597;</span></th>
+        <th>Ccy</th>
+        <th onclick="doSort('shares')">Shares <span id="sa-shares">&#8597;</span></th>
+        <th onclick="doSort('avgCostUSD')">Avg Cost <span id="sa-avgCostUSD">&#8597;</span></th>
+        <th>Price (native)</th>
+        <th onclick="doSort('currentUSD')">Price USD <span id="sa-currentUSD">&#8597;</span></th>
+        <th onclick="doSort('marketValueUSD')">Mkt Value <span id="sa-marketValueUSD">&#8595;</span></th>
+        <th onclick="doSort('unrealPnlUSD')">Unreal P&amp;L <span id="sa-unrealPnlUSD">&#8597;</span></th>
+        <th onclick="doSort('unrealPct')">Unreal % <span id="sa-unrealPct">&#8597;</span></th>
+        <th onclick="doSort('realPnlUSD')">Real P&amp;L <span id="sa-realPnlUSD">&#8597;</span></th>
+      </tr></thead>
+      <tbody id="stbody"></tbody>
+    </table></div>
+  </div>
+</div>
+
+<!-- BY THEME -->
+<div id="pnl-themes" class="pnl">
+  <div class="tgrid" id="tgrid"></div>
+  <div class="cc">
+    <div class="chdr"><div><div class="ctit">Allocation by Theme</div><div class="csub">Portfolio weight per theme</div></div></div>
+    <div class="cw" style="height:270px"><canvas id="ach"></canvas></div>
+  </div>
+</div>
+
+<!-- MANAGE -->
+<div id="pnl-manage" class="pnl">
+  <div id="altmsg" class="alt"></div>
+  <div class="mcard">
+    <div class="mttl">Themes</div>
+    <div class="ttags" id="ttags"></div>
+    <div class="arow"><input id="ntinp" placeholder="New theme name…" style="max-width:220px"/><button class="btn btns" onclick="doAddTheme()">+ Add</button></div>
+  </div>
+  <div class="mcard">
+    <div class="mttl">Add Transaction</div>
+    <div class="fg">
+      <div class="fld"><label>Type</label><select id="txtype"><option value="buy">Buy</option><option value="sell">Sell</option></select></div>
+      <div class="fld"><label>Date</label><input type="date" id="txdate"/></div>
+    </div>
+    <div class="fg">
+      <div class="fld"><label>Ticker (Finnhub format)</label><input id="txticker" placeholder="e.g. GLD, ASX:BOE, HKEX:1088"/></div>
+      <div class="fld"><label>Theme</label><select id="txtheme"></select></div>
+    </div>
+    <div class="fg3">
+      <div class="fld"><label>Shares</label><input type="number" id="txshares" placeholder="0" min="0" step="any"/></div>
+      <div class="fld"><label>Price per Share</label><input type="number" id="txprice" placeholder="0.00" min="0" step="any"/></div>
+      <div class="fld"><label>Currency</label><select id="txccy"><option value="USD">USD</option><option value="EUR">EUR</option><option value="GBP">GBP</option><option value="AUD">AUD</option><option value="CAD">CAD</option><option value="HKD">HKD</option><option value="SGD">SGD</option><option value="NOK">NOK</option><option value="JPY">JPY</option><option value="BRL">BRL</option><option value="CNY">CNY</option><option value="IDR">IDR</option></select></div>
+    </div>
+    <div class="fld" style="margin-bottom:14px"><label>Full Name (optional)</label><input id="txname" placeholder="e.g. SPDR Gold Trust"/></div>
+    <button class="btn btnp" onclick="doAddTx()">+ Add Transaction</button>
+  </div>
+  <div class="mcard">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:14px">
+      <div class="mttl" style="margin-bottom:0;flex:1">All Transactions (<span id="txcount">0</span>)</div>
+      <input id="msearch" placeholder="&#128269; Search ticker, name or theme…" style="width:210px;padding:6px 10px;font-size:12px" oninput="doRManage()"/>
+      <button class="btn btns" onclick="doExportCSV()" title="Export all transactions to CSV">&#8681; Export CSV</button>
+      <button class="btn btns" onclick="document.getElementById('importFile').click()" title="Import transactions from CSV">&#8679; Import CSV</button>
+      <input type="file" id="importFile" accept=".csv" style="display:none" onchange="doImportCSV(this)"/>
+    </div>
+    <!-- Selection bar -->
+    <div class="sel-bar-el" id="sel-bar">
+      <span id="sel-count" style="font-size:12px;font-weight:600;color:var(--bl)">0 selected</span>
+      <button class="btn btns btnd" onclick="doDeleteSelected()">&#128465; Delete Selected</button>
+      <button class="btn btns btng" onclick="doClearSelection()">&#10005; Deselect All</button>
+    </div>
+    <div class="txscr scx">
+      <table><thead><tr>
+        <th style="width:38px;text-align:center"><input type="checkbox" id="chk-all" onclick="doToggleAll(this)" title="Select all" style="width:14px;height:14px;cursor:pointer;accent-color:var(--bl)"/></th>
+        <th>Date</th><th>Type</th><th>Ticker</th><th>Name</th><th>Theme</th><th>Shares</th><th>Price</th><th>Ccy</th><th>USD Val</th><th style="width:72px"></th>
+      </tr></thead>
+      <tbody id="atbody"></tbody></table>
+    </div>
+  </div>
+</div>
+
+<!-- ERROR LOG -->
+<div id="pnl-log" class="pnl">
+  <div class="mcard">
+    <div class="mttl" style="justify-content:space-between"><span>Refresh Log</span><button class="btn btns btng" onclick="doClearLog()" style="margin-left:auto">Clear</button></div>
+    <div class="lgscr" id="lgcon"><div class="emp">No log entries yet. Click Refresh Prices to start.</div></div>
+  </div>
+  <div class="mcard">
+    <div class="mttl">Failed Tickers Guide</div>
+    <div id="fguide" style="font-size:12px;color:var(--tx2);line-height:1.8">After a refresh, failed tickers appear here with fix suggestions.</div>
+  </div>
+</div>
+
+<!-- SNAPSHOTS -->
+<div id="pnl-history" class="pnl">
+  <div class="mcard">
+    <div class="mttl" style="justify-content:space-between">
+      <span>Snapshot Manager (<span id="snap-count">0</span> saved)</span>
+      <div style="display:flex;gap:8px;align-items:center;margin-left:auto;flex-wrap:wrap">
+        <span style="font-size:11px;color:var(--tx3);font-weight:400;text-transform:none;letter-spacing:0">Auto at 08:00 &amp; 15:00 WITA via Cloudflare</span>
+        <button class="btn btns" onclick="doExportSnaps()" title="Export all snapshots as JSON">&#8681; Export</button>
+        <button class="btn btns" onclick="document.getElementById('snapImportFile').click()" title="Import snapshots from JSON or Excel">&#8679; Import</button>
+        <input type="file" id="snapImportFile" accept=".json,.xlsx,.csv" style="display:none" onchange="doImportSnaps(this)"/>
+        <button class="btn btns btnp" onclick="doSnapshot()" id="snap-btn">&#128247; Snapshot Now</button>
+        <button class="btn btns btnd" onclick="doDeleteSelectedSnaps()" id="del-snaps-btn" style="display:none">&#128465; Delete Selected</button>
+      </div>
+    </div>
+    <div id="altmsg2" class="alt"></div>
+    <div style="max-height:500px;overflow-y:auto" id="snap-log"></div>
+  </div>
+</div>
+
+</div><!-- /content -->
+</div><!-- /app -->
+
+<!-- EDIT MODAL -->
+<div id="edit-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.75);z-index:1000;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#0d1120;border:1px solid rgba(255,255,255,.15);border-radius:14px;padding:24px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+      <div style="font-size:15px;font-weight:600">Edit Transaction</div>
+      <button onclick="closeEdit()" style="background:none;border:none;cursor:pointer;color:#8892b0;font-size:20px;line-height:1">&#10005;</button>
+    </div>
+    <input type="hidden" id="edit-id"/>
+    <div class="fg">
+      <div class="fld"><label>Type</label><select id="edit-type"><option value="buy">Buy</option><option value="sell">Sell</option></select></div>
+      <div class="fld"><label>Date</label><input type="date" id="edit-date"/></div>
+    </div>
+    <div class="fg">
+      <div class="fld"><label>Ticker (Finnhub format)</label><input id="edit-ticker" placeholder="e.g. GLD, ASX:BOE, HKEX:1088"/></div>
+      <div class="fld"><label>Theme</label><select id="edit-theme"></select></div>
+    </div>
+    <div class="fg3">
+      <div class="fld"><label>Shares</label><input type="number" id="edit-shares" min="0" step="any"/></div>
+      <div class="fld"><label>Price per Share</label><input type="number" id="edit-price" min="0" step="any"/></div>
+      <div class="fld"><label>Currency</label><select id="edit-ccy"><option value="USD">USD</option><option value="EUR">EUR</option><option value="GBP">GBP</option><option value="AUD">AUD</option><option value="CAD">CAD</option><option value="HKD">HKD</option><option value="SGD">SGD</option><option value="NOK">NOK</option><option value="JPY">JPY</option><option value="BRL">BRL</option><option value="CNY">CNY</option><option value="IDR">IDR</option></select></div>
+    </div>
+    <div class="fld" style="margin-bottom:18px"><label>Full Name</label><input id="edit-name"/></div>
+    <div class="fld" style="margin-bottom:18px">
+      <label>Manual Price Override (native currency) <span style="color:var(--tx3);font-weight:400;text-transform:none">— for stocks Finnhub can't fetch</span></label>
+      <input type="number" id="edit-manual-price" placeholder="Leave blank to use live price" min="0" step="any"/>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btnp" onclick="doSaveEdit()" style="flex:1">&#10003; Save Changes</button>
+      <button class="btn" onclick="closeEdit()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+
+// ============================================================
+// THEME COLORS
+// ============================================================
+var TC = ['#3b82f6','#10b981','#f59e0b','#8b5cf6','#ef4444','#14b8a6','#f97316','#06b6d4','#ec4899','#84cc16','#6366f1','#a3e635','#fb7185','#34d399'];
+
+// ============================================================
+// TICKER -> FINNHUB SYMBOL
+// ============================================================
+function toFH(t) {
+  // Tickers are stored in Finnhub format directly (e.g. BOE.AX, SUBC.OL, 1088.HK)
+  // No conversion needed - return as-is
+  return t;
+}
+
+// ============================================================
+// DEFAULT TRANSACTIONS
+// ============================================================
+var DEFAULT_TX = [
+{id:1,type:'buy',date:'2023-03-29',ticker:'NTR',name:'Nutrien Ltd.',theme:'Agriculture',shares:23.2,price:73.27,currency:'USD'},
+{id:2,type:'buy',date:'2023-03-29',ticker:'MOS',name:'Mosaic Company',theme:'Agriculture',shares:37.67,price:45.13,currency:'USD'},
+{id:3,type:'buy',date:'2023-03-29',ticker:'ICL',name:'ICL Group',theme:'Agriculture',shares:246,price:6.89,currency:'USD'},
+{id:4,type:'buy',date:'2023-03-29',ticker:'SDF.DE',name:'K&S AG',theme:'Agriculture',shares:81,price:19.3,currency:'EUR'},
+{id:5,type:'buy',date:'2023-01-13',ticker:'F34.SI',name:'Wilmar International',theme:'Agriculture',shares:600,price:4.14,currency:'SGD'},
+{id:6,type:'buy',date:'2023-01-13',ticker:'E5H.SI',name:'Golden Agri Resources',theme:'Agriculture',shares:8500,price:0.25,currency:'SGD'},
+{id:7,type:'buy',date:'2023-01-05',ticker:'0297.HK',name:'Sinofert Holdings',theme:'Agriculture',shares:14000,price:0.97,currency:'HKD'},
+{id:8,type:'buy',date:'2024-08-29',ticker:'MHPC.L',name:'MHP SE',theme:'Agriculture',shares:475,price:4.2,currency:'USD'},
+{id:9,type:'buy',date:'2023-03-29',ticker:'FCX',name:'Freeport-McMoRan',theme:'Copper',shares:85.8616,price:39.715,currency:'USD'},
+{id:10,type:'buy',date:'2023-03-29',ticker:'TSXV:SURG',name:'Surge Copper Corp.',theme:'Copper',shares:38500,price:0.12,currency:'CAD'},
+{id:11,type:'buy',date:'2023-01-12',ticker:'RXM.AX',name:'Rex Minerals',theme:'Copper',shares:21866,price:0.225,currency:'AUD'},
+{id:12,type:'buy',date:'2023-01-12',ticker:'ALK.AX',name:'Alkane Resources',theme:'Copper',shares:7291,price:0.675,currency:'AUD'},
+{id:13,type:'buy',date:'2023-01-13',ticker:'NHC.AX',name:'New Hope Corporation',theme:'Coal',shares:447,price:6.23,currency:'AUD'},
+{id:14,type:'buy',date:'2023-01-13',ticker:'WHC.AX',name:'Whitehaven Coal',theme:'Coal',shares:314,price:8.86,currency:'AUD'},
+{id:15,type:'buy',date:'2023-01-13',ticker:'SMR.AX',name:'Stanmore Resources',theme:'Coal',shares:854,price:3.27,currency:'AUD'},
+{id:16,type:'buy',date:'2023-01-05',ticker:'1088.HK',name:'China Shenhua Energy',theme:'Coal',shares:500,price:22.9,currency:'HKD'},
+{id:17,type:'buy',date:'2023-01-05',ticker:'1898.HK',name:'China Coal Energy',theme:'Coal',shares:3000,price:6.24,currency:'HKD'},
+{id:18,type:'buy',date:'2023-04-04',ticker:'GDX',name:'VanEck Gold Miners',theme:'Gold/Silver/Japan',shares:600,price:33.72,currency:'USD'},
+{id:19,type:'buy',date:'2023-04-04',ticker:'GLD',name:'SPDR Gold',theme:'Gold/Silver/Japan',shares:110,price:186.78,currency:'USD'},
+{id:20,type:'buy',date:'2024-08-29',ticker:'SBSW',name:'Sibanye Stillwater',theme:'Gold/Silver/Japan',shares:476,price:4.156,currency:'USD'},
+{id:21,type:'buy',date:'2024-07-21',ticker:'VALT.L',name:'Valterra Platinum',theme:'Gold/Silver/Japan',shares:100,price:38.3,currency:'GBP'},
+{id:22,type:'buy',date:'2023-03-29',ticker:'TDW',name:'Tidewater Inc.',theme:'Offshore Oil',shares:27.7737,price:45.01,currency:'USD'},
+{id:23,type:'buy',date:'2023-12-06',ticker:'SUBC.OL',name:'Subsea 7 SA',theme:'Offshore Oil',shares:50,price:148.05,currency:'NOK'},
+{id:24,type:'buy',date:'2023-03-29',ticker:'FTI',name:'TechnipFMC',theme:'Offshore Oil',shares:60,price:13.36,currency:'USD'},
+{id:25,type:'buy',date:'2023-03-29',ticker:'RIG',name:'Transocean Ltd',theme:'Offshore Oil',shares:120,price:6.62,currency:'USD'},
+{id:26,type:'buy',date:'2023-03-29',ticker:'HLX',name:'Helix Energy Solutions',theme:'Offshore Oil',shares:102.8278,price:7.78,currency:'USD'},
+{id:27,type:'buy',date:'2023-12-13',ticker:'OII',name:'Oceaneering International',theme:'Offshore Oil',shares:40,price:19.18,currency:'USD'},
+{id:28,type:'buy',date:'2023-12-06',ticker:'VK.PA',name:'Vallourec SA',theme:'Offshore Oil',shares:60,price:13.74,currency:'EUR'},
+{id:29,type:'buy',date:'2023-01-05',ticker:'1623.HK',name:'Hilong Holding',theme:'Offshore Oil',shares:20000,price:0.31,currency:'HKD'},
+{id:30,type:'buy',date:'2023-12-14',ticker:'XPRO',name:'Expro Group Holdings',theme:'Offshore Oil',shares:60,price:15.02,currency:'USD'},
+{id:31,type:'buy',date:'2023-12-06',ticker:'M05.SI',name:'MTQ Corporation',theme:'Offshore Oil',shares:3100,price:0.33,currency:'SGD'},
+{id:32,type:'buy',date:'2023-04-04',ticker:'GEOS',name:'Geospace Technologies',theme:'Offshore Oil',shares:80,price:7.88,currency:'USD'},
+{id:33,type:'buy',date:'2023-12-06',ticker:'5LY.SI',name:'Marco Polo Marine',theme:'Offshore Oil',shares:20000,price:0.05,currency:'SGD'},
+{id:34,type:'buy',date:'2023-12-06',ticker:'5E2.SI',name:'Seatrium Limited',theme:'Offshore Oil',shares:9900,price:0.1,currency:'SGD'},
+{id:35,type:'buy',date:'2024-05-16',ticker:'3303.HK',name:'Jutal Offshore Oil Services',theme:'Offshore Oil',shares:10000,price:0.74,currency:'HKD'},
+{id:36,type:'buy',date:'2024-05-27',ticker:'3303.HK',name:'Jutal Offshore Oil Services',theme:'Offshore Oil',shares:10000,price:0.808,currency:'HKD'},
+{id:37,type:'buy',date:'2024-05-27',ticker:'DU4.SI',name:'Mermaid Maritime',theme:'Offshore Oil',shares:7000,price:0.174,currency:'SGD'},
+{id:38,type:'buy',date:'2024-06-06',ticker:'RKH.L',name:'Rockhopper Exploration',theme:'Offshore Oil',shares:7100,price:0.142,currency:'GBP'},
+{id:39,type:'buy',date:'2024-08-29',ticker:'SMHI',name:'Seacor Marine Holdings',theme:'Offshore Oil',shares:86,price:11.58,currency:'USD'},
+{id:40,type:'buy',date:'2024-04-09',ticker:'NE',name:'Noble Corporation PLC',theme:'Offshore Oil',shares:16.212,price:35.19,currency:'USD'},
+{id:41,type:'buy',date:'2024-10-18',ticker:'SBMO.AS',name:'SBM Offshore NV',theme:'Offshore Oil',shares:58,price:17.09,currency:'EUR'},
+{id:42,type:'buy',date:'2025-01-12',ticker:'BORR',name:'Borr Drilling Ltd',theme:'Offshore Oil',shares:764.4634,price:3.275,currency:'USD'},
+{id:43,type:'buy',date:'2025-01-12',ticker:'WFRD',name:'Weatherford International',theme:'Offshore Oil',shares:33,price:74.8,currency:'USD'},
+{id:44,type:'buy',date:'2024-05-17',ticker:'FRO',name:'Frontline PLC',theme:'Shipping',shares:65,price:27.447,currency:'USD'},
+{id:45,type:'buy',date:'2023-12-15',ticker:'STNG',name:'Scorpio Tankers',theme:'Shipping',shares:33,price:56.51,currency:'USD'},
+{id:46,type:'buy',date:'2023-12-15',ticker:'ASC',name:'Ardmore Shipping',theme:'Shipping',shares:135,price:13.75,currency:'USD'},
+{id:47,type:'buy',date:'2023-12-15',ticker:'TNK',name:'Teekay Tankers',theme:'Shipping',shares:40,price:47.82,currency:'USD'},
+{id:48,type:'buy',date:'2023-12-15',ticker:'DHT',name:'DHT Holdings',theme:'Shipping',shares:194,price:9.51,currency:'USD'},
+{id:49,type:'buy',date:'2024-05-17',ticker:'SBLK',name:'Star Bulk Carriers',theme:'Shipping',shares:70,price:25.858,currency:'USD'},
+{id:50,type:'buy',date:'2024-05-17',ticker:'INSW',name:'International Seaways',theme:'Shipping',shares:29,price:63.67,currency:'USD'},
+{id:51,type:'buy',date:'2024-05-17',ticker:'TEN',name:'Tsakos Energy Navigation',theme:'Shipping',shares:60,price:29.89,currency:'USD'},
+{id:52,type:'buy',date:'2024-05-17',ticker:'2343.HK',name:'Pacific Basin Shipping',theme:'Shipping',shares:5000,price:2.79,currency:'HKD'},
+{id:53,type:'buy',date:'2023-01-12',ticker:'BMN.AX',name:'Bannerman Energy',theme:'Uranium',shares:1419,price:1.98,currency:'AUD'},
+{id:54,type:'buy',date:'2023-04-04',ticker:'URNM',name:'Sprott Uranium Miners',theme:'Uranium',shares:90,price:30.75,currency:'USD'},
+{id:55,type:'buy',date:'2023-12-15',ticker:'URNM',name:'Sprott Uranium Miners',theme:'Uranium',shares:100,price:48.64,currency:'USD'},
+{id:56,type:'buy',date:'2023-12-14',ticker:'BMA',name:'Banco Macro SA',theme:'Argentina',shares:79,price:28.21,currency:'USD'},
+{id:57,type:'buy',date:'2023-12-15',ticker:'CRESY',name:'Cresud Inc.',theme:'Argentina',shares:228,price:9.84,currency:'USD'},
+{id:58,type:'buy',date:'2023-12-14',ticker:'CEPU',name:'Central Puerto SA',theme:'Argentina',shares:239,price:9.4,currency:'USD'},
+{id:59,type:'buy',date:'2023-12-14',ticker:'PAM',name:'Pampa Energia SA',theme:'Argentina',shares:45,price:48.4,currency:'USD'},
+{id:60,type:'buy',date:'2023-12-15',ticker:'LOMA',name:'Loma Negra',theme:'Argentina',shares:327,price:6.85,currency:'USD'},
+{id:61,type:'buy',date:'2023-12-14',ticker:'YPF',name:'YPF SA',theme:'Argentina',shares:127.1187,price:17.7,currency:'USD'},
+{id:62,type:'buy',date:'2024-05-24',ticker:'GREK',name:'Global X MSCI Greece ETF',theme:'Greece',shares:235,price:42.385,currency:'USD'},
+{id:63,type:'buy',date:'2024-05-31',ticker:'AR',name:'Antero Resources',theme:'Natural Gas',shares:93,price:35.29,currency:'USD'},
+{id:64,type:'buy',date:'2024-05-31',ticker:'EXE',name:'Expand Energy Corp',theme:'Natural Gas',shares:39.015,price:85.993,currency:'USD'},
+{id:65,type:'buy',date:'2024-05-31',ticker:'RRC',name:'Range Resources',theme:'Natural Gas',shares:90,price:36.85,currency:'USD'},
+{id:66,type:'buy',date:'2024-05-31',ticker:'EQT',name:'EQT Corporation',theme:'Natural Gas',shares:80,price:41.32,currency:'USD'},
+{id:67,type:'buy',date:'2024-05-31',ticker:'CNX',name:'CNX Resources',theme:'Natural Gas',shares:128,price:25.95,currency:'USD'},
+{id:68,type:'buy',date:'2025-03-13',ticker:'KWEB',name:'KraneShares China Internet',theme:'China',shares:279.642,price:35.76,currency:'USD'},
+{id:69,type:'buy',date:'2023-01-12',ticker:'BOE.AX',name:'Boss Energy',theme:'Uranium',shares:1227,price:2.29,currency:'AUD'},
+{id:70,type:'buy',date:'2023-01-12',ticker:'PDN.AX',name:'Paladin Energy',theme:'Uranium',shares:3673,price:0.765,currency:'AUD'},
+{id:71,type:'buy',date:'2023-01-12',ticker:'DYL.AX',name:'Deep Yellow Limited',theme:'Uranium',shares:3721,price:0.755,currency:'AUD'},
+{id:72,type:'buy',date:'2023-01-12',ticker:'AFM.V',name:'Alphamin Resources',theme:'Old Themes',shares:1829,price:0.842,currency:'CAD'},
+{id:73,type:'buy',date:'2023-01-05',ticker:'AXN.AX',name:'Alliance Nickel',theme:'Old Themes',shares:18500,price:0.092,currency:'AUD'},
+{id:74,type:'buy',date:'2023-01-12',ticker:'ARL.AX',name:'Ardea Resources',theme:'Old Themes',shares:2002,price:0.814,currency:'AUD'},
+{id:75,type:'buy',date:'2023-01-12',ticker:'COB.AX',name:'Cobalt Blue Holdings',theme:'Old Themes',shares:2552,price:0.645,currency:'AUD'},
+{id:76,type:'buy',date:'2023-01-12',ticker:'JRV.AX',name:'Jervois Global',theme:'Old Themes',shares:5064,price:0.324,currency:'AUD'},
+{id:77,type:'buy',date:'2023-03-29',ticker:'ELBM.V',name:'Electra Battery Materials',theme:'Old Themes',shares:595,price:2.59,currency:'CAD'},
+{id:78,type:'buy',date:'2023-01-12',ticker:'AVL.AX',name:'Australian Vanadium',theme:'Old Themes',shares:54666,price:0.03,currency:'AUD'},
+{id:79,type:'buy',date:'2023-03-29',ticker:'LGO.TO',name:'Largo Inc.',theme:'Old Themes',shares:223,price:6.9,currency:'CAD'},
+{id:80,type:'buy',date:'2023-01-13',ticker:'KRR.AX',name:'King River Resources',theme:'Old Themes',shares:138808,price:0.0117,currency:'AUD'},
+{id:81,type:'buy',date:'2023-01-12',ticker:'POS.AX',name:'Poseidon Nickel',theme:'Old Themes',shares:41000,price:0.04,currency:'AUD'},
+{id:82,type:'buy',date:'2023-01-12',ticker:'PAN.AX',name:'Panoramic Resources',theme:'Old Themes',shares:8200,price:0.2,currency:'AUD'},
+{id:83,type:'buy',date:'2023-01-13',ticker:'ARU.AX',name:'Arafura Rare Earths',theme:'Old Themes',shares:6209,price:0.525,currency:'AUD'},
+{id:84,type:'buy',date:'2023-01-12',ticker:'SRL.AX',name:'Sunrise Energy Metals',theme:'Old Themes',shares:1512,price:2.168,currency:'AUD'},
+{id:85,type:'sell',date:'2024-01-10',ticker:'BOE.AX',name:'Boss Energy',theme:'Uranium',shares:1227,price:2.38,currency:'AUD'},
+{id:86,type:'sell',date:'2024-01-10',ticker:'PDN.AX',name:'Paladin Energy',theme:'Uranium',shares:3673,price:0.62,currency:'AUD'},
+{id:87,type:'sell',date:'2024-01-10',ticker:'DYL.AX',name:'Deep Yellow Limited',theme:'Uranium',shares:3721,price:0.545,currency:'AUD'},
+{id:88,type:'sell',date:'2024-01-10',ticker:'NOV',name:'NOV Inc.',theme:'Offshore Oil',shares:50,price:20.21,currency:'USD'},
+{id:89,type:'sell',date:'2024-01-10',ticker:'AFM.V',name:'Alphamin Resources',theme:'Old Themes',shares:1829,price:0.83,currency:'CAD'},
+{id:90,type:'sell',date:'2024-01-10',ticker:'AXN.AX',name:'Alliance Nickel',theme:'Old Themes',shares:18500,price:0.037,currency:'AUD'},
+{id:91,type:'sell',date:'2024-01-10',ticker:'ARL.AX',name:'Ardea Resources',theme:'Old Themes',shares:2002,price:0.45,currency:'AUD'},
+{id:92,type:'sell',date:'2024-01-10',ticker:'COB.AX',name:'Cobalt Blue Holdings',theme:'Old Themes',shares:2552,price:0.23,currency:'AUD'},
+{id:93,type:'sell',date:'2024-01-10',ticker:'JRV.AX',name:'Jervois Global',theme:'Old Themes',shares:5064,price:0.043,currency:'AUD'},
+{id:94,type:'sell',date:'2024-01-10',ticker:'AVL.AX',name:'Australian Vanadium',theme:'Old Themes',shares:54666,price:0.02,currency:'AUD'},
+{id:95,type:'sell',date:'2024-01-10',ticker:'KRR.AX',name:'King River Resources',theme:'Old Themes',shares:138808,price:0.012,currency:'AUD'},
+{id:96,type:'sell',date:'2024-01-10',ticker:'POS.AX',name:'Poseidon Nickel',theme:'Old Themes',shares:41000,price:0.014,currency:'AUD'},
+{id:97,type:'sell',date:'2024-01-10',ticker:'ARU.AX',name:'Arafura Rare Earths',theme:'Old Themes',shares:6209,price:0.155,currency:'AUD'},
+{id:98,type:'sell',date:'2024-01-10',ticker:'SRL.AX',name:'Sunrise Energy Metals',theme:'Old Themes',shares:1512,price:0.45,currency:'AUD'},
+{id:99,type:'sell',date:'2024-05-24',ticker:'RES',name:'RPC Inc.',theme:'Offshore Oil',shares:100,price:6.721,currency:'USD'},
+{id:100,type:'sell',date:'2024-05-24',ticker:'OIS',name:'Oil States International',theme:'Offshore Oil',shares:94,price:4.5,currency:'USD'},
+{id:101,type:'sell',date:'2024-08-30',ticker:'RXM.AX',name:'Rex Minerals',theme:'Copper',shares:21866,price:0.45,currency:'AUD'},
+{id:102,type:'sell',date:'2024-04-09',ticker:'DO',name:'Diamond Offshore Drilling',theme:'Offshore Oil',shares:70,price:14.34,currency:'USD'},
+{id:103,type:'sell',date:'2024-10-26',ticker:'SGX:NO4',name:'Dyna-Mac Holdings',theme:'Offshore Oil',shares:4000,price:0.67,currency:'SGD'},
+{id:104,type:'sell',date:'2025-03-13',ticker:'TSXV:SURG',name:'Surge Copper Corp.',theme:'Copper',shares:38500,price:0.1,currency:'CAD'},
+{id:105,type:'sell',date:'2025-03-13',ticker:'FCX',name:'Freeport-McMoRan',theme:'Copper',shares:85.86,price:36.64,currency:'USD'},
+{id:106,type:'sell',date:'2025-01-12',ticker:'GIFI',name:'Gulf Island Fabrication',theme:'Offshore Oil',shares:223,price:11.86,currency:'USD'},
+{id:107,type:'buy',date:'2024-02-13',ticker:'ECH',name:'iShares MSCI Chile ETF',theme:'Chile',shares:338.9831,price:44.0,currency:'USD'},
+{id:108,type:'buy',date:'2025-09-25',ticker:'EWZ',name:'iShares MSCI Brazil ETF',theme:'Brazil',shares:355.2994,price:30.9597,currency:'USD'}
+];
+
+// ============================================================
+// STATE
+// ============================================================
+var txns = [], themes = [], lp = {};
+var fx = {USD:1,EUR:0.86,GBP:0.749,AUD:1.398,CAD:1.375,HKD:7.831,SGD:1.279,NOK:9.312,JPY:158.65,BRL:5.02,CNY:6.82,IDR:17589};
+var dc = null, ac = null, tf = 'YTD', nid = 200, busy = false;
+var sc = 'marketValueUSD', sa = false, elog = [];
+var LS = 'pnb_v5';
+var SB_URL = '', SB_KEY = '', sbConnected = false;
+var manualPrices = {}; // {ticker: price} for stocks Finnhub can't fetch
+
+function defThemes(){return['Agriculture','Argentina','Brazil','Chile','China','Coal','Copper','Gold/Silver/Japan','Greece','Natural Gas','Offshore Oil','Old Themes','Shipping','Uranium'];}
+
+// ============================================================
+// SETTINGS (localStorage for credentials only)
+// ============================================================
+function saveSettings() {
+  var k = document.getElementById('akey').value.trim();
+  var u = document.getElementById('sb-url').value.trim();
+  var sk = document.getElementById('sb-key').value.trim();
+  SB_URL = u; SB_KEY = sk;
+  try { localStorage.setItem(LS + '_cfg', JSON.stringify({fhKey:k, sbUrl:u, sbKey:sk})); } catch(e){}
+}
+
+function loadSettings() {
+  try {
+    var raw = localStorage.getItem(LS + '_cfg');
+    if (raw) {
+      var d = JSON.parse(raw);
+      if (d.fhKey) document.getElementById('akey').value = d.fhKey;
+      if (d.sbUrl) { document.getElementById('sb-url').value = d.sbUrl; SB_URL = d.sbUrl; }
+      if (d.sbKey) { document.getElementById('sb-key').value = d.sbKey; SB_KEY = d.sbKey; }
+    }
+  } catch(e) {}
+  // Load manual price overrides
+  try {
+    var mp = localStorage.getItem(LS + '_manual_prices');
+    if (mp) manualPrices = JSON.parse(mp);
+  } catch(e) {}
+}
+
+// ============================================================
+// SUPABASE SYNC
+// ============================================================
+var SB_ROW = 'main'; // single row stores all data
+
+function sbHeaders() {
+  // Support both new sb_secret_/sb_publishable_ keys and legacy eyJ... anon keys
+  var authHeader = 'Bearer ' + SB_KEY;
+  return {
+    'Content-Type': 'application/json',
+    'apikey': SB_KEY,
+    'Authorization': authHeader,
+    'Prefer': 'return=minimal'
+  };
+}
+
+function sbFetch(method, body) {
+  var url = SB_URL.replace(/\/$/, '') + '/rest/v1/portfolio?id=eq.' + SB_ROW;
+  var opts = {method: method, headers: sbHeaders()};
+  if (body) opts.body = JSON.stringify(body);
+  return fetch(url, opts);
+}
+
+function sbUpsert(body) {
+  var url = SB_URL.replace(/\/$/, '') + '/rest/v1/portfolio';
+  return fetch(url, {method:'POST', headers: Object.assign({}, sbHeaders(), {'Prefer':'resolution=merge-duplicates,return=minimal'}), body: JSON.stringify(body)});
+}
+
+function setSyncSt(cls, msg) {
+  var el = document.getElementById('sync-st');
+  el.className = 'sync-status ' + cls;
+  el.textContent = msg;
+}
+
+function doConnect() {
+  SB_URL = document.getElementById('sb-url').value.trim();
+  SB_KEY = document.getElementById('sb-key').value.trim();
+  if (!SB_URL || !SB_KEY) { setSyncSt('err', 'Enter URL and key first'); return; }
+  setSyncSt('ld', 'Connecting…');
+  saveSettings();
+  // Try to read data
+  var url = SB_URL.replace(/\/$/, '') + '/rest/v1/portfolio?id=eq.' + SB_ROW + '&select=data';
+  fetch(url, {headers: {'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY}})
+    .then(function(r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status + ' — check URL and key');
+      return r.json();
+    })
+    .then(function(rows) {
+      sbConnected = true;
+      if (rows.length > 0 && rows[0].data) {
+        var d = rows[0].data;
+        txns = d.txns || DEFAULT_TX.slice();
+        themes = d.themes || defThemes();
+        nid = d.nid || 200;
+        setSyncSt('ok', '\u2713 Connected — data loaded from cloud');
+        addLog('ok', 'Supabase connected. Loaded ' + txns.length + ' transactions from cloud.');
+      } else {
+        // No data yet — push defaults
+        txns = DEFAULT_TX.slice();
+        themes = defThemes();
+        setSyncSt('ok', '\u2713 Connected — pushing initial data…');
+        doSyncPush(function() { setSyncSt('ok', '\u2713 Connected \u2014 synced'); });
+        addLog('ok', 'Supabase connected. No existing data — pushed defaults.');
+      }
+      renderAll();
+      doRManage();
+      loadCachedPrices(); // load cached prices from last background refresh
+    })
+    .catch(function(e) {
+      sbConnected = false;
+      setSyncSt('err', '\u2717 ' + e.message);
+      addLog('error', 'Supabase connect failed: ' + e.message);
+    });
+}
+
+function doSyncPush(cb) {
+  if (!sbConnected || !SB_URL || !SB_KEY) {
+    // Fallback to localStorage
+    try { localStorage.setItem(LS + '_data', JSON.stringify({txns:txns, themes:themes, nid:nid})); } catch(e) {}
+    return;
+  }
+  setSt(null, null); // don't change status
+  var payload = {id: SB_ROW, data: {txns:txns, themes:themes, nid:nid}, updated_at: new Date().toISOString()};
+  sbUpsert(payload)
+    .then(function(r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      setSyncSt('ok', '\u2713 Synced ' + new Date().toLocaleTimeString());
+      addLog('ok', 'Data synced to Supabase at ' + new Date().toLocaleTimeString());
+      if (cb) cb();
+    })
+    .catch(function(e) {
+      setSyncSt('err', '\u2717 Sync failed: ' + e.message);
+      addLog('error', 'Supabase push failed: ' + e.message);
+      // Fallback to localStorage
+      try { localStorage.setItem(LS + '_data', JSON.stringify({txns:txns, themes:themes, nid:nid})); } catch(ex) {}
+    });
+}
+
+// Called after every data change
+function autoSync() {
+  setSyncSt('ld', 'Saving…');
+  doSyncPush(null);
+}
+
+// ============================================================
+// LOCAL FALLBACK LOAD (used if no Supabase)
+// ============================================================
+function doLocalLoad() {
+  try {
+    var raw = localStorage.getItem(LS + '_data');
+    if (raw) {
+      var d = JSON.parse(raw);
+      txns = d.txns || DEFAULT_TX.slice();
+      themes = d.themes || defThemes();
+      nid = d.nid || 200;
+      addLog('info', 'Loaded from local storage (' + txns.length + ' transactions). Connect Supabase for cross-device sync.');
+    } else {
+      txns = DEFAULT_TX.slice();
+      themes = defThemes();
+      addLog('warn', 'No saved data found. Using default transactions. Connect Supabase to persist your data.');
+    }
+  } catch(e) {
+    txns = DEFAULT_TX.slice();
+    themes = defThemes();
+  }
+}
+
+// ============================================================
+// LOGGING
+// ============================================================
+function addLog(lvl, msg) {
+  elog.unshift({ts: new Date().toLocaleTimeString(), lvl: lvl, msg: msg});
+  if (elog.length > 300) elog.pop();
+  var errs = 0;
+  for (var i = 0; i < elog.length; i++) { if (elog[i].lvl === 'error') errs++; }
+  var b = document.getElementById('lbdg');
+  b.textContent = errs ? ' (' + errs + ')' : '';
+  if (document.getElementById('pnl-log').classList.contains('on')) renderLog();
+}
+function renderLog() {
+  var el = document.getElementById('lgcon');
+  if (!elog.length) { el.innerHTML = '<div class="emp">No log entries yet.</div>'; return; }
+  var h = '';
+  for (var i = 0; i < elog.length; i++) {
+    var e = elog[i];
+    h += '<div class="lge ' + e.lvl + '"><span class="lgt">' + e.ts + '</span><span>[' + e.lvl.toUpperCase() + ']</span><span>' + e.msg + '</span></div>';
+  }
+  el.innerHTML = h;
+}
+function doClearLog() { elog = []; renderLog(); }
+
+// ============================================================
+// TAB / STATUS
+// ============================================================
+function goTab(el, tab) {
+  var tabs = document.querySelectorAll('.tab');
+  for (var i = 0; i < tabs.length; i++) tabs[i].classList.remove('on');
+  var panels = document.querySelectorAll('.pnl');
+  for (var i = 0; i < panels.length; i++) panels[i].classList.remove('on');
+  el.classList.add('on');
+  document.getElementById('pnl-' + tab).classList.add('on');
+  if (tab === 'stocks') doRStocks();
+  else if (tab === 'themes') doRThemes();
+  else if (tab === 'manage') doRManage();
+  else if (tab === 'log') renderLog();
+  else if (tab === 'history') renderSnapLog();
+  else renderDashboard();
+}
+function setSt(cls, msg) {
+  if (cls === null) return;
+  var d = document.getElementById('sdot');
+  d.className = 'dot' + (cls === 'live' ? ' live' : cls === 'err' ? ' err' : cls === 'ld' ? ' ld' : '');
+  if (msg) document.getElementById('smsg').textContent = msg;
+}
+function setPb(p) { document.getElementById('pbf').style.width = p + '%'; }
+
+// ============================================================
+// FETCH / REFRESH
+// ============================================================
+function fetchFX() {
+  return fetch('https://open.er-api.com/v6/latest/USD')
+    .then(function(r) { return r.json(); })
+    .then(function(d) { var ks = Object.keys(d.rates); for (var i = 0; i < ks.length; i++) fx[ks[i]] = d.rates[ks[i]]; addLog('ok', 'FX rates loaded'); })
+    .catch(function(e) { addLog('warn', 'FX fetch failed: ' + e.message); });
+}
+// Yahoo Finance via Cloudflare Worker proxy — reliable fallback for all exchanges
+var CF_PROXY = 'https://yahoo-proxy.bpcdejong84.workers.dev/';
+
+function fetchYahoo(ticker) {
+  var yTicker = ticker;
+  if (yTicker === '297.HK') yTicker = '0297.HK';
+
+  var yahooUrl = 'https://query2.finance.yahoo.com/v8/finance/chart/' + encodeURIComponent(yTicker) + '?interval=1d&range=1d';
+
+  function parsePrice(m) {
+    var price = m.regularMarketPrice;
+    var currency = m.currency;
+    if (currency === 'GBp') { price = price / 100; currency = 'GBP'; }
+    if (currency === 'ZAc') { price = price / 100; currency = 'ZAR'; }
+    var prev = m.chartPreviousClose || price;
+    return {price:price, prev:prev, change:price-prev,
+            changePct:prev>0?((price-prev)/prev)*100:0, live:true, src:'yahoo'};
+  }
+
+  function parseResponse(d) {
+    // Handle both direct Yahoo response and allorigins-wrapped response
+    var inner = (d.contents) ? JSON.parse(d.contents) : d;
+    if (!inner.chart || !inner.chart.result || !inner.chart.result[0]) throw new Error('no result');
+    if (inner.chart.error) throw new Error(inner.chart.error.description || 'YF error');
+    var m = inner.chart.result[0].meta;
+    if (!m.regularMarketPrice) throw new Error('price=0');
+    return parsePrice(m);
+  }
+
+  // Primary: Cloudflare Worker (your own proxy — fast, no rate limits)
+  function tryCFWorker() {
+    var url = CF_PROXY + '?url=' + encodeURIComponent(yahooUrl);
+    return fetch(url)
+      .then(function(r) {
+        if (!r.ok) throw new Error('CF HTTP ' + r.status);
+        return r.json();
+      })
+      .then(parseResponse);
+  }
+
+  // Fallback 1: allorigins (free public proxy)
+  function tryAllorigins() {
+    var url = 'https://api.allorigins.win/get?url=' + encodeURIComponent(yahooUrl);
+    return fetch(url)
+      .then(function(r) { return r.json(); })
+      .then(parseResponse);
+  }
+
+  // Chain: CF Worker -> allorigins -> error
+  return tryCFWorker()
+    .catch(function(e1) {
+      addLog('warn', yTicker + ': CF proxy failed (' + e1.message + '), trying allorigins…');
+      return tryAllorigins()
+        .catch(function(e2) {
+          throw new Error('All proxies failed for ' + yTicker + '. Use manual price in Edit ✏️');
+        });
+    });
+}
+
+function fetchOne(ticker, key) {
+  var sym = toFH(ticker);
+  return fetch('https://finnhub.io/api/v1/quote?symbol=' + encodeURIComponent(sym) + '&token=' + key)
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d.error && d.error.indexOf('access') !== -1) {
+        // Finnhub access restriction — fallback to Yahoo Finance silently
+        return fetchYahoo(ticker).then(function(q) {
+          q.src = 'yahoo_fallback';
+          return q;
+        });
+      }
+      if (d.error) throw new Error('Finnhub: ' + d.error + ' (tried: ' + sym + ')');
+      if (!d.c || d.c === 0) {
+        // Price=0 — also try Yahoo as fallback
+        return fetchYahoo(ticker).then(function(q) {
+          q.src = 'yahoo_fallback';
+          return q;
+        }).catch(function() {
+          throw new Error('Price=0 for ' + sym + ' — also failed on Yahoo');
+        });
+      }
+      return {price:d.c, prev:d.pc, change:d.d, changePct:d.dp, live:true, src:'finnhub'};
+    });
+}
+function doRefresh() {
+  if (busy) return;
+  var key = document.getElementById('akey').value.trim();
+  if (!key) { showAlt('Paste your Finnhub API key in the yellow bar above first.', 'er'); return; }
+  busy = true;
+  document.getElementById('rbtn').disabled = true;
+  document.getElementById('pbw').style.display = 'block';
+  setSt('ld', 'Loading FX rates…'); setPb(3);
+  addLog('info', '=== Refresh started at ' + new Date().toLocaleTimeString() + ' ===');
+  fetchFX().then(function() {
+    setPb(12);
+    var pos = calcPortfolio().positions;
+    var tickers = [], seen = {}, pk = Object.keys(pos);
+    for (var i = 0; i < pk.length; i++) {
+      var p = pos[pk[i]];
+      if (p.shares > 0.001 && !seen[p.ticker]) { tickers.push(p.ticker); seen[p.ticker] = 1; }
+    }
+    addLog('info', 'Fetching ' + tickers.length + ' positions (6 parallel, 6.5s between batches)');
+    setSt('ld', 'Loading ' + tickers.length + ' quotes…');
+    var errors = [], done = 0, BATCH = 6, DELAY = 6500;
+    function runBatch(start) {
+      if (start >= tickers.length) {
+        setPb(100);
+        var ok = tickers.length - errors.length;
+        setSt('live', 'Live \u00b7 ' + ok + '/' + tickers.length + ' quotes \u00b7 ' + new Date().toLocaleTimeString());
+        addLog('info', '=== Done: ' + ok + ' ok, ' + errors.length + ' failed ===');
+        buildFailedGuide(errors, key);
+        renderAll();
+        document.getElementById('pbw').style.display = 'none';
+        document.getElementById('rbtn').disabled = false;
+        busy = false;
+        return;
+      }
+      var batch = tickers.slice(start, start + BATCH);
+      var promises = [];
+      for (var j = 0; j < batch.length; j++) { promises.push(fetchOne(batch[j], key)); }
+      Promise.allSettled(promises).then(function(results) {
+        for (var j = 0; j < results.length; j++) {
+          var t = batch[j], r = results[j];
+          if (r.status === 'fulfilled') {
+            lp[t] = r.value;
+            var src = r.value.src === 'yahoo_fallback' ? ' [Yahoo]' : '';
+            addLog('ok', t + ': $' + r.value.price.toFixed(4) + ' (' + (r.value.changePct >= 0 ? '+' : '') + (r.value.changePct || 0).toFixed(2) + '%)' + src);
+          } else {
+            errors.push(t); lp[t] = {price:null, live:false};
+            addLog('error', t + ': ' + (r.reason ? r.reason.message : 'unknown'));
+          }
+          done++;
+        }
+        var rem = tickers.length - done, batches_left = Math.ceil(rem / BATCH);
+        var secs = Math.round(batches_left * DELAY / 1000);
+        setPb(12 + Math.round(done / tickers.length * 85));
+        setSt('ld', done + '/' + tickers.length + ' done \u2014 ~' + secs + 's remaining\u2026');
+        setTimeout(function() { runBatch(start + BATCH); }, DELAY);
+      });
+    }
+    runBatch(0);
+  });
+}
+function doTestKey() {
+  var key = document.getElementById('akey').value.trim();
+  if (!key) { showAlt('Enter an API key first.', 'er'); return; }
+  setSt('ld', 'Testing…');
+  fetch('https://finnhub.io/api/v1/quote?symbol=AAPL&token=' + key)
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d.error) { setSt('err', 'Key error'); showAlt('Key error: ' + d.error, 'er'); }
+      else if (d.c > 0) { setSt('live', 'Key valid \u2713 AAPL=$' + d.c); showAlt('Key valid! AAPL = $' + d.c, 'ok'); addLog('ok', 'Key valid. AAPL=$' + d.c); }
+      else { setSt('err', 'No data'); showAlt('Key returned empty data', 'er'); }
+    })
+    .catch(function(e) { setSt('err', 'Network error'); showAlt('Cannot reach Finnhub: ' + e.message, 'er'); });
+}
+function buildFailedGuide(errors, key) {
+  if (!errors.length) { document.getElementById('fguide').innerHTML = '<p style="color:var(--gr)">\u2713 All tickers loaded successfully.</p>'; return; }
+  var h = '<p style="color:var(--rd);font-weight:600;margin-bottom:12px">\u26a0 ' + errors.length + ' ticker(s) failed. Go to Manage tab, search the ticker, click \u270f to edit it with the correct Finnhub symbol:</p>';
+  for (var i = 0; i < errors.length; i++) {
+    var t = errors[i], fh = toFH(t), tx = null;
+    for (var j = 0; j < txns.length; j++) { if (txns[j].ticker === t) { tx = txns[j]; break; } }
+    h += '<div style="padding:10px;background:var(--bg3);border-radius:8px;margin-bottom:8px;border-left:3px solid var(--rd)">';
+    h += '<div style="font-weight:600;margin-bottom:4px">' + t + (tx ? ' \u2014 ' + tx.name : '') + '</div>';
+    h += '<div style="font-size:11px;color:var(--tx2)">Tried: <code>' + fh + '</code> &nbsp; | &nbsp; ';
+    h += 'Search correct symbol: <a href="https://finnhub.io/api/v1/search?q=' + encodeURIComponent(t.replace(/:.*/,'').split('.')[0]) + '&token=' + key + '" target="_blank" style="color:var(--bl)">Finnhub lookup &rarr;</a></div>';
+    h += '</div>';
+  }
+  document.getElementById('fguide').innerHTML = h;
+}
+
+// ============================================================
+// PORTFOLIO ENGINE
+// ============================================================
+function toUSD(amt, ccy) { if (ccy === 'USD') return amt; return amt / (fx[ccy] || 1); }
+function calcPortfolio() {
+  var positions = {}, totalRealPnl = 0;
+  // Sort by date; on same date buys come before sells to ensure correct FIFO
+  var sorted = txns.slice().sort(function(a,b) {
+    if (a.date < b.date) return -1;
+    if (a.date > b.date) return 1;
+    // Same date: buys before sells
+    if (a.type === 'buy' && b.type === 'sell') return -1;
+    if (a.type === 'sell' && b.type === 'buy') return 1;
+    return 0;
+  });
+  for (var i = 0; i < sorted.length; i++) {
+    var tx = sorted[i], k = tx.ticker;
+    if (!positions[k]) positions[k] = {ticker:k, name:tx.name, theme:tx.theme, shares:0, totalCostUSD:0, realPnlUSD:0, currency:tx.currency, lots:[]};
+    var pos = positions[k], pusd = toUSD(tx.price, tx.currency);
+    if (tx.type === 'buy') {
+      pos.shares += tx.shares; pos.totalCostUSD += tx.shares * pusd;
+      pos.lots.push({shares:tx.shares, priceUSD:pusd}); pos.currency = tx.currency;
+    } else {
+      var rem = tx.shares, cb = 0;
+      var lots2 = [];
+      for (var j = 0; j < pos.lots.length; j++) lots2.push({shares:pos.lots[j].shares, priceUSD:pos.lots[j].priceUSD});
+      while (rem > 0 && lots2.length > 0) {
+        var used = Math.min(lots2[0].shares, rem);
+        cb += used * lots2[0].priceUSD; lots2[0].shares -= used; rem -= used;
+        if (lots2[0].shares < 0.0001) lots2.shift();
+      }
+      pos.lots = lots2;
+      // If cb==0 and we had shares to sell, use average cost as fallback
+      // This handles edge cases where sell date precedes buy date in data
+      if (cb === 0 && pos.totalCostUSD > 0 && pos.shares > 0) {
+        var avgCost = pos.totalCostUSD / pos.shares;
+        cb = tx.shares * avgCost;
+      }
+      var g = toUSD(tx.shares * tx.price, tx.currency) - cb;
+      pos.realPnlUSD += g; totalRealPnl += g;
+      pos.shares = Math.max(0, pos.shares - tx.shares);
+      var tc2 = 0; for (var j = 0; j < pos.lots.length; j++) tc2 += pos.lots[j].shares * pos.lots[j].priceUSD;
+      pos.totalCostUSD = tc2;
+    }
+  }
+  var totalValue = 0, totalCost = 0, totalUnreal = 0;
+  var pkeys = Object.keys(positions);
+  for (var i = 0; i < pkeys.length; i++) {
+    var p = positions[pkeys[i]];
+    if (p.shares < 0.001) { p.currentNative=0; p.currentUSD=0; p.marketValueUSD=0; p.unrealPnlUSD=0; p.unrealPct=0; p.avgCostUSD=0; continue; }
+    var live = lp[p.ticker];
+    var manP = manualPrices[p.ticker]; // manual override price (native currency)
+    var np = (live && live.price) ? live.price : (manP ? manP : (p.totalCostUSD / Math.max(p.shares,0.001)) * (fx[p.currency] || 1));
+    var priceSource = (live && live.price) ? 'live' : (manP ? 'manual' : 'cost');
+    var pusd2 = toUSD(np, p.currency);
+    p.currentNative=np; p.currentUSD=pusd2; p.avgCostUSD=p.totalCostUSD/Math.max(p.shares,0.001);
+    p.marketValueUSD=p.shares*pusd2; p.unrealPnlUSD=p.marketValueUSD-p.totalCostUSD;
+    p.unrealPct=p.totalCostUSD>0?(p.unrealPnlUSD/p.totalCostUSD)*100:0;
+    p.isLive=live?live.live:false; p.isManual=((!live||!live.price)&&!!manP); p.changePct=live?live.changePct:null; p.priceSource=priceSource;
+    totalValue+=p.marketValueUSD; totalCost+=p.totalCostUSD; totalUnreal+=p.unrealPnlUSD;
+  }
+  // Separate closed positions for display
+  var closedPositions = {};
+  var pkeys2 = Object.keys(positions);
+  for (var i = 0; i < pkeys2.length; i++) {
+    var p = positions[pkeys2[i]];
+    if (p.shares < 0.001 && Math.abs(p.realPnlUSD) > 0.01) {
+      closedPositions[pkeys2[i]] = p;
+    }
+  }
+  return {positions:positions, closedPositions:closedPositions, totalValue:totalValue, totalCost:totalCost, totalUnreal:totalUnreal, totalRealPnl:totalRealPnl};
+}
+
+// ============================================================
+// FORMATTERS
+// ============================================================
+function fN(n,d){if(d===undefined)d=2;if(n===null||n===undefined||isNaN(n))return'\u2014';var a=Math.abs(n);if(a>=1e9)return(n/1e9).toFixed(2)+'B';if(a>=1e6)return(n/1e6).toFixed(2)+'M';if(a>=1e3)return n.toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});return n.toFixed(d);}
+function fP(n){return(n>=0?'+':'')+n.toFixed(2)+'%';}
+function clr(n){return n>0.001?'pos':n<-0.001?'neg':'neu';}
+function today(){return new Date().toISOString().split('T')[0];}
+function ini(t){return t.replace(/:.*/,'').replace(/\..*/,'').slice(0,2).toUpperCase();}
+function tcol(t){var h=0;for(var i=0;i<t.length;i++)h=(h*31+t.charCodeAt(i))%TC.length;return TC[h];}
+
+// ============================================================
+// RENDER ALL
+// ============================================================
+function renderAll(){renderDashboard();doRStocks();doRThemes();}
+
+// ============================================================
+// DASHBOARD
+// ============================================================
+function doRDash(){
+  var R=calcPortfolio(),tv=R.totalValue,tc=R.totalCost,tu=R.totalUnreal,tr=R.totalRealPnl;
+  var tp=tu+tr,tpc=tc>0?(tp/tc)*100:0,upc=tc>0?(tu/tc)*100:0;
+  var open=0,pk=Object.keys(R.positions);for(var i=0;i<pk.length;i++){if(R.positions[pk[i]].shares>0.001)open++;}
+  document.getElementById('mgrid').innerHTML=
+    mkMc('Portfolio Value','$'+fN(tv),'USD equiv.','nt','neu')+
+    mkMc('Cost Basis','$'+fN(tc),'Invested','nt','neu')+
+    mkMc('Unrealized P&L',(tu>=0?'+':'')+'$'+fN(tu),fP(upc),tu>0?'up':tu<0?'dn':'nt',clr(tu))+
+    mkMc('Realized P&L',(tr>=0?'+':'')+'$'+fN(tr),'Closed',tr>0?'up':tr<0?'dn':'nt',clr(tr))+
+    mkMc('Total P&L',(tp>=0?'+':'')+'$'+fN(tp),fP(tpc),tp>0?'up':tp<0?'dn':'nt',clr(tp))+
+    mkMc('Open Positions',''+open,themes.length+' themes','nt','neu');
+  bChart(tv,tc);
+  var recent=txns.slice().sort(function(a,b){return a.date<b.date?1:a.date>b.date?-1:0;}).slice(0,12);
+  if(recent.length)document.getElementById('rts').textContent='Latest: '+recent[0].date;
+  var h='';
+  for(var i=0;i<recent.length;i++){
+    var tx=recent[i],col=tcol(tx.ticker);
+    h+='<tr id="txrow-'+tx.id+'">';
+h+='<td style="text-align:center"><input type="checkbox" class="tx-chk" data-id="'+tx.id+'" onclick="onChkChange()" style="width:15px;height:15px;cursor:pointer;accent-color:var(--bl)"/></td>';
+h+='<td>'+tx.date+'</td><td><span class="bdg '+(tx.type==='buy'?'bdb':'bds')+'">'+(tx.type==='buy'?'&#9650;':'&#9660;')+' '+tx.type.toUpperCase()+'</span></td>';
+    h+='<td><span style="display:inline-flex;align-items:center;gap:8px"><span class="tav" style="width:24px;height:24px;background:'+col+'22;color:'+col+';border:1px solid '+col+'33;font-size:9px">'+ini(tx.ticker)+'</span><span class="fw">'+tx.ticker+'</span></span></td>';
+    h+='<td class="nmc">'+tx.name+'</td><td style="color:var(--tx3);font-size:11px">'+tx.theme+'</td><td class="mn">'+fN(tx.shares,4)+'</td><td class="mn">'+fN(tx.price,4)+'</td><td style="color:var(--tx3)">'+tx.currency+'</td>';
+    h+='<td class="mn fw">$'+fN(toUSD(tx.shares*tx.price,tx.currency))+'</td></tr>';
+  }
+  document.getElementById('rtbody').innerHTML=h;
+}
+function mkMc(lbl,val,sub,cls,vcls){return '<div class="mc '+cls+'"><div class="mlb">'+lbl+'</div><div class="mv '+vcls+'">'+val+'</div><div class="ms '+vcls+'">'+sub+'</div></div>';}
+function bChart(tv,tc){
+  var now=new Date(),s=new Date();
+  if(tf==='1M')s.setMonth(now.getMonth()-1);else if(tf==='3M')s.setMonth(now.getMonth()-3);else if(tf==='YTD')s=new Date(now.getFullYear(),0,1);else if(tf==='1Y')s.setFullYear(now.getFullYear()-1);else s=new Date('2023-01-01');
+  var days=Math.ceil((now-s)/864e5),step=Math.max(1,Math.floor(days/40));
+  var labels=[],vals=[],costs=[],base=tc||200000;
+  for(var i=0;i<=days;i+=step){
+    var d=new Date(s);d.setDate(d.getDate()+i);
+    labels.push(d.toLocaleDateString('en-US',{month:'short',day:'numeric'}));
+    var p=i/days,n=Math.sin(i*.22)*base*.025+Math.cos(i*.14)*base*.012;
+    vals.push(Math.round(Math.max(0,base+p*(tv-base)+n)));
+    costs.push(Math.round(base+p*Math.min(base*.07,20000)));
+  }
+  if(vals.length)vals[vals.length-1]=Math.round(tv||0);
+  var ctx=document.getElementById('dch').getContext('2d');
+  if(dc)dc.destroy();
+  var grad=ctx.createLinearGradient(0,0,0,220);
+  grad.addColorStop(0,'rgba(59,130,246,0.2)');grad.addColorStop(1,'rgba(59,130,246,0)');
+  dc=new Chart(ctx,{type:'line',data:{labels:labels,datasets:[
+    {label:'Portfolio Value',data:vals,borderColor:'#3b82f6',backgroundColor:grad,tension:.4,fill:true,pointRadius:0,borderWidth:2.5},
+    {label:'Cost Basis',data:costs,borderColor:'rgba(255,255,255,0.18)',backgroundColor:'transparent',tension:.3,fill:false,pointRadius:0,borderWidth:1.5,borderDash:[6,4]}
+  ]},options:{responsive:true,maintainAspectRatio:false,interaction:{intersect:false,mode:'index'},
+    plugins:{legend:{display:false},tooltip:{backgroundColor:'rgba(8,11,20,.96)',titleColor:'#8892b0',bodyColor:'#e2e8f8',borderColor:'rgba(255,255,255,.1)',borderWidth:1,padding:10,callbacks:{label:function(c){return c.dataset.label+': $'+fN(c.raw);}}}},
+    scales:{x:{grid:{display:false},border:{display:false},ticks:{color:'#4a5378',font:{size:10},maxTicksLimit:8}},y:{grid:{color:'rgba(255,255,255,.04)'},border:{display:false},ticks:{color:'#4a5378',font:{size:10},callback:function(v){return '$'+fN(v,0);}}}}}});
+}
+function goTf(t,btn){tf=t;var bs=document.querySelectorAll('.tfb');for(var i=0;i<bs.length;i++)bs[i].classList.remove('on');btn.classList.add('on');var R=calcPortfolio();bChart(R.totalValue,R.totalCost);}
+
+// ============================================================
+// DASHBOARD CHARTS — real data from HIST_DATA + userSnapshots
+// ============================================================
+var dPortChartObj=null, dThemeChartObj=null, dStockChartObj=null;
+var dThemeStocksChartObj=null;
+var dTf='YTD', topTf='1W';
+
+function setDTf(t,btn){
+  dTf=t;
+  var bs=document.querySelectorAll('#port-tfs .tfb');
+  for(var i=0;i<bs.length;i++)bs[i].classList.remove('on');
+  btn.classList.add('on');
+  renderDPortChart();
+}
+
+function setTopTf(t,btn){
+  topTf=t;
+  var bs=document.querySelectorAll('#pnl-dashboard .tfbs:last-of-type .tfb');
+  // Find all tfb in the top performers section
+  var allTfbs=document.querySelectorAll('#pnl-dashboard .tfb');
+  // Only reset the last tfbs group
+  btn.parentElement.querySelectorAll('.tfb').forEach(function(b){b.classList.remove('on');});
+  btn.classList.add('on');
+  renderTopPerformers();
+}
+
+// Merge Excel history + user snapshots into unified array
+function getMergedHistory(){
+  var merged={};
+  // Excel data: [date, value, costBasis, unrealized, realized]
+  for(var i=0;i<HIST_DATA.length;i++){
+    var d=HIST_DATA[i];
+    merged[d[0]]={d:d[0],v:d[1],cb:d[2],u:d[3],r:d[4],themes:null,stocks:null};
+  }
+  // User snapshots override Excel on same date
+  for(var i=0;i<userSnapshots.length;i++){
+    var s=userSnapshots[i];
+    merged[s.d]={d:s.d,v:s.v,cb:s.cb,u:s.u,r:s.r,themes:s.themes||null,stocks:s.stocks||null};
+  }
+  var arr=Object.values(merged).sort(function(a,b){return a.d<b.d?-1:a.d>b.d?1:0;});
+  return arr;
+}
+
+function filterByTf(arr,tf){
+  var now=new Date(); var cutoff=new Date();
+  if(tf==='1M')cutoff.setMonth(now.getMonth()-1);
+  else if(tf==='3M')cutoff.setMonth(now.getMonth()-3);
+  else if(tf==='YTD')cutoff=new Date(now.getFullYear(),0,1);
+  else if(tf==='1Y')cutoff.setFullYear(now.getFullYear()-1);
+  else cutoff=new Date('2020-01-01');
+  var cutStr=cutoff.toISOString().split('T')[0];
+  return arr.filter(function(d){return d.d>=cutStr;});
+}
+
+// ── 1. Portfolio Performance ──────────────────────────────────────────────
+function renderDPortChart(){
+  var all=getMergedHistory();
+  var filtered=filterByTf(all,dTf);
+  if(!filtered.length){
+    if(dPortChartObj){dPortChartObj.destroy();dPortChartObj=null;}
+    return;
+  }
+  var labels=[],vals=[],cbs=[],pnls=[];
+  for(var i=0;i<filtered.length;i++){
+    var d=filtered[i];
+    labels.push(d.d.slice(5));
+    vals.push(d.v);
+    cbs.push(d.cb);
+    pnls.push((d.u||0)+(d.r||0));
+  }
+  var ctx=document.getElementById('dPortChart').getContext('2d');
+  if(dPortChartObj)dPortChartObj.destroy();
+  var gV=ctx.createLinearGradient(0,0,0,240);
+  gV.addColorStop(0,'rgba(67,97,238,0.15)');gV.addColorStop(1,'rgba(67,97,238,0)');
+  var gP=ctx.createLinearGradient(0,0,0,240);
+  gP.addColorStop(0,'rgba(12,166,120,0.12)');gP.addColorStop(1,'rgba(12,166,120,0)');
+  dPortChartObj=new Chart(ctx,{type:'line',data:{labels:labels,datasets:[
+    {label:'Portfolio Value',data:vals,borderColor:'#4361ee',backgroundColor:gV,tension:.3,fill:true,pointRadius:0,borderWidth:2.5},
+    {label:'Cost Basis',data:cbs,borderColor:'rgba(0,0,0,0.2)',backgroundColor:'transparent',tension:.3,fill:false,pointRadius:0,borderWidth:1.5,borderDash:[6,3]},
+    {label:'Total P&L',data:pnls,borderColor:'#0ca678',backgroundColor:gP,tension:.3,fill:true,pointRadius:0,borderWidth:2,yAxisID:'y2'}
+  ]},options:{responsive:true,maintainAspectRatio:false,
+    interaction:{intersect:false,mode:'index'},
+    plugins:{legend:{display:true,position:'top',labels:{font:{size:11},color:'#4f566b',usePointStyle:true,boxWidth:8}},
+      tooltip:{backgroundColor:'rgba(26,31,54,.95)',titleColor:'#97a0b4',bodyColor:'#e2e8f8',borderColor:'rgba(0,0,0,.08)',borderWidth:1,padding:10,
+        callbacks:{label:function(c){return c.dataset.label+': $'+fN(c.raw);}}}},
+    scales:{
+      x:{grid:{display:false},border:{display:false},ticks:{color:'#97a0b4',font:{size:10},maxTicksLimit:10}},
+      y:{grid:{color:'rgba(0,0,0,.05)'},border:{display:false},position:'left',ticks:{color:'#97a0b4',font:{size:10},callback:function(v){return '$'+fN(v,0);}}},
+      y2:{grid:{display:false},border:{display:false},position:'right',ticks:{color:'#0ca678',font:{size:10},callback:function(v){return '$'+fN(v,0);}}}
+    }}});
+}
+
+// ── 2. Performance by Theme ───────────────────────────────────────────────
+function renderDThemeChart(){
+  var snaps=userSnapshots.filter(function(s){return s.themes;});
+  var ctx=document.getElementById('dThemeChart').getContext('2d');
+  if(dThemeChartObj)dThemeChartObj.destroy();
+  if(!snaps.length){
+    ctx.clearRect(0,0,9999,9999);
+    ctx.fillStyle='#97a0b4';ctx.font='12px Inter';
+    ctx.fillText('No snapshots yet. Click Snapshot Now after refreshing prices.',20,100);
+    return;
+  }
+  var labels=[],themeMap={};
+  for(var i=0;i<snaps.length;i++){
+    var s=snaps[i]; labels.push(s.d.slice(5));
+    var tk=Object.keys(s.themes);
+    for(var j=0;j<tk.length;j++){
+      if(!themeMap[tk[j]])themeMap[tk[j]]=[];
+      themeMap[tk[j]].push(s.themes[tk[j]]||0);
+    }
+  }
+  var datasets=[]; var tnames=Object.keys(themeMap);
+  for(var i=0;i<tnames.length;i++){
+    var col=TC[i%TC.length];
+    datasets.push({label:tnames[i],data:themeMap[tnames[i]],borderColor:col,backgroundColor:'transparent',tension:.3,fill:false,pointRadius:0,borderWidth:2});
+  }
+  // Build legend
+  var legEl=document.getElementById('dThemeLeg');
+  legEl.innerHTML='';
+  for(var i=0;i<tnames.length;i++){
+    var col=TC[i%TC.length];
+    legEl.innerHTML+='<span style="display:inline-flex;align-items:center;gap:4px;font-size:10px;color:'+col+'"><span style="width:10px;height:2px;background:'+col+';display:inline-block;border-radius:1px"></span>'+tnames[i]+'</span>';
+  }
+  dThemeChartObj=new Chart(ctx,{type:'line',data:{labels:labels,datasets:datasets},
+    options:{responsive:true,maintainAspectRatio:false,
+      interaction:{intersect:false,mode:'index'},
+      plugins:{legend:{display:false},
+        tooltip:{backgroundColor:'rgba(26,31,54,.95)',titleColor:'#97a0b4',bodyColor:'#e2e8f8',borderColor:'rgba(0,0,0,.08)',borderWidth:1,padding:10,
+          callbacks:{label:function(c){return c.dataset.label+': $'+fN(c.raw);}}}},
+      scales:{x:{grid:{display:false},border:{display:false},ticks:{color:'#97a0b4',font:{size:10},maxTicksLimit:8}},
+        y:{grid:{color:'rgba(0,0,0,.05)'},border:{display:false},ticks:{color:'#97a0b4',font:{size:10},callback:function(v){return '$'+fN(v,0);}}}}}});
+}
+
+// ── 3. Performance by Stock ───────────────────────────────────────────────
+function populateDStockSel(){
+  var sel=document.getElementById('dStockSel');
+  var prev=sel.value;
+  sel.innerHTML='<option value="">-- Select stock --</option>';
+  var tickerSet={};
+  for(var i=0;i<userSnapshots.length;i++){
+    if(userSnapshots[i].stocks){
+      var sk=Object.keys(userSnapshots[i].stocks);
+      for(var j=0;j<sk.length;j++)tickerSet[sk[j]]=1;
+    }
+  }
+  var tickers=Object.keys(tickerSet).sort();
+  for(var i=0;i<tickers.length;i++){
+    var o=document.createElement('option');
+    o.value=tickers[i];o.textContent=tickers[i];
+    if(tickers[i]===prev)o.selected=true;
+    sel.appendChild(o);
+  }
+  if(!tickers.length){
+    sel.innerHTML='<option value="">(Take snapshots first)</option>';
+  }
+}
+
+function renderDStockChart(){
+  var ticker=document.getElementById('dStockSel').value;
+  var ctx=document.getElementById('dStockChart').getContext('2d');
+  if(dStockChartObj)dStockChartObj.destroy();
+  if(!ticker||!userSnapshots.length){
+    ctx.clearRect(0,0,9999,9999);
+    ctx.fillStyle='#97a0b4';ctx.font='12px Inter';
+    ctx.fillText(!userSnapshots.length?'Take snapshots first':'Select a stock above',20,100);
+    return;
+  }
+  var labels=[],vals=[];
+  for(var i=0;i<userSnapshots.length;i++){
+    var s=userSnapshots[i];
+    if(s.stocks&&s.stocks[ticker]!==undefined){
+      labels.push(s.d.slice(5));
+      vals.push(s.stocks[ticker]);
+    }
+  }
+  if(!vals.length){
+    ctx.clearRect(0,0,9999,9999);
+    ctx.fillStyle='#97a0b4';ctx.font='12px Inter';
+    ctx.fillText('No snapshot data for '+ticker,20,100);
+    return;
+  }
+  var col=tcol(ticker);
+  var grad=ctx.createLinearGradient(0,0,0,210);
+  grad.addColorStop(0,col+'2a');grad.addColorStop(1,col+'00');
+  dStockChartObj=new Chart(ctx,{type:'line',data:{labels:labels,datasets:[
+    {label:ticker,data:vals,borderColor:col,backgroundColor:grad,tension:.3,fill:true,pointRadius:0,borderWidth:2.5}
+  ]},options:{responsive:true,maintainAspectRatio:false,
+    interaction:{intersect:false,mode:'index'},
+    plugins:{legend:{display:false},
+      tooltip:{backgroundColor:'rgba(26,31,54,.95)',titleColor:'#97a0b4',bodyColor:'#e2e8f8',borderColor:'rgba(0,0,0,.08)',borderWidth:1,padding:10,
+        callbacks:{label:function(c){return ticker+': $'+fN(c.raw);}}}},
+    scales:{x:{grid:{display:false},border:{display:false},ticks:{color:'#97a0b4',font:{size:10},maxTicksLimit:8}},
+      y:{grid:{color:'rgba(0,0,0,.05)'},border:{display:false},ticks:{color:'#97a0b4',font:{size:10},callback:function(v){return '$'+fN(v,0);}}}}}});
+}
+
+// ── 4. Theme -> Individual Stocks ─────────────────────────────────────────
+function populateDThemeStockSel(){
+  var sel=document.getElementById('dThemeStockSel');
+  var prev=sel.value;
+  sel.innerHTML='<option value="">-- Select theme --</option>';
+  for(var i=0;i<themes.length;i++){
+    var o=document.createElement('option');
+    o.value=themes[i];o.textContent=themes[i];
+    if(themes[i]===prev)o.selected=true;
+    sel.appendChild(o);
+  }
+}
+
+function renderDThemeStocksChart(){
+  var theme=document.getElementById('dThemeStockSel').value;
+  var ctx=document.getElementById('dThemeStocksChart').getContext('2d');
+  if(dThemeStocksChartObj)dThemeStocksChartObj.destroy();
+  if(!theme||!userSnapshots.length){
+    ctx.clearRect(0,0,9999,9999);
+    ctx.fillStyle='#97a0b4';ctx.font='12px Inter';
+    ctx.fillText(!userSnapshots.length?'Take snapshots first':'Select a theme above',20,100);
+    return;
+  }
+  // Get stocks in this theme from calcPortfolio
+  var R=calcPortfolio();
+  var themeStocks=[];
+  var pk=Object.keys(R.positions);
+  for(var i=0;i<pk.length;i++){
+    if(R.positions[pk[i]].theme===theme)themeStocks.push(pk[i]);
+  }
+  // Also check closed positions
+  var cpk=Object.keys(R.closedPositions);
+  for(var i=0;i<cpk.length;i++){
+    if(R.closedPositions[cpk[i]].theme===theme&&themeStocks.indexOf(cpk[i])===-1)themeStocks.push(cpk[i]);
+  }
+  if(!themeStocks.length){
+    ctx.clearRect(0,0,9999,9999);
+    ctx.fillStyle='#97a0b4';ctx.font='12px Inter';
+    ctx.fillText('No stocks found in theme: '+theme,20,100);
+    return;
+  }
+  var labels=[];
+  for(var i=0;i<userSnapshots.length;i++)labels.push(userSnapshots[i].d.slice(5));
+  var datasets=[];
+  for(var j=0;j<themeStocks.length;j++){
+    var ticker=themeStocks[j]; var col=tcol(ticker); var vals=[];
+    for(var i=0;i<userSnapshots.length;i++){
+      var s=userSnapshots[i];
+      vals.push(s.stocks&&s.stocks[ticker]!==undefined?s.stocks[ticker]:null);
+    }
+    if(vals.some(function(v){return v!==null;})){
+      datasets.push({label:ticker,data:vals,borderColor:col,backgroundColor:'transparent',tension:.3,fill:false,pointRadius:0,borderWidth:2,spanGaps:true});
+    }
+  }
+  if(!datasets.length){
+    ctx.clearRect(0,0,9999,9999);
+    ctx.fillStyle='#97a0b4';ctx.font='12px Inter';
+    ctx.fillText('No snapshot data for stocks in this theme yet',20,100);
+    return;
+  }
+  dThemeStocksChartObj=new Chart(ctx,{type:'line',data:{labels:labels,datasets:datasets},
+    options:{responsive:true,maintainAspectRatio:false,
+      interaction:{intersect:false,mode:'index'},
+      plugins:{legend:{display:true,position:'right',labels:{font:{size:10},color:'#4f566b',usePointStyle:true,boxWidth:8}},
+        tooltip:{backgroundColor:'rgba(26,31,54,.95)',titleColor:'#97a0b4',bodyColor:'#e2e8f8',borderColor:'rgba(0,0,0,.08)',borderWidth:1,padding:10,
+          callbacks:{label:function(c){return c.dataset.label+': $'+fN(c.raw);}}}},
+      scales:{x:{grid:{display:false},border:{display:false},ticks:{color:'#97a0b4',font:{size:10},maxTicksLimit:8}},
+        y:{grid:{color:'rgba(0,0,0,.05)'},border:{display:false},ticks:{color:'#97a0b4',font:{size:10},callback:function(v){return '$'+fN(v,0);}}}}}});
+}
+
+// ── 5. Top Performers ─────────────────────────────────────────────────────
+function getDaysBack(tf){
+  if(tf==='1W')return 7;
+  if(tf==='1M')return 30;
+  if(tf==='3M')return 90;
+  return 30;
+}
+
+function getSnapAtDaysBack(days){
+  var cutoff=new Date();
+  cutoff.setDate(cutoff.getDate()-days);
+  var cutStr=cutoff.toISOString().split('T')[0];
+  // Find closest snapshot at or before the cutoff
+  var best=null;
+  for(var i=0;i<userSnapshots.length;i++){
+    if(userSnapshots[i].d<=cutStr)best=userSnapshots[i];
+    else break;
+  }
+  return best;
+}
+
+function renderTopPerformers(){
+  var days=getDaysBack(topTf);
+  var tfLabel=topTf==='1W'?'this week':topTf==='1M'?'this month':'last 3 months';
+  var snapOld=getSnapAtDaysBack(days);
+  var snapNow=userSnapshots.length?userSnapshots[userSnapshots.length-1]:null;
+
+  // ── Top Stocks ──
+  var stocksEl=document.getElementById('dTopStocks');
+  if(!snapOld||!snapNow||!snapNow.stocks){
+    stocksEl.innerHTML='<div class="emp" style="padding:24px">Not enough snapshots for '+tfLabel+'. Need '+days+' days of data.</div>';
+  } else {
+    var changes=[];
+    var tickers=Object.keys(snapNow.stocks);
+    for(var i=0;i<tickers.length;i++){
+      var t=tickers[i];
+      var valNow=snapNow.stocks[t]||0;
+      var valOld=snapOld.stocks&&snapOld.stocks[t]?snapOld.stocks[t]:null;
+      if(valOld&&valOld>0){
+        var pct=((valNow-valOld)/valOld)*100;
+        changes.push({ticker:t,pct:pct,valNow:valNow,valOld:valOld});
+      }
+    }
+    changes.sort(function(a,b){return b.pct-a.pct;});
+    var top=changes.slice(0,10);
+    var h='<div style="padding:4px 0">';
+    for(var i=0;i<top.length;i++){
+      var c=top[i]; var col=tcol(c.ticker);
+      var isPos=c.pct>=0;
+      var barW=Math.min(Math.abs(c.pct)*2,100);
+      h+='<div style="display:flex;align-items:center;gap:8px;padding:5px 12px;border-bottom:1px solid var(--bd)">';
+      h+='<span style="width:18px;text-align:right;font-size:10px;color:var(--tx3);font-weight:600">'+(i+1)+'</span>';
+      h+='<span class="tav" style="width:22px;height:22px;border-radius:5px;background:'+col+'22;color:'+col+';border:1px solid '+col+'33;font-size:8px;flex-shrink:0">'+ini(c.ticker)+'</span>';
+      h+='<span style="font-size:11px;font-weight:600;min-width:70px">'+c.ticker+'</span>';
+      h+='<div style="flex:1;height:6px;background:var(--bg4);border-radius:3px;overflow:hidden">';
+      h+='<div style="height:100%;width:'+barW+'%;background:'+(isPos?'var(--gr)':'var(--rd)')+';border-radius:3px"></div></div>';
+      h+='<span class="mn" style="font-size:11px;font-weight:700;min-width:55px;text-align:right;color:'+(isPos?'var(--gr)':'var(--rd)')+'">'+fP(c.pct)+'</span>';
+      h+='</div>';
+    }
+    h+='</div>';
+    stocksEl.innerHTML=h;
+  }
+
+  // ── Top Themes ──
+  var themesEl=document.getElementById('dTopThemes');
+  if(!snapOld||!snapNow||!snapNow.themes){
+    themesEl.innerHTML='<div class="emp" style="padding:24px;font-size:11px">Need more snapshots</div>';
+  } else {
+    var tchanges=[];
+    var tnames=Object.keys(snapNow.themes);
+    for(var i=0;i<tnames.length;i++){
+      var tn=tnames[i];
+      var vNow=snapNow.themes[tn]||0;
+      var vOld=snapOld.themes&&snapOld.themes[tn]?snapOld.themes[tn]:null;
+      if(vOld&&vOld>0){
+        var pct2=((vNow-vOld)/vOld)*100;
+        tchanges.push({name:tn,pct:pct2,vNow:vNow});
+      }
+    }
+    tchanges.sort(function(a,b){return b.pct-a.pct;});
+    var top3=tchanges.slice(0,3);
+    var h='<div style="padding:4px 0">';
+    for(var i=0;i<top3.length;i++){
+      var c=top3[i]; var col=TC[i*4%TC.length]; var isPos=c.pct>=0;
+      h+='<div style="padding:10px 14px;border-bottom:1px solid var(--bd)">';
+      h+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">';
+      h+='<span style="font-size:11px;font-weight:600;color:var(--tx)">'+c.name+'</span>';
+      h+='<span style="font-size:13px;font-weight:700;color:'+(isPos?'var(--gr)':'var(--rd)')+'">'+fP(c.pct)+'</span>';
+      h+='</div>';
+      h+='<div style="font-size:10px;color:var(--tx3)">$'+fN(c.vNow)+' current value</div>';
+      h+='<div style="height:4px;background:var(--bg4);border-radius:2px;margin-top:6px;overflow:hidden">';
+      h+='<div style="height:100%;width:'+Math.min(Math.abs(c.pct)*3,100)+'%;background:'+(isPos?'var(--gr)':'var(--rd)')+';border-radius:2px"></div></div>';
+      h+='</div>';
+    }
+    if(!top3.length)h+='<div class="emp" style="padding:16px;font-size:11px">Need more snapshots</div>';
+    h+='</div>';
+    themesEl.innerHTML=h;
+  }
+}
+
+// ── Main dashboard render ─────────────────────────────────────────────────
+function renderDashboard(){
+  doRDash(); // metric cards + recent transactions
+  renderDPortChart();
+  renderDThemeChart();
+  populateDStockSel();
+  renderDStockChart();
+  populateDThemeStockSel();
+  renderDThemeStocksChart();
+  renderTopPerformers();
+}
+
+// ============================================================
+// BY STOCK
+// ============================================================
+function doSort(col){
+  if(sc===col)sa=!sa;else{sc=col;sa=(col==='ticker'||col==='theme');}
+  var ids=['ticker','theme','shares','avgCostUSD','currentUSD','marketValueUSD','unrealPnlUSD','unrealPct','realPnlUSD'];
+  for(var i=0;i<ids.length;i++){var el=document.getElementById('sa-'+ids[i]);if(el){el.innerHTML=sc===ids[i]?(sa?'&#8593;':'&#8595;'):'&#8597;';el.classList.toggle('tha',sc===ids[i]);}}
+  doRStocks();
+}
+function doRStocks(){
+  var R=calcPortfolio(),q=(document.getElementById('ssearch')?document.getElementById('ssearch').value:'').toLowerCase();
+
+  // -- Open positions --
+  var active=[],pk=Object.keys(R.positions);
+  for(var i=0;i<pk.length;i++){var p=R.positions[pk[i]];if(p.shares<=0.001)continue;if(q&&p.ticker.toLowerCase().indexOf(q)===-1&&p.name.toLowerCase().indexOf(q)===-1)continue;active.push(p);}
+  active.sort(function(a,b){var av=a[sc]!==undefined?a[sc]:'',bv=b[sc]!==undefined?b[sc]:'';if(typeof av==='string')return sa?av.localeCompare(bv):bv.localeCompare(av);return sa?av-bv:bv-av;});
+  var lc=0,mc=0;for(var i=0;i<active.length;i++){if(active[i].isLive)lc++;if(active[i].isManual)mc++;}
+  var badge=lc?'● '+lc+'/'+active.length+' live':'';
+  if(mc)badge+=' ◆ '+mc+' manual';
+  document.getElementById('livebdg').textContent=badge;
+
+  var h='';
+  // Open positions section header
+  h+='<tr><td colspan="13" style="padding:7px 14px;background:var(--green-bg);border-bottom:1px solid var(--green-bd)">';
+  h+='<span style="font-size:10px;font-weight:700;color:var(--gr);text-transform:uppercase;letter-spacing:.07em">';
+  h+='● Open Positions ('+active.length+')</span></td></tr>';
+
+  if(!active.length){
+    h+='<tr><td colspan="13" class="emp" style="color:var(--tx3)">No open positions'+(q?' matching "'+q+'"':'')+'.</td></tr>';
+  } else {
+    for(var i=0;i<active.length;i++){
+      var p=active[i],col=tcol(p.ticker),fxt=p.currency!=='USD'?'<span class="fxt">'+p.currency+'→USD</span>':'';
+      var cp=p.changePct,dayC=cp!==null&&cp!==undefined?'<span class="chip '+(cp>=0?'cup':'cdn')+'">'+(cp>=0?'▲':'▼')+Math.abs(cp).toFixed(2)+'%</span>':'';
+      var srcIcon=p.isLive?'<span style="color:var(--gr);font-size:9px" title="Live">●</span>':(p.isManual?'<span style="color:var(--pu);font-size:9px" title="Manual price">◆</span>':'<span style="color:var(--tx3);font-size:9px" title="Cost estimate">○</span>');
+      h+='<tr>';
+      h+='<td>'+srcIcon+'</td>';
+      h+='<td><span style="display:inline-flex;align-items:center;gap:8px"><span class="tav" style="width:26px;height:26px;background:'+col+'22;color:'+col+';border:1px solid '+col+'33;font-size:9px">'+ini(p.ticker)+'</span><span><div class="fw" style="font-size:12px">'+p.ticker+'</div>'+dayC+'</span></span></td>';
+      h+='<td class="nmc">'+p.name+'</td><td style="font-size:11px;color:var(--tx3)">'+p.theme+'</td><td>'+p.currency+fxt+'</td>';
+      h+='<td class="mn">'+fN(p.shares,4)+'</td><td class="mn">$'+fN(p.avgCostUSD,4)+'</td>';
+      h+='<td class="mn">'+(p.currency!=='USD'?p.currency+' ':'$')+fN(p.currentNative,4)+'</td><td class="mn">$'+fN(p.currentUSD,4)+'</td>';
+      h+='<td class="mn fw">$'+fN(p.marketValueUSD)+'</td>';
+      h+='<td class="mn '+clr(p.unrealPnlUSD)+' fw">'+(p.unrealPnlUSD>=0?'+':'')+'$'+fN(p.unrealPnlUSD)+'</td>';
+      h+='<td><span class="chip '+(p.unrealPct>=0?'cup':'cdn')+'">'+fP(p.unrealPct)+'</span></td>';
+      h+='<td class="mn '+clr(p.realPnlUSD)+'">'+(Math.abs(p.realPnlUSD)>0.01?(p.realPnlUSD>=0?'+':'')+'$'+fN(p.realPnlUSD):'—')+'</td></tr>';
+    }
+  }
+
+  // -- Closed positions --
+  var closed=[],cpk=Object.keys(R.closedPositions);
+  for(var i=0;i<cpk.length;i++){var p=R.closedPositions[cpk[i]];if(q&&p.ticker.toLowerCase().indexOf(q)===-1&&p.name.toLowerCase().indexOf(q)===-1)continue;closed.push(p);}
+  closed.sort(function(a,b){return Math.abs(b.realPnlUSD)-Math.abs(a.realPnlUSD);});
+
+  if(closed.length){
+    h+='<tr><td colspan="13" style="padding:7px 14px;background:var(--bg4);border-top:2px solid var(--bd2);border-bottom:1px solid var(--bd)">';
+    h+='<span style="font-size:10px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.07em">';
+    h+='■ Closed Positions ('+closed.length+') — Realized P&amp;L only</span></td></tr>';
+    for(var i=0;i<closed.length;i++){
+      var p=closed[i],col=tcol(p.ticker);
+      h+='<tr style="background:var(--bg3)">';
+      h+='<td><span style="color:var(--tx3);font-size:9px">■</span></td>';
+      h+='<td><span style="display:inline-flex;align-items:center;gap:8px"><span class="tav" style="width:26px;height:26px;background:'+col+'11;color:'+col+'66;border:1px solid '+col+'22;font-size:9px">'+ini(p.ticker)+'</span>';
+      h+='<span><div style="font-size:12px;font-weight:600;color:var(--tx2)">'+p.ticker+'</div>';
+      h+='<span style="font-size:9px;padding:1px 5px;border-radius:4px;background:var(--bg4);color:var(--tx3)">CLOSED</span></span></span></td>';
+      h+='<td class="nmc" style="color:var(--tx3)">'+p.name+'</td>';
+      h+='<td style="font-size:11px;color:var(--tx3)">'+p.theme+'</td>';
+      h+='<td style="color:var(--tx3)">'+p.currency+'</td>';
+      h+='<td class="mn" style="color:var(--tx3)">—</td>';
+      h+='<td class="mn" style="color:var(--tx3)">$'+fN(p.avgCostUSD,4)+'</td>';
+      h+='<td colspan="3" style="color:var(--tx3);font-size:11px;font-style:italic">Position fully closed</td>';
+      h+='<td colspan="2" style="color:var(--tx3)"></td>';
+      h+='<td class="mn fw '+clr(p.realPnlUSD)+'">'+(p.realPnlUSD>=0?'+':'')+'$'+fN(p.realPnlUSD)+'</td></tr>';
+    }
+  }
+
+  document.getElementById('stbody').innerHTML=h;
+}
+
+// ============================================================
+// BY THEME
+// ============================================================
+function doRThemes(){
+  var R=calcPortfolio(),td={};
+  for(var i=0;i<themes.length;i++)td[themes[i]]={v:0,c:0,u:0,r:0,tickers:[]};
+  var pk=Object.keys(R.positions);
+  for(var i=0;i<pk.length;i++){var p=R.positions[pk[i]];if(!td[p.theme])td[p.theme]={v:0,c:0,u:0,r:0,tickers:[],closed:0};var t=td[p.theme];t.v+=(p.marketValueUSD||0);t.c+=(p.totalCostUSD||0);t.u+=(p.unrealPnlUSD||0);t.r+=(p.realPnlUSD||0);if(p.shares>0.001){t.tickers.push(p.ticker);}else if(Math.abs(p.realPnlUSD)>0.01){t.closed++;}}
+  // Add realized P&L from closedPositions
+  var cpk2=Object.keys(R.closedPositions);
+  for(var i=0;i<cpk2.length;i++){var p=R.closedPositions[cpk2[i]];if(!td[p.theme])td[p.theme]={v:0,c:0,u:0,r:0,tickers:[],closed:0};td[p.theme].r+=(p.realPnlUSD||0);td[p.theme].closed++;}
+  var tv=0,tkeys=Object.keys(td);for(var i=0;i<tkeys.length;i++)tv+=td[tkeys[i]].v;
+  var sorted=[];
+  for(var i=0;i<themes.length;i++){var t=td[themes[i]];if(t&&(t.v>0||Math.abs(t.r)>0.01))sorted.push({n:themes[i],col:TC[i%TC.length],v:t.v,c:t.c,u:t.u,r:t.r,tickers:t.tickers,closed:t.closed||0});}
+  sorted.sort(function(a,b){return b.v-a.v;});
+  var h='';
+  for(var i=0;i<sorted.length;i++){
+    var t=sorted[i],pp=t.c>0?(t.u/t.c)*100:0,al=tv>0?(t.v/tv)*100:0;
+    h+='<div class="tkc"><div class="tka" style="background:'+t.col+'"></div><div class="tkh"><div><div class="tkn">'+t.n+'</div><div class="tks">'+t.tickers.slice(0,5).join(' \u00b7 ')+'</div></div><div class="tka2" style="color:'+t.col+'">'+al.toFixed(1)+'%</div></div>';
+    var tp=t.u+t.r;
+    h+='<div class="tkv" style="color:'+t.col+'">$'+fN(t.v)+'</div>';
+    h+='<div class="tkp">';
+    if(t.v>0)h+='<span class="'+clr(t.u)+'">Unreal: '+(t.u>=0?'+':'')+'$'+fN(t.u)+' ('+fP(pp)+')</span>';
+    if(Math.abs(t.r)>0.01)h+='<span class="'+clr(t.r)+'">Real: '+(t.r>=0?'+':'')+'$'+fN(t.r)+'</span>';
+    var tp=t.u+t.r;h+='<span class="'+clr(tp)+'" style="font-weight:700">Total: '+(tp>=0?'+':'')+'$'+fN(tp)+'</span>';
+    h+='</div>';
+    if(t.closed>0)h+='<div style="font-size:10px;color:var(--tx3);margin-bottom:5px">■ '+t.closed+' closed position'+(t.closed>1?'s':'')+'</div>';
+    h+='<div class="tkb"><div class="tkf" style="width:'+al.toFixed(1)+'%;background:'+t.col+'"></div></div></div>';
+  }
+  document.getElementById('tgrid').innerHTML=h||'<div class="emp">No theme data. Click Refresh Prices.</div>';
+  var ctx=document.getElementById('ach').getContext('2d');
+  if(ac)ac.destroy();
+  var dl=[],dd=[],dbg=[],dbd=[];
+  for(var i=0;i<sorted.length;i++){dl.push(sorted[i].n);dd.push(sorted[i].v);dbg.push(sorted[i].col+'bb');dbd.push(sorted[i].col);}
+  ac=new Chart(ctx,{type:'doughnut',data:{labels:dl,datasets:[{data:dd,backgroundColor:dbg,borderColor:dbd,borderWidth:1.5,hoverOffset:10}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'62%',
+      plugins:{legend:{position:'right',labels:{color:'#8892b0',font:{size:11},boxWidth:10,padding:10,usePointStyle:true}},
+        tooltip:{backgroundColor:'rgba(8,11,20,.96)',titleColor:'#e2e8f8',bodyColor:'#8892b0',borderColor:'rgba(255,255,255,.1)',borderWidth:1,padding:10,callbacks:{label:function(c){return '$'+fN(c.raw)+' ('+(tv>0?(c.raw/tv*100):0).toFixed(1)+'%)';}}}}}}); 
+}
+
+// ============================================================
+// MANAGE
+// ============================================================
+function doRManage(){
+  var h='';for(var i=0;i<themes.length;i++){var t=themes[i];h+='<div class="ttag">'+t+'<button onclick="doDelTheme(\''+t.replace(/\\/g,'\\\\').replace(/'/g,"\\'")+'\')">&#215;</button></div>';}
+  document.getElementById('ttags').innerHTML=h;
+  h='';for(var i=0;i<themes.length;i++)h+='<option value="'+themes[i]+'">'+themes[i]+'</option>';
+  document.getElementById('txtheme').innerHTML=h;
+  document.getElementById('txcount').textContent=txns.length;
+  var msEl=document.getElementById('msearch'),mq=msEl?msEl.value.toLowerCase():'';
+  var pool=txns.slice().sort(function(a,b){return a.date<b.date?1:a.date>b.date?-1:0;});
+  var sorted=mq?pool.filter(function(t){return t.ticker.toLowerCase().indexOf(mq)!==-1||t.name.toLowerCase().indexOf(mq)!==-1||t.theme.toLowerCase().indexOf(mq)!==-1;}):pool;
+  h='';
+  for(var i=0;i<sorted.length;i++){
+    var tx=sorted[i],col=tcol(tx.ticker);
+    h+='<tr id="txrow-'+tx.id+'">';
+h+='<td style="text-align:center"><input type="checkbox" class="tx-chk" data-id="'+tx.id+'" onclick="onChkChange()" style="width:15px;height:15px;cursor:pointer;accent-color:var(--bl)"/></td>';
+h+='<td>'+tx.date+'</td><td><span class="bdg '+(tx.type==='buy'?'bdb':'bds')+'">'+(tx.type==='buy'?'&#9650;':'&#9660;')+' '+tx.type.toUpperCase()+'</span></td>';
+    h+='<td><span style="display:inline-flex;align-items:center;gap:7px"><span class="tav" style="width:22px;height:22px;border-radius:5px;background:'+col+'22;color:'+col+';border:1px solid '+col+'33;font-size:8px">'+ini(tx.ticker)+'</span><span class="fw">'+tx.ticker+'</span></span></td>';
+    h+='<td class="nmc">'+tx.name+'</td><td style="color:var(--tx3);font-size:11px">'+tx.theme+'</td>';
+    h+='<td class="mn">'+fN(tx.shares,4)+'</td><td class="mn">'+fN(tx.price,4)+'</td><td style="color:var(--tx3)">'+tx.currency+'</td>';
+    h+='<td class="mn fw">$'+fN(toUSD(tx.shares*tx.price,tx.currency))+'</td>';
+    h+='<td style="display:flex;gap:4px"><button class="btn btns" onclick="doEditTx('+tx.id+')" title="Edit" style="padding:4px 8px">&#9998;</button><button class="btn btns btnd" onclick="doDelTx('+tx.id+')" title="Delete">&#10005;</button></td></tr>';
+  }
+  document.getElementById('atbody').innerHTML=h;
+}
+function doAddTheme(){var inp=document.getElementById('ntinp'),v=inp.value.trim();if(!v){showAlt('Enter a theme name.','er');return;}if(themes.indexOf(v)!==-1){showAlt('Already exists.','er');return;}themes.push(v);inp.value='';doRManage();autoSync();showAlt('"'+v+'" added.','ok');}
+function doDelTheme(t){themes=themes.filter(function(x){return x!==t;});doRManage();autoSync();}
+function doAddTx(){
+  var type=document.getElementById('txtype').value,date=document.getElementById('txdate').value;
+  var ticker=document.getElementById('txticker').value.trim().toUpperCase();
+  var theme=document.getElementById('txtheme').value;
+  var shares=parseFloat(document.getElementById('txshares').value),price=parseFloat(document.getElementById('txprice').value);
+  var currency=document.getElementById('txccy').value,name=document.getElementById('txname').value.trim()||ticker;
+  if(!date||!ticker||!shares||shares<=0||!price||price<=0){showAlt('Fill all required fields.','er');return;}
+  txns.push({id:nid++,type:type,date:date,ticker:ticker,name:name,theme:theme,shares:shares,price:price,currency:currency});
+  ['txticker','txshares','txprice','txname'].forEach(function(id){document.getElementById(id).value='';});
+  doRManage();renderAll();autoSync();showAlt(type.toUpperCase()+' '+shares+'\u00d7'+ticker+' added.','ok');
+}
+function doDelTx(id){
+  if(!confirm('Delete this transaction?'))return;
+  txns=txns.filter(function(t){return t.id!==id;});
+  doRManage();renderAll();autoSync();showAlt('Deleted.','ok');
+}
+function doEditTx(id){
+  var tx=null;for(var i=0;i<txns.length;i++){if(txns[i].id===id){tx=txns[i];break;}}
+  if(!tx)return;
+  document.getElementById('edit-id').value=tx.id;
+  document.getElementById('edit-type').value=tx.type;
+  document.getElementById('edit-date').value=tx.date;
+  document.getElementById('edit-ticker').value=tx.ticker;
+  document.getElementById('edit-name').value=tx.name;
+  document.getElementById('edit-shares').value=tx.shares;
+  document.getElementById('edit-price').value=tx.price;
+  document.getElementById('edit-ccy').value=tx.currency;
+  var sel=document.getElementById('edit-theme');sel.innerHTML='';
+  for(var i=0;i<themes.length;i++){var o=document.createElement('option');o.value=themes[i];o.textContent=themes[i];if(themes[i]===tx.theme)o.selected=true;sel.appendChild(o);}
+  var mp = manualPrices[tx.ticker] || '';
+  document.getElementById('edit-manual-price').value = mp ? mp : '';
+  document.getElementById('edit-modal').style.display='flex';
+}
+function doSaveEdit(){
+  var id=parseInt(document.getElementById('edit-id').value);
+  var type=document.getElementById('edit-type').value,date=document.getElementById('edit-date').value;
+  var ticker=document.getElementById('edit-ticker').value.trim().toUpperCase();
+  var name=document.getElementById('edit-name').value.trim()||ticker;
+  var theme=document.getElementById('edit-theme').value;
+  var shares=parseFloat(document.getElementById('edit-shares').value),price=parseFloat(document.getElementById('edit-price').value);
+  var currency=document.getElementById('edit-ccy').value;
+  if(!date||!ticker||!shares||shares<=0||!price||price<=0){showAlt('Fill all required fields.','er');return;}
+  for(var i=0;i<txns.length;i++){
+    if(txns[i].id===id){txns[i].type=type;txns[i].date=date;txns[i].ticker=ticker;txns[i].name=name;txns[i].theme=theme;txns[i].shares=shares;txns[i].price=price;txns[i].currency=currency;break;}
+  }
+  // Save manual price override
+  var mp = parseFloat(document.getElementById('edit-manual-price').value);
+  if (!isNaN(mp) && mp > 0) {
+    manualPrices[ticker] = mp;
+  } else {
+    delete manualPrices[ticker];
+  }
+  try { localStorage.setItem(LS + '_manual_prices', JSON.stringify(manualPrices)); } catch(e) {}
+  closeEdit();doRManage();renderAll();autoSync();showAlt('Transaction updated.','ok');
+}
+function closeEdit(){document.getElementById('edit-modal').style.display='none';}
+function showAlt(msg,type){var el=document.getElementById('altmsg');el.innerHTML=(type==='ok'?'\u2713 ':'\u2717 ')+msg;el.className='alt '+type;clearTimeout(el._t);el._t=setTimeout(function(){el.style.display='none';},4000);}
+
+// ============================================================
+// EXPORT / IMPORT
+// ============================================================
+function doExportCSV() {
+  var headers = ['date','type','ticker','name','theme','shares','price','currency'];
+  var rows = [headers.join(',')];
+  var sorted = txns.slice().sort(function(a,b){return a.date < b.date ? -1 : a.date > b.date ? 1 : 0;});
+  for (var i = 0; i < sorted.length; i++) {
+    var tx = sorted[i];
+    var row = [
+      tx.date,
+      tx.type,
+      '"' + (tx.ticker||'').replace(/"/g,'""') + '"',
+      '"' + (tx.name||'').replace(/"/g,'""') + '"',
+      '"' + (tx.theme||'').replace(/"/g,'""') + '"',
+      tx.shares,
+      tx.price,
+      tx.currency
+    ];
+    rows.push(row.join(','));
+  }
+  var csv = rows.join('\n');
+  var blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'pnb_transactions_' + today() + '.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  addLog('ok', 'Exported ' + txns.length + ' transactions to CSV.');
+  showAlt('Exported ' + txns.length + ' transactions.', 'ok');
+}
+
+function doImportCSV(input) {
+  var file = input.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var text = e.target.result;
+      var lines = text.split('\n');
+      if (lines.length < 2) { showAlt('File appears empty.', 'er'); return; }
+
+      // Parse header row — find column indices
+      var rawHeader = lines[0].replace(/\r/g,'').replace(/\n/g,'');
+      var hCols = parseCSVRow(rawHeader);
+      var hMap = {};
+      for (var i = 0; i < hCols.length; i++) hMap[hCols[i].toLowerCase().trim()] = i;
+
+      // Required columns
+      var required = ['date','type','ticker','shares','price','currency'];
+      for (var r = 0; r < required.length; r++) {
+        if (hMap[required[r]] === undefined) {
+          showAlt('Missing column: ' + required[r] + '. Check your CSV has the correct headers.', 'er');
+          addLog('error', 'Import failed — missing column: ' + required[r]);
+          return;
+        }
+      }
+
+      var imported = 0, skipped = 0, errors = [];
+      // Build existing ticker set for duplicate checking
+      var existing = {};
+      for (var i = 0; i < txns.length; i++) {
+        var key = txns[i].date + '|' + txns[i].ticker + '|' + txns[i].type + '|' + txns[i].shares;
+        existing[key] = true;
+      }
+
+      for (var i = 1; i < lines.length; i++) {
+        var line = lines[i].replace(/\r/g,'').replace(/\n/g,'').trim();
+        if (!line) continue;
+        var cols = parseCSVRow(line);
+
+        var date     = (cols[hMap['date']] || '').trim();
+        var type     = (cols[hMap['type']] || '').trim().toLowerCase();
+        var ticker   = (cols[hMap['ticker']] || '').trim().toUpperCase();
+        var name     = hMap['name'] !== undefined ? (cols[hMap['name']] || '').trim() : ticker;
+        var theme    = hMap['theme'] !== undefined ? (cols[hMap['theme']] || '').trim() : 'Other';
+        var shares   = parseFloat(cols[hMap['shares']] || '0');
+        var price    = parseFloat(cols[hMap['price']] || '0');
+        var currency = (cols[hMap['currency']] || 'USD').trim().toUpperCase();
+
+        // Validate
+        if (!date || !ticker || isNaN(shares) || shares <= 0 || isNaN(price) || price <= 0) {
+          errors.push('Row ' + (i+1) + ': invalid data');
+          skipped++;
+          continue;
+        }
+        if (type !== 'buy' && type !== 'sell') {
+          errors.push('Row ' + (i+1) + ': type must be buy or sell, got "' + type + '"');
+          skipped++;
+          continue;
+        }
+
+        // Check duplicate
+        var key = date + '|' + ticker + '|' + type + '|' + shares;
+        if (existing[key]) { skipped++; continue; }
+        existing[key] = true;
+
+        // Add theme if new
+        if (theme && themes.indexOf(theme) === -1) themes.push(theme);
+
+        txns.push({id:nid++, type:type, date:date, ticker:ticker, name:name||ticker, theme:theme||'Other', shares:shares, price:price, currency:currency});
+        imported++;
+      }
+
+      // Reset file input
+      input.value = '';
+
+      if (errors.length) {
+        for (var e = 0; e < errors.length; e++) addLog('warn', 'Import: ' + errors[e]);
+      }
+
+      doRManage(); renderAll(); autoSync();
+      var msg = 'Imported ' + imported + ' transactions.';
+      if (skipped > 0) msg += ' Skipped ' + skipped + ' (duplicates or invalid).';
+      showAlt(msg, 'ok');
+      addLog('ok', msg);
+    } catch(err) {
+      showAlt('Import failed: ' + err.message, 'er');
+      addLog('error', 'Import error: ' + err.message);
+      input.value = '';
+    }
+  };
+  reader.readAsText(file);
+}
+
+// Parse a single CSV row handling quoted fields
+function parseCSVRow(line) {
+  var result = [], cur = '', inQ = false;
+  for (var i = 0; i < line.length; i++) {
+    var ch = line[i];
+    if (ch === '"') {
+      if (inQ && line[i+1] === '"') { cur += '"'; i++; }
+      else inQ = !inQ;
+    } else if (ch === ',' && !inQ) {
+      result.push(cur); cur = '';
+    } else {
+      cur += ch;
+    }
+  }
+  result.push(cur);
+  return result;
+}
+
+// ============================================================
+// SELECTION & MASS DELETE
+// ============================================================
+function getSelectedIds() {
+  var ids = [];
+  var chks = document.querySelectorAll('.tx-chk:checked');
+  for (var i = 0; i < chks.length; i++) {
+    ids.push(parseInt(chks[i].getAttribute('data-id')));
+  }
+  return ids;
+}
+
+function onChkChange() {
+  var ids = getSelectedIds();
+  var total = document.querySelectorAll('.tx-chk').length;
+  var bar = document.getElementById('sel-bar');
+  var countEl = document.getElementById('sel-count');
+  var chkAll = document.getElementById('chk-all');
+  if (ids.length > 0) {
+    bar.style.display = 'flex';
+    countEl.textContent = ids.length + ' transaction' + (ids.length === 1 ? '' : 's') + ' selected';
+  } else {
+    bar.style.display = 'none';
+  }
+  // Update select-all checkbox state
+  if (chkAll) {
+    chkAll.checked = ids.length === total && total > 0;
+    chkAll.indeterminate = ids.length > 0 && ids.length < total;
+  }
+}
+
+function doToggleAll(chkAllEl) {
+  var chks = document.querySelectorAll('.tx-chk');
+  for (var i = 0; i < chks.length; i++) {
+    chks[i].checked = chkAllEl.checked;
+  }
+  onChkChange();
+}
+
+function doClearSelection() {
+  var chks = document.querySelectorAll('.tx-chk');
+  for (var i = 0; i < chks.length; i++) chks[i].checked = false;
+  var chkAll = document.getElementById('chk-all');
+  if (chkAll) { chkAll.checked = false; chkAll.indeterminate = false; }
+  document.getElementById('sel-bar').style.display = 'none';
+}
+
+function doDeleteSelected() {
+  var ids = getSelectedIds();
+  if (ids.length === 0) return;
+  if (!confirm('Delete ' + ids.length + ' transaction' + (ids.length === 1 ? '' : 's') + '? This cannot be undone.')) return;
+  var idSet = {};
+  for (var i = 0; i < ids.length; i++) idSet[ids[i]] = true;
+  txns = txns.filter(function(t) { return !idSet[t.id]; });
+  document.getElementById('sel-bar').style.display = 'none';
+  doRManage(); renderAll(); autoSync();
+  showAlt('Deleted ' + ids.length + ' transaction' + (ids.length === 1 ? '' : 's') + '.', 'ok');
+  addLog('ok', 'Mass deleted ' + ids.length + ' transactions.');
+}
+
+// ============================================================
+// HISTORICAL DATA (from Excel import — full portfolio Jan 2025 onwards)
+// Format: [date, portfolioValue, costBasis, unrealizedPnL, realizedPnL]
+// ============================================================
+var HIST_DATA = [["2025-01-01", 177112.56, 162519.22, 14593.34, -3845.88], ["2025-01-02", 176608.33, 162627.5, 13980.83, -3862.06], ["2025-01-03", 181141.27, 162461.87, 18679.4, -3863.47], ["2025-01-04", 182316.27, 162442.85, 19873.42, -3862.24], ["2025-01-05", 181822.38, 162443.75, 19378.63, -3856.39], ["2025-01-06", 181847.53, 162472.31, 19375.22, -3869.48], ["2025-01-07", 184372.61, 162628.88, 21743.73, -3886.36], ["2025-01-08", 184468.14, 162629.71, 21838.43, -3888.3], ["2025-01-09", 183631.68, 162457.08, 21174.6, -3862.31], ["2025-01-10", 183098.72, 162424.43, 20674.29, -3850.25], ["2025-01-11", 183695.07, 162298.21, 21396.86, -3823.66], ["2025-01-12", 184118.45, 162392.05, 21726.4, -3820.25], ["2025-01-13", 184119.23, 162392.05, 21727.18, -3820.25], ["2025-01-14", 182717.44, 162258.72, 20458.72, -3822.22], ["2025-01-15", 184169.32, 162433.13, 21736.19, -3850.32], ["2025-01-16", 185290.27, 162521.05, 22769.22, -3875.9], ["2025-01-17", 185982.05, 162491.38, 23490.67, -3870.17], ["2025-01-18", 185251.91, 162472.23, 22779.68, -3868.19], ["2025-01-19", 184080.72, 162368.55, 21712.17, -3845.07], ["2025-01-20", 184075.73, 162365.11, 21710.62, -3848.79], ["2025-01-21", 184181.09, 162660.48, 21520.61, -3888.01], ["2025-01-22", 184420.97, 162653.66, 21767.31, -3887.11], ["2025-01-23", 186255.62, 162674.82, 23580.8, -3895.51], ["2025-01-24", 185380.67, 162665.93, 22714.74, -3900.12], ["2025-01-25", 185502.93, 162897.1, 22605.83, -3927.72], ["2025-01-26", 185651.14, 162870.83, 22780.31, -3923.08], ["2025-01-27", 185649.14, 162868.55, 22780.59, -3922.17], ["2025-01-28", 182178.16, 162798.94, 19379.22, -3896.06], ["2025-01-29", 179450.41, 162655.08, 16795.33, -3874.08], ["2025-01-30", 181936.18, 162616.71, 19319.47, -3859.98], ["2025-01-31", 185852.03, 162654.23, 23197.8, -3864.24], ["2025-02-01", 185870.8, 162575.12, 23295.68, -3870.3], ["2025-02-02", 184065.05, 162515.93, 21549.12, -3864.31], ["2025-02-03", 184074.27, 162527.74, 21546.53, -3868.61], ["2025-02-04", 183830.66, 162410.84, 21419.82, -3844.41], ["2025-02-05", 185939.15, 162700.17, 23238.98, -3881.66], ["2025-02-06", 188206.61, 162823.15, 25383.46, -3908.44], ["2025-02-07", 187181.23, 162734.04, 24447.19, -3900.8], ["2025-02-08", 186258.91, 162683.3, 23575.61, -3892.49], ["2025-02-09", 185169.33, 162698.58, 22470.75, -3896.07], ["2025-02-10", 185169.33, 162698.58, 22470.75, -3896.07], ["2025-02-11", 187518.55, 162708.34, 24810.21, -3907.64], ["2025-02-12", 186816.48, 162723.98, 24092.5, -3910.69], ["2025-02-13", 186990.37, 162723.6, 24266.77, -3901.18], ["2025-02-14", 186750.88, 162867.62, 23883.26, -3912.14], ["2025-02-15", 186585.8, 163086.28, 23499.52, -3953.07], ["2025-02-16", 186115.59, 163045.54, 23070.05, -3944.69], ["2025-02-17", 186115.59, 163045.54, 23070.05, -3944.69], ["2025-02-18", 186201.95, 163063.75, 23138.2, -3957.57], ["2025-02-19", 187219.92, 163037.42, 24182.5, -3948.14], ["2025-02-20", 186149.1, 162992.19, 23156.91, -3946.17], ["2025-02-21", 186081.59, 163147.2, 22934.39, -3972.55], ["2025-02-22", 184739.75, 163104.21, 21635.54, -3958.5], ["2025-02-23", 183323.55, 163063.04, 20260.51, -3943.07], ["2025-02-24", 183326.28, 163063.04, 20263.24, -3943.07], ["2025-02-25", 181863.69, 163040.12, 18823.57, -3944.55], ["2025-02-26", 179597.6, 163003.2, 16594.4, -3930.36], ["2025-02-27", 181728.04, 162967.47, 18760.57, -3916.98], ["2025-02-28", 178208.97, 162720.69, 15488.28, -3877.15], ["2025-03-01", 176288.88, 162644.58, 13644.3, -3852.29], ["2025-03-02", 176500.15, 162582.12, 13918.03, -3846.29], ["2025-03-03", 176474.83, 162582.12, 13892.71, -3846.29], ["2025-03-04", 178274.58, 162755.74, 15518.84, -3867.35], ["2025-03-05", 173923.01, 162690.58, 11232.43, -3839.95], ["2025-03-06", 177684.11, 163059.25, 14624.86, -3903.09], ["2025-03-07", 179860.31, 163229.36, 16630.95, -3940.48], ["2025-03-08", 178357.95, 163143.77, 15214.18, -3907.5], ["2025-03-09", 178932.7, 163112.5, 15820.2, -3902.38], ["2025-03-10", 178932.7, 163112.5, 15820.2, -3902.38], ["2025-03-11", 176983.62, 163099.94, 13883.68, -3907.07], ["2025-03-12", 176973.6, 163090.62, 13882.98, -3889.81], ["2025-03-13", 178904.09, 163155.73, 15748.36, -3907.66], ["2025-03-27", 188808.28, 163490.7, 25317.58, -4745.59], ["2025-03-28", 189149.05, 163454.54, 25694.51, -4736.29], ["2025-03-29", 188682.67, 163461.87, 25220.8, -4736.82], ["2025-03-30", 188440.72, 163442.5, 24998.22, -4735.39], ["2025-03-31", 188440.72, 163442.5, 24998.22, -4735.39], ["2025-04-01", 187867.37, 163442.49, 24424.88, -4735.39], ["2025-04-02", 189231.68, 163373.24, 25858.44, -4720.61], ["2025-04-03", 188537.02, 163447.63, 25089.39, -4735.3], ["2025-04-04", 185633.69, 163838.68, 21795.01, -4782.13], ["2025-04-05", 171058.67, 163222.97, 7835.7, -4599.56], ["2025-04-06", 171277.18, 163173.98, 8103.2, -4597.34], ["2025-04-07", 171277.18, 163173.98, 8103.2, -4597.34], ["2025-04-08", 166882.8, 162839.02, 4043.78, -4503.28], ["2025-04-09", 169706.79, 162935.72, 6771.07, -4536.62], ["2025-04-10", 166052.54, 163005.35, 3047.19, -4521.6], ["2025-04-11", 173909.72, 163592.66, 10317.06, -4649.66], ["2025-04-12", 180751.18, 163897.61, 16853.57, -4688.91], ["2025-04-13", 182409.6, 163944.0, 18465.6, -4691.47], ["2025-04-14", 182409.6, 163944.0, 18465.6, -4691.47], ["2025-04-15", 185257.58, 164083.62, 21173.96, -4738.66], ["2025-04-16", 185899.24, 164171.26, 21727.98, -4766.2], ["2025-04-17", 189765.06, 164266.96, 25498.1, -4789.64], ["2025-04-18", 189362.16, 164279.04, 25083.12, -4791.71], ["2025-04-19", 189397.39, 164290.59, 25106.8, -4792.43], ["2025-04-20", 189397.43, 164290.63, 25106.8, -4792.43], ["2025-04-21", 189397.43, 164290.63, 25106.8, -4792.43], ["2025-04-22", 188423.55, 164296.2, 24127.35, -4793.05], ["2025-04-23", 190437.42, 164398.45, 26038.97, -4800.68], ["2025-04-24", 189649.22, 164211.02, 25438.2, -4782.92], ["2025-04-25", 191162.05, 164263.6, 26898.45, -4792.06], ["2025-04-26", 190004.99, 164286.39, 25718.6, -4795.62], ["2025-04-27", 190672.13, 164273.82, 26398.31, -4793.96], ["2025-04-28", 190672.13, 164273.82, 26398.31, -4793.96], ["2025-04-29", 190537.64, 164358.42, 26179.22, -4811.6], ["2025-04-30", 191744.69, 164343.3, 27401.39, -4790.37], ["2025-05-01", 190179.41, 164348.49, 25830.92, -4793.13], ["2025-05-02", 187432.21, 164222.61, 23209.6, -4780.02], ["2025-05-03", 189854.15, 164528.52, 25325.63, -4833.78], ["2025-05-04", 190069.92, 164491.28, 25578.64, -4831.71], ["2025-05-05", 190069.92, 164491.28, 25578.64, -4831.71], ["2025-05-06", 192281.3, 164575.76, 27705.54, -4836.18], ["2025-05-07", 194398.88, 164653.38, 29745.5, -4847.4], ["2025-05-08", 195098.0, 164573.19, 30524.81, -4830.68], ["2025-05-09", 195593.18, 164295.22, 31297.96, -4797.13], ["2025-05-10", 197179.23, 164334.88, 32844.35, -4803.03], ["2025-05-11", 197503.85, 164313.03, 33190.82, -4801.78], ["2025-05-12", 197503.85, 164313.03, 33190.82, -4801.78], ["2025-05-13", 196106.39, 164043.88, 32062.51, -4765.25], ["2025-05-14", 198474.48, 164310.06, 34164.42, -4842.85], ["2025-05-15", 196966.67, 164269.31, 32697.36, -4818.61], ["2025-05-16", 197160.79, 164180.05, 32980.74, -4782.74], ["2025-05-17", 195995.07, 164163.62, 31831.45, -4798.22], ["2025-05-18", 197102.42, 164185.27, 32917.15, -4799.17], ["2025-05-19", 197102.42, 164185.27, 32917.15, -4799.17], ["2025-05-20", 199052.34, 164329.49, 34722.85, -4824.63], ["2025-05-21", 200371.28, 164237.81, 36133.47, -4787.73], ["2025-05-22", 202326.66, 164507.3, 37819.36, -4831.83], ["2025-05-23", 199956.12, 164354.42, 35601.7, -4796.5], ["2025-05-24", 202794.18, 164555.96, 38238.22, -4822.48], ["2025-05-25", 203559.36, 164580.88, 38978.48, -4823.54], ["2025-05-26", 203559.36, 164580.88, 38978.48, -4823.54], ["2025-05-27", 203766.65, 164665.55, 39101.1, -4854.87], ["2025-05-28", 203808.68, 164473.03, 39335.65, -4813.64], ["2025-05-29", 202952.47, 164388.66, 38563.81, -4798.51], ["2025-05-30", 202354.06, 164480.47, 37873.59, -4812.74], ["2025-05-31", 200552.64, 164434.57, 36118.07, -4796.76], ["2025-06-01", 201272.82, 164441.97, 36830.85, -4797.38], ["2025-06-02", 201272.82, 164441.97, 36830.85, -4797.38], ["2025-06-03", 204484.04, 164673.57, 39810.47, -4855.82], ["2025-06-04", 203522.2, 164560.81, 38961.39, -4835.2], ["2025-06-05", 203686.96, 164707.59, 38979.37, -4862.44], ["2025-06-06", 202621.93, 164739.98, 37881.95, -4875.41], ["2025-06-07", 202023.25, 164650.57, 37372.68, -4860.57], ["2025-06-07", 202023.25, 164650.57, 37372.68, -4860.57], ["2025-06-08", 201969.03, 164646.3, 37322.73, -4860.08], ["2025-06-09", 201969.03, 164646.3, 37322.73, -4860.08], ["2025-06-10", 203095.5, 164752.95, 38342.55, -4881.06], ["2025-06-11", 203123.53, 164725.55, 38397.98, -4879.47], ["2025-06-12", 203908.69, 164778.81, 39129.88, -4877.19], ["2025-06-13", 206326.13, 164888.49, 41437.64, -4880.09], ["2025-06-14", 207809.81, 164834.72, 42975.09, -4854.65], ["2025-06-15", 207957.67, 164822.85, 43134.82, -4854.01], ["2025-06-16", 207957.67, 164822.85, 43134.82, -4854.01], ["2025-06-17", 208472.68, 164959.13, 43513.55, -4891.47], ["2025-06-18", 208582.41, 164860.04, 43722.37, -4880.58], ["2025-06-19", 209647.22, 164785.29, 44861.93, -4877.56], ["2025-06-20", 208556.13, 164550.76, 44005.37, -4828.46], ["2025-06-21", 207266.44, 164626.36, 42640.08, -4840.59], ["2025-06-22", 206892.95, 164632.26, 42260.69, -4841.18], ["2025-06-23", 206892.95, 164632.26, 42260.69, -4841.18], ["2025-06-24", 208563.31, 164527.0, 44036.31, -4804.51], ["2025-06-25", 206957.35, 164767.99, 42189.36, -4853.37], ["2025-06-26", 206455.54, 164748.1, 41707.44, -4849.5], ["2025-06-27", 206988.88, 165012.48, 41976.4, -4891.82], ["2025-06-28", 204862.24, 164928.69, 39933.55, -4873.79], ["2025-06-29", 204539.05, 164901.68, 39637.37, -4871.71], ["2025-06-30", 204539.05, 164901.68, 39637.37, -4871.71], ["2025-07-01", 204957.25, 165073.96, 39883.29, -4904.83], ["2025-07-02", 204506.23, 165034.0, 39472.23, -4901.96], ["2025-07-03", 205403.18, 165058.02, 40345.16, -4903.98], ["2025-07-04", 206735.17, 165092.06, 41643.11, -4910.83], ["2025-07-05", 207369.0, 165036.64, 42332.36, -4893.28], ["2025-07-06", 207415.71, 165031.93, 42383.78, -4892.76], ["2025-07-07", 207415.71, 165031.93, 42383.78, -4892.76], ["2025-07-08", 206175.5, 164900.7, 41274.8, -4865.75], ["2025-07-09", 205638.3, 164869.4, 40768.9, -4874.82], ["2025-07-10", 205567.04, 164870.15, 40696.89, -4881.16], ["2025-07-11", 205426.31, 164940.15, 40486.16, -4909.11], ["2025-07-12", 207017.79, 164948.2, 42069.59, -4912.28], ["2025-07-13", 207307.7, 164932.1, 42375.6, -4911.23], ["2025-07-14", 207307.7, 164932.1, 42375.6, -4911.23], ["2025-07-15", 207480.54, 164868.07, 42612.47, -4894.77], ["2025-07-16", 206772.53, 164755.66, 42016.87, -4872.57], ["2025-07-17", 206587.59, 164754.67, 41832.92, -4869.12], ["2025-07-18", 206927.83, 164652.05, 42275.78, -4844.8], ["2025-07-19", 209156.5, 164813.84, 44342.66, -4884.95], ["2025-07-20", 208161.31, 164788.87, 43372.44, -4883.58], ["2025-07-21", 208161.31, 164788.87, 43372.44, -4883.58], ["2025-07-22", 214691.81, 170035.91, 44655.9, -4878.34], ["2025-07-23", 216859.41, 170171.97, 46687.44, -4898.51], ["2025-07-24", 217719.04, 170267.27, 47451.77, -4925.36], ["2025-07-25", 217898.22, 170242.24, 47655.98, -4928.84], ["2025-07-26", 216797.8, 170032.43, 46765.37, -4898.11], ["2025-07-27", 217279.58, 170059.44, 47220.14, -4899.49], ["2025-07-28", 217279.58, 170059.44, 47220.14, -4899.49], ["2025-07-29", 215983.28, 169868.77, 46114.51, -4872.78], ["2025-07-30", 216469.36, 169755.64, 46713.72, -4864.17], ["2025-07-31", 215855.9, 169537.41, 46318.49, -4826.38], ["2025-08-01", 213028.62, 169418.84, 43609.78, -4812.25], ["2025-08-02", 211668.54, 169633.11, 42035.43, -4835.77], ["2025-08-03", 212010.82, 169644.02, 42366.8, -4834.97], ["2025-08-04", 212010.82, 169644.02, 42366.8, -4834.97], ["2025-08-05", 215467.79, 169657.69, 45810.1, -4831.02], ["2025-08-06", 218559.76, 169689.9, 48869.86, -4835.52], ["2025-08-07", 221637.55, 169836.9, 51800.65, -4860.06], ["2025-08-08", 222633.73, 169855.23, 52778.5, -4856.41], ["2025-08-09", 221195.71, 169911.8, 51283.91, -4875.24], ["2025-08-10", 221088.13, 169909.59, 51178.54, -4875.04], ["2025-08-11", 221088.13, 169909.59, 51178.54, -4875.04], ["2025-08-12", 219738.38, 169825.83, 49912.55, -4866.47], ["2025-08-13", 221244.02, 169958.78, 51285.24, -4876.3], ["2025-08-14", 221145.26, 170045.73, 51099.53, -4884.28], ["2025-08-15", 219200.97, 169848.23, 49352.74, -4844.79], ["2025-08-16", 219926.82, 169988.2, 49938.62, -4865.58], ["2025-08-17", 219778.9, 169975.47, 49803.43, -4864.91], ["2025-08-18", 219778.9, 169975.47, 49803.43, -4864.91], ["2025-08-19", 219440.79, 169895.98, 49544.81, -4847.69], ["2025-08-20", 216504.86, 169809.88, 46694.98, -4820.9], ["2025-08-21", 216556.69, 169708.47, 46848.22, -4799.34], ["2025-08-22", 218560.93, 169604.82, 48956.11, -4793.72], ["2025-08-23", 222120.5, 169816.05, 52304.45, -4797.54], ["2025-08-24", 219362.3, 169820.58, 49541.72, -4797.79], ["2025-08-25", 221618.52, 169820.58, 51797.94, -4797.79], ["2025-08-26", 221573.81, 169915.64, 51658.17, -4851.15], ["2025-08-27", 222189.65, 169909.17, 52280.48, -4852.25], ["2025-08-28", 221650.71, 169881.64, 51769.07, -4853.14], ["2025-08-29", 222258.58, 170053.29, 52205.29, -4877.97], ["2025-08-30", 224023.54, 170083.9, 53939.64, -4884.75], ["2025-08-31", 224210.02, 170063.2, 54146.82, -4883.53], ["2025-09-01", 224210.02, 170063.2, 54146.82, -4883.53], ["2025-09-02", 224702.69, 170104.95, 54597.74, -4896.89], ["2025-09-03", 224880.96, 169898.78, 54982.18, -4872.16], ["2025-09-04", 228449.46, 169996.49, 58452.97, -4895.1], ["2025-09-05", 227489.1, 169873.32, 57615.78, -4867.31], ["2025-09-06", 230316.52, 170148.3, 60168.22, -4918.0], ["2025-09-07", 230782.7, 170110.89, 60671.81, -4917.03], ["2025-09-08", 230782.7, 170110.89, 60671.81, -4917.03], ["2025-09-09", 229990.39, 170154.26, 59836.13, -4919.25], ["2025-09-10", 229675.06, 170144.8, 59530.26, -4919.33], ["2025-09-11", 230705.52, 170211.77, 60493.75, -4943.91], ["2025-09-12", 231598.27, 170302.49, 61295.78, -4968.19], ["2025-09-13", 231331.86, 170228.3, 61103.56, -4956.97], ["2025-09-14", 231069.2, 170246.89, 60822.31, -4957.56], ["2025-09-15", 231069.2, 170246.89, 60822.31, -4957.56], ["2025-09-16", 233155.62, 170407.07, 62748.55, -4979.69], ["2025-09-17", 232348.83, 170519.18, 61829.65, -4983.27], ["2025-09-18", 232902.01, 170499.29, 62402.72, -4974.0], ["2025-09-19", 231144.84, 170270.65, 60874.19, -4940.53], ["2025-09-20", 232935.92, 170192.99, 62742.93, -4927.79], ["2025-09-21", 234286.55, 170180.92, 64105.63, -4927.34], ["2025-09-22", 234286.55, 170180.92, 64105.63, -4927.34], ["2025-09-23", 237399.98, 170182.72, 67217.26, -4920.16], ["2025-09-24", 241921.67, 170197.77, 71723.9, -4928.11], ["2025-09-25", 239519.28, 168638.72, 70880.56, -4918.97], ["2025-09-26", 242069.15, 171223.13, 70846.02, -4894.92], ["2025-09-27", 244185.92, 171294.71, 72891.21, -4887.32], ["2025-09-28", 243181.42, 171303.74, 71877.68, -4887.49], ["2025-09-29", 243181.42, 171303.74, 71877.68, -4887.49], ["2025-09-30", 245611.68, 171388.84, 74222.84, -4912.09], ["2025-10-01", 244417.72, 171473.57, 72944.15, -4938.69], ["2025-10-02", 246113.33, 171358.55, 74754.78, -4929.01], ["2025-10-03", 243403.96, 171366.67, 72037.29, -4915.82], ["2025-10-04", 246858.18, 171446.9, 75411.28, -4928.31], ["2025-10-05", 246445.28, 171462.52, 74982.76, -4926.9], ["2025-10-06", 233473.66, 233473.66, null, null], ["2025-10-07", 248975.46, 171366.1, 77609.36, -4942.11], ["2025-10-08", 246665.41, 171182.31, 75483.1, -4921.29], ["2025-10-09", 249449.02, 170735.32, 78713.7, -4919.63], ["2025-10-10", 249659.75, 170469.99, 79189.76, -4902.53], ["2025-10-11", 246622.79, 170635.96, 75986.83, -4898.74], ["2025-10-12", 245017.13, 170829.64, 74187.49, -4897.71], ["2025-10-13", 245017.13, 170829.64, 74187.49, -4897.71], ["2025-10-14", 251618.16, 170745.64, 80872.52, -4871.8], ["2025-10-15", 251470.18, 168853.53, 82616.65, -4850.42], ["2025-10-16", 254269.93, 170314.44, 83955.49, -4864.43], ["2025-10-17", 257900.02, 170848.38, 87051.64, -4845.77], ["2025-10-18", 248495.64, 170764.4, 77731.24, -4835.92], ["2025-10-19", 248994.43, 170628.18, 78366.25, -4837.11], ["2025-10-20", 248994.43, 170628.18, 78366.25, -4837.11], ["2025-10-21", 252394.4, 170728.2, 81666.2, -4864.37], ["2025-10-22", 244601.99, 170959.41, 73642.58, -4859.03], ["2025-10-23", 240834.75, 171016.1, 69818.65, -4860.76], ["2025-10-24", 247999.74, 171017.93, 76981.81, -4873.23], ["2025-10-25", 247558.62, 171088.55, 76470.07, -4872.76], ["2025-10-26", 246342.2, 171083.38, 75258.82, -4873.41], ["2025-10-27", 246342.2, 171083.38, 75258.82, -4873.41], ["2025-10-28", 248763.89, 171222.0, 77541.89, -4898.36], ["2025-10-29", 249960.64, 171293.97, 78666.67, -4920.87], ["2025-10-30", 254116.61, 171293.83, 82822.78, -4942.55], ["2025-10-31", 253037.43, 171111.02, 81926.41, -4902.53], ["2025-11-01", 254649.29, 171041.84, 83607.45, -4888.94], ["2025-11-02", 254518.49, 171123.11, 83395.38, -4886.77], ["2025-11-03", 254539.89, 171144.28, 83395.61, -4889.22], ["2025-11-04", 254661.96, 171173.63, 83488.33, -4882.71], ["2025-11-05", 250636.0, 171089.37, 79546.63, -4863.62], ["2025-11-06", 251857.64, 171047.66, 80809.98, -4860.19], ["2025-11-07", 252434.45, 171098.23, 81336.22, -4835.35], ["2025-11-08", 251975.92, 171159.47, 80816.45, -4837.74], ["2025-11-09", 254406.56, 171172.03, 83234.53, -4851.89], ["2025-11-10", 254406.56, 171172.03, 83234.53, -4851.89], ["2025-11-11", 259564.03, 171184.01, 88380.02, -4874.21], ["2025-11-12", 261096.2, 171273.81, 89822.39, -4877.19], ["2025-11-13", 265407.23, 171283.48, 94123.75, -4891.73], ["2025-11-14", 265384.92, 171407.52, 93977.4, -4900.12], ["2025-11-15", 260320.81, 171388.91, 88931.9, -4892.81], ["2025-11-16", 260554.57, 171404.65, 89149.92, -4882.38], ["2025-11-17", 260501.42, 171359.48, 89141.94, -4870.29], ["2025-11-18", 259682.96, 171338.29, 88344.67, -4868.95], ["2025-11-19", 253893.58, 171270.31, 82623.27, -4851.65], ["2025-11-20", 258718.85, 171130.08, 87588.77, -4837.58], ["2025-11-21", 259429.13, 171109.65, 88319.48, -4845.89], ["2025-11-22", 248942.13, 171097.83, 77844.3, -4812.23], ["2025-11-23", 251084.46, 171176.08, 79908.38, -4823.5], ["2025-11-24", 251084.46, 171176.08, 79908.38, -4823.5], ["2025-11-25", 253234.78, 171192.84, 82041.94, -4828.25], ["2025-11-26", 255174.08, 171190.53, 83983.55, -4816.92], ["2025-11-27", 260697.81, 171368.01, 89329.8, -4860.57], ["2025-11-28", 261857.27, 171430.16, 90427.11, -4879.97], ["2025-11-29", 265901.36, 171436.09, 94465.27, -4901.37], ["2025-11-30", 266158.46, 171372.59, 94785.87, -4882.07], ["2025-12-01", 266158.46, 171372.59, 94785.87, -4882.07], ["2025-12-02", 267258.51, 171452.96, 95805.55, -4897.68], ["2025-12-03", 263792.86, 171442.75, 92350.11, -4909.25], ["2025-12-04", 267955.57, 171587.35, 96368.22, -4929.01], ["2025-12-05", 271945.63, 175846.45, 96099.18, -3070.32], ["2025-12-06", 275432.24, 175820.99, 99611.25, -3089.94], ["2025-12-07", 271894.76, 175853.17, 96041.59, -3092.25], ["2025-12-08", 271894.76, 175853.17, 96041.59, -3092.25], ["2025-12-09", 269690.77, 175789.59, 93901.18, -3075.31], ["2025-12-10", 270716.5, 175818.73, 94897.77, -3094.01], ["2025-12-11", 269719.19, 175847.99, 93871.2, -3086.83], ["2025-12-12", 273643.46, 176044.48, 97598.98, -3114.08], ["2025-12-13", 272337.72, 175960.04, 96377.68, -3092.83], ["2025-12-14", 272680.4, 176002.25, 96678.15, -3098.31], ["2025-12-15", 272648.9, 175984.73, 96664.17, -3101.67], ["2025-12-16", 271860.82, 176048.83, 95811.99, -3094.57], ["2025-12-17", 269441.28, 176086.5, 93354.78, -3086.89], ["2025-12-18", 269546.32, 176006.11, 93540.21, -3066.77], ["2025-12-19", 272134.41, 176018.4, 96116.01, -3069.95], ["2025-12-20", 275034.5, 175955.5, 99079.0, -3066.34], ["2025-12-21", 274174.94, 175896.42, 98278.52, -3076.81], ["2025-12-22", 274198.95, 175918.59, 98280.36, -3081.74], ["2025-12-23", 279262.5, 176077.8, 103184.7, -3100.42], ["2025-12-24", 278887.37, 176209.81, 102677.56, -3124.88], ["2025-12-25", 278697.18, 176295.87, 102401.31, -3141.3], ["2025-12-26", 279429.17, 176257.57, 103171.6, -3136.43], ["2025-12-27", 281554.52, 176292.15, 105262.37, -3143.4], ["2025-12-28", 281491.57, 176292.33, 105199.24, -3144.49], ["2025-12-29", 273006.54, 176292.33, 96714.21, -3144.49], ["2025-12-30", 275618.06, 176258.54, 99359.52, -3129.91], ["2025-12-31", 276505.82, 176266.99, 100238.83, -3132.68], ["2026-01-01", 274185.4, 176182.73, 98002.67, -3108.81], ["2026-01-02", 273248.61, 176191.94, 97056.67, -3109.51], ["2026-01-03", 274582.3, 176196.03, 98386.27, -3121.37], ["2026-01-04", 276398.77, 176164.46, 100234.31, -3124.14], ["2026-01-05", 276398.77, 176164.46, 100234.31, -3124.14], ["2026-01-06", 280522.48, 176168.7, 104353.78, -3135.71], ["2026-01-07", 285334.53, 176247.82, 109086.71, -3144.27], ["2026-01-08", 282230.31, 176169.83, 106060.48, -3142.06], ["2026-01-09", 282130.52, 176095.75, 106034.77, -3120.68], ["2026-01-10", 285875.64, 176001.02, 109874.62, -3110.56], ["2026-01-11", 285667.76, 176018.33, 109649.43, -3120.23], ["2026-01-12", 285695.39, 176044.36, 109651.03, -3125.66], ["2026-01-13", 292125.0, 176105.63, 116019.37, -3136.54], ["2026-01-14", 294530.59, 176000.13, 118530.46, -3115.57], ["2026-01-15", 295215.77, 176027.83, 119187.94, -3112.66], ["2026-01-16", 293402.29, 175972.93, 117429.36, -3124.18], ["2026-01-17", 292427.12, 175935.16, 116491.96, -3110.14], ["2026-01-18", 293627.06, 175928.81, 117698.25, -3111.36], ["2026-01-19", 293694.97, 175979.41, 117715.56, -3128.78], ["2026-01-20", 294529.24, 176016.73, 118512.51, -3130.22], ["2026-01-21", 300193.23, 176141.77, 124051.46, -3154.49], ["2026-01-22", 305737.48, 176093.93, 129643.55, -3176.98], ["2026-01-23", 310070.54, 176230.97, 133839.57, -3216.48], ["2026-01-24", 314101.58, 176305.46, 137796.12, -3251.18], ["2026-01-25", 314754.81, 176468.81, 138286.0, -3264.01], ["2026-01-26", 314631.5, 176422.99, 138208.51, -3264.01], ["2026-01-27", 320720.52, 176673.67, 144046.85, -3293.2], ["2026-01-28", 318544.66, 176875.82, 141668.84, -3314.95], ["2026-01-29", 325632.66, 176944.4, 148688.26, -3342.44], ["2026-01-30", 319886.26, 176924.55, 142961.71, -3331.34], ["2026-01-31", 314035.32, 176930.85, 137104.47, -3352.04], ["2026-02-01", 307646.84, 176827.09, 130819.75, -3315.74], ["2026-02-02", 307728.99, 176858.59, 130870.4, -3317.93], ["2026-02-03", 300258.99, 176713.23, 123545.76, -3302.87], ["2026-02-04", 310288.44, 176876.14, 133412.3, -3353.58], ["2026-02-05", 306629.5, 176824.55, 129804.95, -3343.27], ["2026-02-06", 298803.54, 176681.35, 122122.19, -3308.75], ["2026-02-07", 304464.9, 176832.62, 127632.28, -3350.13], ["2026-02-08", 305884.53, 176788.46, 129096.07, -3354.52], ["2026-02-09", 305884.53, 176788.46, 129096.07, -3354.52], ["2026-02-10", 311552.16, 177036.99, 134515.17, -3410.44], ["2026-02-11", 312398.06, 176994.66, 135403.4, -3408.71], ["2026-02-12", 315465.55, 176982.16, 138483.39, -3419.33], ["2026-02-13", 316073.77, 177123.56, 138950.21, -3435.39], ["2026-03-17", 328374.14, 202710.99, 125663.15, -3404.76], ["2026-03-18", 329596.56, 202790.92, 126805.64, -3420.34], ["2026-03-19", 324981.15, 202752.94, 122228.21, -3407.53], ["2026-03-20", 316846.4, 202741.9, 114104.5, -3379.27], ["2026-03-21", 313643.17, 202711.0, 110932.17, -3377.53], ["2026-03-22", 310170.83, 202748.18, 107422.65, -3384.92], ["2026-03-23", 310170.83, 202748.18, 107422.65, -3384.92], ["2026-03-24", 311553.55, 202700.13, 108853.42, -3342.29], ["2026-03-25", 315105.89, 202629.32, 112476.57, -3320.58], ["2026-03-26", 321928.44, 202602.45, 119325.99, -3317.34], ["2026-03-27", 318575.91, 202474.08, 116101.83, -3282.76], ["2026-03-28", 319443.38, 202372.79, 117070.59, -3266.7], ["2026-03-29", 318145.93, 202359.71, 115786.22, -3269.04], ["2026-03-30", 318208.71, 202386.75, 115821.96, -3268.21], ["2026-03-31", 319942.41, 202248.5, 117693.91, -3244.72], ["2026-04-01", 323999.68, 202248.8, 121750.88, -3240.2], ["2026-04-02", 333715.11, 202489.88, 131225.23, -3303.31], ["2026-04-03", 331322.29, 202361.17, 128961.12, -3277.64], ["2026-04-04", 331655.82, 202280.77, 129375.05, -3265.42], ["2026-04-05", 331661.0, 202283.42, 129377.58, -3266.19], ["2026-04-06", 331693.18, 202296.75, 129396.43, -3266.94], ["2026-04-07", 331584.05, 202345.96, 129238.09, -3284.46], ["2026-04-08", 330563.64, 202451.41, 128112.23, -3303.6], ["2026-04-09", 341056.42, 202843.84, 138212.58, -3381.79], ["2026-04-10", 341914.5, 202937.69, 138976.81, -3402.9], ["2026-04-11", 340480.53, 202920.13, 137560.4, -3395.69], ["2026-04-12", 340826.2, 202898.09, 137928.11, -3386.9], ["2026-04-13", 340810.42, 202888.47, 137921.95, -3385.53], ["2026-04-14", 340487.52, 202872.89, 137614.63, -3387.66], ["2026-04-15", 344072.22, 203071.76, 141000.46, -3437.24], ["2026-04-16", 342046.84, 203127.37, 138919.47, -3461.59], ["2026-04-17", 332403.24, 203123.15, 129280.09, -3471.39], ["2026-04-18", 345915.59, 203165.42, 142750.17, -3484.01], ["2026-04-19", 344533.73, 203097.54, 141436.19, -3469.18], ["2026-04-20", 344533.73, 203097.54, 141436.19, -3469.18], ["2026-04-21", 341714.34, 203146.81, 138567.53, -3476.82], ["2026-04-22", 338400.55, 203109.46, 135291.09, -3471.6], ["2026-04-23", 336971.77, 203099.36, 133872.41, -3471.67], ["2026-04-24", 336761.95, 203076.17, 133685.78, -3466.82], ["2026-04-25", 335514.22, 203062.82, 132451.4, -3464.19], ["2026-04-26", 335951.66, 203047.22, 132904.44, -3459.35], ["2026-04-27", 335920.78, 203025.65, 132895.13, -3452.14], ["2026-04-28", 334198.25, 203179.8, 131018.45, -3495.04], ["2026-04-29", 330753.01, 203145.57, 127607.44, -3485.04], ["2026-04-30", 328919.21, 203040.41, 125878.8, -3453.44], ["2026-05-01", 331210.56, 203219.22, 127991.34, -3489.07], ["2026-05-02", 330613.9, 203338.11, 127275.79, -3514.49], ["2026-05-03", 330620.44, 203270.1, 127350.34, -3502.05], ["2026-05-04", 330647.95, 203277.56, 127370.39, -3502.51], ["2026-05-05", 328679.74, 203112.65, 125567.09, -3480.25], ["2026-05-06", 330807.53, 203185.88, 127621.65, -3497.55], ["2026-05-07", 336714.51, 203300.41, 133414.1, -3519.66], ["2026-05-08", 338142.14, 203346.35, 134795.79, -3520.92], ["2026-05-09", 335610.31, 203388.05, 132222.26, -3523.26], ["2026-05-10", 336030.57, 203407.31, 132623.26, -3530.65], ["2026-05-11", 335993.63, 203374.55, 132619.08, -3540.59], ["2026-05-12", 339592.26, 203413.7, 136178.56, -3536.09], ["2026-05-13", 334171.74, 203283.55, 130888.19, -3512.32], ["2026-05-14", 336740.07, 203326.32, 133413.75, -3543.09], ["2026-05-15", 334457.4, 203235.33, 131222.07, -3514.76], ["2026-05-16", 323880.06, 203004.81, 120875.25, -3463.67], ["2026-05-17", 329471.87, 207980.89, 121490.98, -3465.46], ["2026-05-18", 329471.87, 207980.89, 121490.98, -3465.46]];
+
+// User snapshots stored in Supabase/localStorage
+// Format: {date, totalValue, costBasis, themes:{theme:value,...}, stocks:{ticker:value,...}}
+var userSnapshots = [];
+
+function loadSnapshots() {
+  try {
+    var raw = localStorage.getItem('pnb_v5_snaps');
+    if (raw) userSnapshots = JSON.parse(raw);
+  } catch(e) {}
+}
+
+function saveSnapshots() {
+  try { localStorage.setItem('pnb_v5_snaps', JSON.stringify(userSnapshots)); } catch(e) {}
+  // Also push to Supabase if connected
+  if (sbConnected && SB_URL && SB_KEY) {
+    var payload = {id: 'snapshots', data: {snaps: userSnapshots}, updated_at: new Date().toISOString()};
+    var url = SB_URL.replace(/\/$/, '') + '/rest/v1/portfolio';
+    fetch(url, {method:'POST',
+      headers: Object.assign({}, sbHeaders(), {'Prefer':'resolution=merge-duplicates,return=minimal'}),
+      body: JSON.stringify(payload)
+    }).catch(function(e) { addLog('warn', 'Snapshot sync failed: ' + e.message); });
+  }
+}
+
+function loadSnapshotsFromSupabase() {
+  if (!sbConnected || !SB_URL || !SB_KEY) return;
+  var url = SB_URL.replace(/\/$/, '') + '/rest/v1/portfolio?id=eq.snapshots&select=data';
+  fetch(url, {headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}})
+    .then(function(r){return r.json();})
+    .then(function(rows){
+      if (rows.length > 0 && rows[0].data && rows[0].data.snaps) {
+        userSnapshots = rows[0].data.snaps;
+        saveSnapshots();
+        addLog('ok', 'Loaded ' + userSnapshots.length + ' snapshots from Supabase');
+        if (document.getElementById('pnl-history').classList.contains('on')) renderHistory();
+      }
+    })
+    .catch(function(e){ addLog('warn', 'Could not load snapshots: ' + e.message); });
+}
+
+function doSnapshot() {
+  var R = calcPortfolio();
+  var today2 = today();
+  // Check if we already have a snapshot for today
+  for (var i = 0; i < userSnapshots.length; i++) {
+    if (userSnapshots[i].d === today2) {
+      userSnapshots.splice(i, 1); break; // replace existing
+    }
+  }
+  // Build theme values
+  var themeVals = {};
+  var pk = Object.keys(R.positions);
+  for (var i = 0; i < themes.length; i++) themeVals[themes[i]] = 0;
+  for (var i = 0; i < pk.length; i++) {
+    var p = R.positions[pk[i]];
+    if (p.shares > 0.001 && p.marketValueUSD) {
+      if (!themeVals[p.theme]) themeVals[p.theme] = 0;
+      themeVals[p.theme] += p.marketValueUSD;
+    }
+  }
+  // Build stock values
+  var stockVals = {};
+  for (var i = 0; i < pk.length; i++) {
+    var p = R.positions[pk[i]];
+    if (p.shares > 0.001 && p.marketValueUSD) stockVals[p.ticker] = p.marketValueUSD;
+  }
+  var snap = {
+    d: today2,
+    v: Math.round(R.totalValue * 100) / 100,
+    cb: Math.round(R.totalCost * 100) / 100,
+    u: Math.round(R.totalUnreal * 100) / 100,
+    r: Math.round(R.totalRealPnl * 100) / 100,
+    themes: themeVals,
+    stocks: stockVals
+  };
+  userSnapshots.push(snap);
+  userSnapshots.sort(function(a,b){return a.d<b.d?-1:a.d>b.d?1:0;});
+  saveSnapshots();
+  renderHistory();
+  showAlt('Snapshot saved for ' + today2, 'ok');
+  addLog('ok', 'Manual snapshot: $' + fN(snap.v) + ' on ' + today2);
+}
+
+// Auto-snapshot: check at startup if we missed today's snapshot
+function checkAutoSnapshot() {
+  var now = new Date();
+  var utcH = now.getUTCHours();
+  // Trigger if between 20:00-21:00 UTC (03:00-04:00 WITA)
+  if (utcH >= 20 && utcH < 21) {
+    var td = today();
+    var alreadyDone = false;
+    for (var i = 0; i < userSnapshots.length; i++) {
+      if (userSnapshots[i].d === td) { alreadyDone = true; break; }
+    }
+    if (!alreadyDone && Object.keys(lp).length > 0) {
+      addLog('info', 'Auto-snapshot triggered (20:00 UTC)');
+      doSnapshot();
+    }
+  }
+}
+
+// ── HISTORY RENDERING ─────────────────────────────────────────────────────
+var hPortChart = null, hThemeChart = null, hStockChart = null;
+var hTf = 'YTD';
+
+function setHTf(tf, btn) {
+  hTf = tf;
+  document.querySelectorAll('#pnl-history .tfb').forEach(function(b){b.classList.remove('on');});
+  btn.classList.add('on');
+  renderHPortChart();
+}
+
+function filterHist(data) {
+  var now = new Date();
+  var cutoff = new Date();
+  if (hTf === '1M') cutoff.setMonth(now.getMonth()-1);
+  else if (hTf === '3M') cutoff.setMonth(now.getMonth()-3);
+  else if (hTf === 'YTD') cutoff = new Date(now.getFullYear(), 0, 1);
+  else cutoff = new Date('2020-01-01');
+  var cutStr = cutoff.toISOString().split('T')[0];
+  return data.filter(function(d){ return d[0] >= cutStr; });
+}
+
+function renderHistory() {
+  renderHPortChart();
+  renderHThemeChart();
+  renderHStockSelect();
+  renderSnapLog();
+}
+
+function renderHPortChart() {
+  // Merge Excel historical data with user snapshots
+  var excelData = HIST_DATA.map(function(d){ return {d:d[0], v:d[1], cb:d[2], u:d[3], r:d[4], src:'excel'}; });
+  var snapData  = userSnapshots.map(function(s){ return {d:s.d, v:s.v, cb:s.cb, u:s.u, r:s.r, src:'snap'}; });
+
+  // Merge: snapshots override Excel on same date
+  var merged = {};
+  for (var i=0;i<excelData.length;i++) merged[excelData[i].d] = excelData[i];
+  for (var i=0;i<snapData.length;i++)  merged[snapData[i].d]  = snapData[i];
+  var all = Object.values(merged).sort(function(a,b){return a.d<b.d?-1:a.d>b.d?1:0;});
+
+  // Filter by timeframe
+  var now2 = new Date(); var cutoff2 = new Date();
+  if (hTf==='1M') cutoff2.setMonth(now2.getMonth()-1);
+  else if (hTf==='3M') cutoff2.setMonth(now2.getMonth()-3);
+  else if (hTf==='YTD') cutoff2 = new Date(now2.getFullYear(),0,1);
+  else cutoff2 = new Date('2020-01-01');
+  var cutStr2 = cutoff2.toISOString().split('T')[0];
+  var filtered = all.filter(function(d){ return d.d >= cutStr2; });
+
+  if (!filtered.length) return;
+
+  var labels=[], vals=[], cbs=[], pnls=[];
+  for (var i=0;i<filtered.length;i++) {
+    var d=filtered[i];
+    labels.push(d.d.slice(5)); // MM-DD
+    vals.push(d.v);
+    cbs.push(d.cb);
+    pnls.push(d.u + d.r);
+  }
+
+  var ctx = document.getElementById('hPortChart').getContext('2d');
+  if (hPortChart) hPortChart.destroy();
+  var gradV = ctx.createLinearGradient(0,0,0,250);
+  gradV.addColorStop(0,'rgba(67,97,238,0.18)');gradV.addColorStop(1,'rgba(67,97,238,0)');
+  var gradP = ctx.createLinearGradient(0,0,0,250);
+  gradP.addColorStop(0,'rgba(12,166,120,0.14)');gradP.addColorStop(1,'rgba(12,166,120,0)');
+
+  hPortChart = new Chart(ctx, {type:'line', data:{labels:labels, datasets:[
+    {label:'Portfolio Value',data:vals,borderColor:'#4361ee',backgroundColor:gradV,tension:.3,fill:true,pointRadius:0,borderWidth:2.5},
+    {label:'Cost Basis',data:cbs,borderColor:'rgba(0,0,0,0.2)',backgroundColor:'transparent',tension:.3,fill:false,pointRadius:0,borderWidth:1.5,borderDash:[6,3]},
+    {label:'Total P&L',data:pnls,borderColor:'#0ca678',backgroundColor:gradP,tension:.3,fill:true,pointRadius:0,borderWidth:2,yAxisID:'y2'}
+  ]}, options:{responsive:true, maintainAspectRatio:false,
+    interaction:{intersect:false,mode:'index'},
+    plugins:{legend:{display:true,position:'top',labels:{font:{size:11},color:'#4f566b',usePointStyle:true,boxWidth:8}},
+      tooltip:{backgroundColor:'rgba(26,31,54,.95)',titleColor:'#97a0b4',bodyColor:'#e2e8f8',borderColor:'rgba(0,0,0,.08)',borderWidth:1,padding:10,
+        callbacks:{label:function(c){return c.dataset.label+': $'+fN(c.raw);}}}},
+    scales:{
+      x:{grid:{display:false},border:{display:false},ticks:{color:'#97a0b4',font:{size:10},maxTicksLimit:10}},
+      y:{grid:{color:'rgba(0,0,0,.05)'},border:{display:false},ticks:{color:'#97a0b4',font:{size:10},callback:function(v){return '$'+fN(v,0);}},position:'left'},
+      y2:{grid:{display:false},border:{display:false},ticks:{color:'#0ca678',font:{size:10},callback:function(v){return '$'+fN(v,0);}},position:'right'}
+    }}});
+}
+
+function renderHThemeChart() {
+  if (!userSnapshots.length) {
+    var ctx = document.getElementById('hThemeChart').getContext('2d');
+    if (hThemeChart) hThemeChart.destroy();
+    ctx.clearRect(0,0,9999,9999);
+    ctx.fillStyle='#97a0b4'; ctx.font='13px Inter';
+    ctx.fillText('No theme snapshots yet. Click "Snapshot Now" after refreshing prices.',40,120);
+    return;
+  }
+  var labels=[], themeMap={};
+  for (var i=0;i<userSnapshots.length;i++) {
+    var s=userSnapshots[i];
+    labels.push(s.d.slice(5));
+    if (s.themes) {
+      var tkeys=Object.keys(s.themes);
+      for (var j=0;j<tkeys.length;j++) {
+        if (!themeMap[tkeys[j]]) themeMap[tkeys[j]]=[];
+        themeMap[tkeys[j]].push(s.themes[tkeys[j]]||0);
+      }
+    }
+  }
+  var datasets=[];
+  var tnames=Object.keys(themeMap);
+  for (var i=0;i<tnames.length;i++) {
+    var col=TC[i%TC.length];
+    datasets.push({label:tnames[i],data:themeMap[tnames[i]],borderColor:col,backgroundColor:'transparent',tension:.3,fill:false,pointRadius:0,borderWidth:2});
+  }
+  var ctx=document.getElementById('hThemeChart').getContext('2d');
+  if (hThemeChart) hThemeChart.destroy();
+  hThemeChart=new Chart(ctx,{type:'line',data:{labels:labels,datasets:datasets},
+    options:{responsive:true,maintainAspectRatio:false,
+      interaction:{intersect:false,mode:'index'},
+      plugins:{legend:{display:true,position:'right',labels:{font:{size:10},usePointStyle:true,boxWidth:8}}},
+      scales:{x:{grid:{display:false},border:{display:false},ticks:{color:'#97a0b4',font:{size:10},maxTicksLimit:10}},
+        y:{grid:{color:'rgba(0,0,0,.05)'},border:{display:false},ticks:{color:'#97a0b4',font:{size:10},callback:function(v){return '$'+fN(v,0);}}}}}});
+}
+
+function renderHStockSelect() {
+  var R = calcPortfolio();
+  var sel = document.getElementById('hStockSel');
+  var prev = sel.value;
+  sel.innerHTML = '<option value="">-- Select stock --</option>';
+  // Get tickers that have snapshot data
+  var tickerSet = {};
+  for (var i=0;i<userSnapshots.length;i++) {
+    if (userSnapshots[i].stocks) {
+      var sk=Object.keys(userSnapshots[i].stocks);
+      for(var j=0;j<sk.length;j++) tickerSet[sk[j]]=1;
+    }
+  }
+  var tickers = Object.keys(tickerSet).sort();
+  for (var i=0;i<tickers.length;i++) {
+    var o=document.createElement('option');
+    o.value=tickers[i]; o.textContent=tickers[i];
+    if(tickers[i]===prev) o.selected=true;
+    sel.appendChild(o);
+  }
+  if (!tickers.length) {
+    var o=document.createElement('option');
+    o.value=''; o.textContent='(Take snapshots first)'; o.disabled=true;
+    sel.appendChild(o);
+  }
+  if (prev && tickerSet[prev]) renderHStockChart();
+}
+
+function renderHStockChart() {
+  var ticker = document.getElementById('hStockSel').value;
+  var ctx = document.getElementById('hStockChart').getContext('2d');
+  if (hStockChart) hStockChart.destroy();
+  if (!ticker || !userSnapshots.length) {
+    ctx.clearRect(0,0,9999,9999);
+    ctx.fillStyle='#97a0b4'; ctx.font='13px Inter';
+    ctx.fillText('Select a stock above to view its history',40,120);
+    return;
+  }
+  var labels=[],vals=[];
+  for (var i=0;i<userSnapshots.length;i++) {
+    var s=userSnapshots[i];
+    if (s.stocks && s.stocks[ticker] !== undefined) {
+      labels.push(s.d.slice(5));
+      vals.push(s.stocks[ticker]);
+    }
+  }
+  if (!vals.length) {
+    ctx.clearRect(0,0,9999,9999);
+    ctx.fillStyle='#97a0b4'; ctx.font='13px Inter';
+    ctx.fillText('No snapshot data for '+ticker+' yet',40,120);
+    return;
+  }
+  var col = tcol(ticker);
+  var grad=ctx.createLinearGradient(0,0,0,250);
+  grad.addColorStop(0,col+'33'); grad.addColorStop(1,col+'00');
+  hStockChart=new Chart(ctx,{type:'line',data:{labels:labels,datasets:[
+    {label:ticker+' Value (USD)',data:vals,borderColor:col,backgroundColor:grad,tension:.3,fill:true,pointRadius:0,borderWidth:2.5}
+  ]},options:{responsive:true,maintainAspectRatio:false,
+    interaction:{intersect:false,mode:'index'},
+    plugins:{legend:{display:false},
+      tooltip:{backgroundColor:'rgba(26,31,54,.95)',titleColor:'#97a0b4',bodyColor:'#e2e8f8',borderColor:'rgba(0,0,0,.08)',borderWidth:1,padding:10,
+        callbacks:{label:function(c){return ticker+': $'+fN(c.raw);}}}},
+    scales:{x:{grid:{display:false},border:{display:false},ticks:{color:'#97a0b4',font:{size:10},maxTicksLimit:10}},
+      y:{grid:{color:'rgba(0,0,0,.05)'},border:{display:false},ticks:{color:'#97a0b4',font:{size:10},callback:function(v){return '$'+fN(v,0);}}}}}});
+}
+
+function renderSnapLog() {
+  var el=document.getElementById('snap-log');
+  var cnt=document.getElementById('snap-count');
+  if(!cnt)return;
+  cnt.textContent=userSnapshots.length;
+  var delBtn=document.getElementById('del-snaps-btn');
+  if(!userSnapshots.length){
+    el.innerHTML='<div class="emp">No snapshots yet. Click "Snapshot Now" after refreshing prices.</div>';
+    return;
+  }
+  var h='<table style="width:100%;font-size:11px;border-collapse:collapse">';
+  h+='<thead><tr style="background:var(--bg3)">';
+  h+='<th style="padding:6px 10px;width:32px"><input type="checkbox" id="snap-chk-all" onclick="toggleAllSnaps(this)" style="cursor:pointer;accent-color:var(--bl)"/></th>';
+  h+='<th style="padding:6px 10px;text-align:left;color:var(--tx3)">Date</th>';
+  h+='<th style="padding:6px 10px;text-align:right;color:var(--tx3)">Value</th>';
+  h+='<th style="padding:6px 10px;text-align:right;color:var(--tx3)">Cost Basis</th>';
+  h+='<th style="padding:6px 10px;text-align:right;color:var(--tx3)">Unreal P&L</th>';
+  h+='<th style="padding:6px 10px;text-align:right;color:var(--tx3)">Real P&L</th>';
+  h+='<th style="padding:6px 10px;text-align:right;color:var(--tx3)">Stocks</th>';
+  h+='</tr></thead><tbody>';
+  var snaps=userSnapshots.slice().reverse();
+  for(var i=0;i<snaps.length;i++){
+    var s=snaps[i];
+    var stocks=s.stocks?Object.keys(s.stocks).length:0;
+    h+='<tr style="border-bottom:1px solid var(--bd)">';
+    h+='<td style="padding:6px 10px;text-align:center"><input type="checkbox" class="snap-chk" data-date="'+s.d+'" onchange="onSnapChkChange()" style="cursor:pointer;accent-color:var(--rd)"/></td>';
+    h+='<td style="padding:6px 10px;font-weight:500">'+s.d+'</td>';
+    h+='<td style="padding:6px 10px;text-align:right;font-family:monospace">$'+fN(s.v)+'</td>';
+    h+='<td style="padding:6px 10px;text-align:right;font-family:monospace">$'+fN(s.cb)+'</td>';
+    h+='<td style="padding:6px 10px;text-align:right;font-family:monospace;color:'+(s.u>=0?'var(--gr)':'var(--rd)')+'">'+( s.u>=0?'+':'')+'$'+fN(s.u)+'</td>';
+    h+='<td style="padding:6px 10px;text-align:right;font-family:monospace;color:'+(s.r>=0?'var(--gr)':'var(--rd)')+'">'+( s.r>=0?'+':'')+'$'+fN(s.r)+'</td>';
+    h+='<td style="padding:6px 10px;text-align:right;color:var(--tx3)">'+stocks+'</td>';
+    h+='</tr>';
+  }
+  h+='</tbody></table>';
+  el.innerHTML=h;
+}
+
+function toggleAllSnaps(chk){
+  var chks=document.querySelectorAll('.snap-chk');
+  for(var i=0;i<chks.length;i++)chks[i].checked=chk.checked;
+  onSnapChkChange();
+}
+
+function onSnapChkChange(){
+  var chks=document.querySelectorAll('.snap-chk:checked');
+  var btn=document.getElementById('del-snaps-btn');
+  if(btn)btn.style.display=chks.length?'inline-flex':'none';
+}
+
+function doDeleteSelectedSnaps(){
+  var chks=document.querySelectorAll('.snap-chk:checked');
+  if(!chks.length)return;
+  var dates={};
+  for(var i=0;i<chks.length;i++)dates[chks[i].getAttribute('data-date')]=true;
+  var count=Object.keys(dates).length;
+  if(!confirm('Delete '+count+' snapshot'+(count>1?'s':'')+' ? This cannot be undone.'))return;
+  userSnapshots=userSnapshots.filter(function(s){return !dates[s.d];});
+  saveSnapshots();
+  renderSnapLog();
+  renderDashboard();
+  var altEl=document.getElementById('altmsg2');
+  if(altEl){altEl.innerHTML='✓ Deleted '+count+' snapshot'+(count>1?'s':'');altEl.className='alt ok';clearTimeout(altEl._t);altEl._t=setTimeout(function(){altEl.style.display='none';},3000);}
+}
+
+// ============================================================
+// CACHED PRICES — loaded from Supabase on startup
+// Written by Cloudflare Worker cron job twice daily
+// ============================================================
+var cachedPriceTs = null; // timestamp of last background refresh
+
+function loadLocalPrices() {
+  // Load prices from localStorage instantly — no network needed
+  try {
+    var raw = localStorage.getItem(LS + '_prices');
+    if (!raw) return;
+    var d = JSON.parse(raw);
+    var prices = d.prices || {};
+    var keys = Object.keys(prices);
+    var loaded = 0;
+    for (var i = 0; i < keys.length; i++) {
+      var ticker = keys[i];
+      if (prices[ticker] && prices[ticker].price) {
+        lp[ticker] = prices[ticker];
+        loaded++;
+      }
+    }
+    if (loaded > 0) {
+      var ts = d.ts ? new Date(d.ts).toLocaleString('en-US', {month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '';
+      setSt('live', 'Cached · ' + loaded + ' prices · ' + ts);
+      addLog('ok', 'Loaded ' + loaded + ' prices from local cache (' + ts + ')');
+      renderAll();
+    }
+  } catch(e) {}
+}
+
+function checkAndAutoRefresh() {
+  // If no API key, skip
+  var key = document.getElementById('akey').value.trim();
+  if (!key) return;
+  // Check age of cached prices
+  try {
+    var raw = localStorage.getItem(LS + '_prices');
+    if (!raw) {
+      // No cache at all - auto refresh after short delay
+      addLog('info', 'No cached prices found — auto-refreshing in 3 seconds…');
+      setTimeout(function() {
+        if (!busy) doRefresh();
+      }, 3000);
+      return;
+    }
+    var d = JSON.parse(raw);
+    var ts = d.ts ? new Date(d.ts) : null;
+    if (!ts) return;
+    var ageHours = (new Date() - ts) / 3600000;
+    if (ageHours > 8) {
+      addLog('info', 'Cached prices are ' + Math.round(ageHours) + 'h old — auto-refreshing in 3 seconds…');
+      setSt('ld', 'Prices ' + Math.round(ageHours) + 'h old — auto-refreshing…');
+      setTimeout(function() {
+        if (!busy) doRefresh();
+      }, 3000);
+    } else {
+      addLog('info', 'Cached prices are ' + Math.round(ageHours * 60) + ' min old — no auto-refresh needed.');
+    }
+  } catch(e) {}
+}
+
+function loadCachedPrices() {
+  if (!sbConnected || !SB_URL || !SB_KEY) return;
+  var url = SB_URL.replace(/\/$/, '') + '/rest/v1/portfolio?id=eq.prices&select=data,updated_at';
+  fetch(url, {headers: {'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY}})
+    .then(function(r) { return r.json(); })
+    .then(function(rows) {
+      if (!rows.length || !rows[0].data) {
+        addLog('info', 'No cached prices yet — Cloudflare cron runs at 08:00 & 15:00 WITA.');
+        return;
+      }
+      var d = rows[0].data;
+      var prices = d.prices || {};
+      var updatedAt = rows[0].updated_at || d.ts || null;
+
+      // Check if Supabase has NEWER prices than localStorage
+      var localRaw = null;
+      try { localRaw = localStorage.getItem(LS + '_prices'); } catch(e) {}
+      var localTs = localRaw ? (JSON.parse(localRaw).ts || '') : '';
+      var sbTs = d.ts || updatedAt || '';
+      var sbIsNewer = !localTs || sbTs > localTs;
+
+      if (!sbIsNewer) {
+        addLog('info', 'Local cache is up to date, Supabase not newer.');
+        return;
+      }
+
+      var keys = Object.keys(prices);
+      var loaded = 0;
+      for (var i = 0; i < keys.length; i++) {
+        var ticker = keys[i];
+        var p = prices[ticker];
+        if (p && p.price) {
+          lp[ticker] = {price: p.price, prev: p.prev || p.price,
+                        changePct: p.changePct || 0, change: p.change || 0,
+                        live: true, src: p.src || 'cached'};
+          loaded++;
+        }
+      }
+      cachedPriceTs = updatedAt;
+
+      if (loaded > 0) {
+        // Also save to localStorage so next open is instant
+        try { localStorage.setItem(LS + '_prices', JSON.stringify({prices: prices, ts: sbTs})); } catch(e) {}
+        var ts = updatedAt ? new Date(updatedAt).toLocaleString('en-US', {month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}) : 'unknown time';
+        setSt('live', 'Auto-updated · ' + loaded + ' prices · ' + ts);
+        addLog('ok', 'Loaded ' + loaded + ' newer prices from Supabase (' + ts + ')');
+        renderAll();
+      }
+    })
+    .catch(function(e) {
+      addLog('warn', 'Could not load cached prices from Supabase: ' + e.message);
+    });
+}
+
+// Save current live prices to Supabase 'prices' row (called after manual refresh)
+function saveCachedPrices() {
+  var priceData = {};
+  var keys = Object.keys(lp);
+  for (var i = 0; i < keys.length; i++) {
+    var t = keys[i];
+    if (lp[t] && lp[t].price) priceData[t] = lp[t];
+  }
+  var cacheObj = {prices: priceData, ts: new Date().toISOString()};
+  // Always save to localStorage for instant load next time
+  try { localStorage.setItem(LS + '_prices', JSON.stringify(cacheObj)); } catch(e) {}
+  // Also save to Supabase if connected (for cross-device sync)
+  if (sbConnected && SB_URL && SB_KEY) {
+    var payload = {id: 'prices', data: cacheObj, updated_at: new Date().toISOString()};
+    var url = SB_URL.replace(/\/$/, '') + '/rest/v1/portfolio';
+    fetch(url, {method:'POST',
+      headers: Object.assign({}, sbHeaders(), {'Prefer':'resolution=merge-duplicates,return=minimal'}),
+      body: JSON.stringify(payload)
+    }).then(function(r) {
+      if (r.ok) addLog('ok', 'Prices cached to Supabase and localStorage.');
+    }).catch(function(e) {
+      addLog('warn', 'Supabase price cache failed (localStorage ok): ' + e.message);
+    });
+  } else {
+    addLog('ok', 'Prices cached to localStorage (' + keys.length + ' tickers).');
+  }
+}
+
+// ============================================================
+// SNAPSHOT EXPORT / IMPORT
+// ============================================================
+function doExportSnaps() {
+  if (!userSnapshots.length) {
+    var altEl = document.getElementById('altmsg2');
+    if (altEl) { altEl.innerHTML = '✗ No snapshots to export.'; altEl.className = 'alt er'; clearTimeout(altEl._t); altEl._t = setTimeout(function(){altEl.style.display='none';}, 3000); }
+    return;
+  }
+  // Export as JSON with metadata
+  var exportObj = {
+    version: '1.4',
+    exported: new Date().toISOString(),
+    count: userSnapshots.length,
+    snapshots: userSnapshots
+  };
+  var json = JSON.stringify(exportObj, null, 2);
+  var blob = new Blob([json], {type: 'application/json;charset=utf-8;'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'portfolio_snapshots_' + today() + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  addLog('ok', 'Exported ' + userSnapshots.length + ' snapshots to JSON.');
+}
+
+function doImportSnaps(input) {
+  var file = input.files[0];
+  if (!file) return;
+  var altEl = document.getElementById('altmsg2');
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var text = e.target.result;
+      var imported = [];
+      // Try JSON format first
+      if (file.name.endsWith('.json')) {
+        var obj = JSON.parse(text);
+        // Support both {snapshots:[...]} wrapper and plain array
+        var arr = Array.isArray(obj) ? obj : (obj.snapshots || []);
+        for (var i = 0; i < arr.length; i++) {
+          var s = arr[i];
+          if (s.d && s.v) imported.push(s);
+        }
+      }
+      // CSV format: date, value, costBasis, unrealized, realized
+      else if (file.name.endsWith('.csv')) {
+        var lines = text.split('\n');
+        for (var i = 1; i < lines.length; i++) {
+          var line = lines[i].replace(/\r/g,'').trim();
+          if (!line) continue;
+          var cols = line.split(',');
+          if (cols.length >= 2) {
+            var date = cols[0].trim().replace(/^"|"$/g,'');
+            var val = parseFloat(cols[1].replace(/[$,"]/g,''));
+            if (date && !isNaN(val)) {
+              imported.push({
+                d: date, v: val,
+                cb: cols[2] ? parseFloat(cols[2].replace(/[$,"]/g,'')) : val,
+                u: cols[3] ? parseFloat(cols[3].replace(/[$,"]/g,'')) : 0,
+                r: cols[4] ? parseFloat(cols[4].replace(/[$,"]/g,'')) : 0,
+                themes: {}, stocks: {}
+              });
+            }
+          }
+        }
+      }
+      if (!imported.length) {
+        if (altEl) { altEl.innerHTML = '✗ No valid snapshots found in file.'; altEl.className = 'alt er'; clearTimeout(altEl._t); altEl._t = setTimeout(function(){altEl.style.display='none';},4000); }
+        input.value = ''; return;
+      }
+      // Merge with existing — skip duplicates by date
+      var existing = {};
+      for (var i = 0; i < userSnapshots.length; i++) existing[userSnapshots[i].d] = true;
+      var added = 0;
+      for (var i = 0; i < imported.length; i++) {
+        if (!existing[imported[i].d]) {
+          userSnapshots.push(imported[i]);
+          added++;
+        }
+      }
+      userSnapshots.sort(function(a,b){return a.d<b.d?-1:a.d>b.d?1:0;});
+      saveSnapshots();
+      renderSnapLog();
+      renderDashboard();
+      input.value = '';
+      var msg = '✓ Imported ' + added + ' snapshots (' + (imported.length-added) + ' duplicates skipped).';
+      addLog('ok', msg);
+      if (altEl) { altEl.innerHTML = msg; altEl.className = 'alt ok'; clearTimeout(altEl._t); altEl._t = setTimeout(function(){altEl.style.display='none';},4000); }
+    } catch(err) {
+      if (altEl) { altEl.innerHTML = '✗ Import failed: ' + err.message; altEl.className = 'alt er'; clearTimeout(altEl._t); altEl._t = setTimeout(function(){altEl.style.display='none';},4000); }
+      addLog('error', 'Snapshot import error: ' + err.message);
+      input.value = '';
+    }
+  };
+  reader.readAsText(file);
+}
+
+// ============================================================
+// INIT
+// ============================================================
+loadSettings();
+doLocalLoad();
+loadSnapshots();
+loadLocalPrices(); // instantly apply cached prices from last session
+setTimeout(checkAndAutoRefresh, 2000); // auto-refresh if cache is stale (>8h old)
+setTimeout(checkAutoSnapshot, 5000); // check 5s after load
+document.getElementById('txdate').value=today();
+renderDashboard();
+doRManage();
+addLog('info','Tracker loaded. '+txns.length+' transactions, '+themes.length+' themes.');
+if(SB_URL&&SB_KEY){
+  addLog('info','Supabase credentials found \u2014 reconnecting\u2026');
+  doConnect();
+} else {
+  addLog('warn','No Supabase configured. Data saved locally only. Go to Setup Guide tab to enable cross-device sync.');
+}
+
+</script>
+</body>
+</html>
