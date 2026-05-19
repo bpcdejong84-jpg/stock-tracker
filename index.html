@@ -1087,6 +1087,8 @@ function doRefresh() {
         addLog('info', '=== Done: ' + ok + ' ok, ' + errors.length + ' failed ===');
         buildFailedGuide(errors, key);
         renderAll();
+        saveCachedPrices(); // save prices to localStorage + Supabase for next open
+        checkAutoSnapshot();
         document.getElementById('pbw').style.display = 'none';
         document.getElementById('rbtn').disabled = false;
         busy = false;
