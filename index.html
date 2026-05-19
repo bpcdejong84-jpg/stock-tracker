@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PNB Portfolio Tracker</title>
+<title>Stock Portfolio Tracker v1.4</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -308,12 +308,13 @@ select option { background: #fff; }
 .lgt { color: var(--tx3); flex-shrink: 0; font-size: 10px; margin-top: 1px; }
 .lgscr { max-height: 400px; overflow-y: auto; padding: 3px; }
 
-@media(max-width:800px) {
+@media(max-width:900px) {
   .content { padding: 14px; }
   header, .tabw, .apibar, .syncbar { padding-left: 14px; padding-right: 14px; }
   .fg, .fg3 { grid-template-columns: 1fr; }
   .mgrid { grid-template-columns: repeat(2, 1fr); }
   .tgrid { grid-template-columns: 1fr; }
+  .twoCol { grid-template-columns: 1fr !important; }
 }
 </style>
 </head>
@@ -324,7 +325,7 @@ select option { background: #fff; }
 <header>
   <div class="logo">
     <div class="lmark">P</div>
-    <div class="ltext">PNB <span>Portfolio</span></div>
+    <div class="ltext">Stock <span>Portfolio</span> <span style="font-size:10px;color:var(--tx3);font-weight:400;margin-left:2px">v1.4</span></div>
   </div>
   <div class="hright">
     <div class="spill"><div class="dot" id="sdot"></div><span id="smsg">Ready</span></div>
@@ -361,7 +362,7 @@ select option { background: #fff; }
     <div class="tab" onclick="goTab(this,'themes')">By Theme</div>
     <div class="tab" onclick="goTab(this,'manage')">Manage</div>
     <div class="tab" onclick="goTab(this,'log')">Error Log <span id="lbdg" style="color:var(--rd)"></span></div>
-    <div class="tab" onclick="goTab(this,'history')">History</div>
+    <div class="tab" onclick="goTab(this,'history')">Snapshots</div>
   </div>
 </div>
 
@@ -369,31 +370,102 @@ select option { background: #fff; }
 
 <!-- DASHBOARD -->
 <div id="pnl-dashboard" class="pnl on">
+
+  <!-- Metric Cards -->
   <div class="mgrid" id="mgrid"></div>
+
+  <!-- 1. Portfolio Performance Chart -->
   <div class="cc">
     <div class="chdr">
-      <div><div class="ctit">Portfolio Performance</div><div class="csub">Value vs cost basis &#183; USD</div></div>
-      <div class="tfbs">
-        <button class="tfb" onclick="goTf('1M',this)">1M</button>
-        <button class="tfb on" onclick="goTf('YTD',this)">YTD</button>
-        <button class="tfb" onclick="goTf('3M',this)">3M</button>
-        <button class="tfb" onclick="goTf('1Y',this)">1Y</button>
-        <button class="tfb" onclick="goTf('ALL',this)">All</button>
+      <div><div class="ctit">Portfolio Performance</div><div class="csub">Total value vs cost basis &#183; Real historical data</div></div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <div class="tfbs" id="port-tfs">
+          <button class="tfb" onclick="setDTf('1M',this)">1M</button>
+          <button class="tfb" onclick="setDTf('3M',this)">3M</button>
+          <button class="tfb on" onclick="setDTf('YTD',this)">YTD</button>
+          <button class="tfb" onclick="setDTf('1Y',this)">1Y</button>
+          <button class="tfb" onclick="setDTf('ALL',this)">All</button>
+        </div>
       </div>
     </div>
-    <div class="cw"><canvas id="dch"></canvas></div>
+    <div class="cw" style="height:240px"><canvas id="dPortChart"></canvas></div>
     <div class="cleg">
-      <div class="cli"><div class="clln" style="background:var(--bl)"></div>Portfolio Value (USD)</div>
-      <div class="cli"><div class="clln" style="background:var(--tx3)"></div>Cost Basis (USD)</div>
+      <div class="cli"><div class="clln" style="background:var(--bl)"></div>Portfolio Value</div>
+      <div class="cli"><div class="clln" style="background:var(--tx3)"></div>Cost Basis</div>
+      <div class="cli"><div class="clln" style="background:var(--gr)"></div>Total P&amp;L</div>
     </div>
   </div>
-  <div class="tc">
+
+  <!-- 2. Theme + Stock Performance side by side -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:0" class="twoCol">
+
+    <!-- 2a. Performance by Theme -->
+    <div class="cc" style="margin-bottom:0">
+      <div class="chdr">
+        <div><div class="ctit">Performance by Theme</div><div class="csub">USD value over time from snapshots</div></div>
+      </div>
+      <div class="cw" style="height:210px"><canvas id="dThemeChart"></canvas></div>
+      <div id="dThemeLeg" style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px"></div>
+    </div>
+
+    <!-- 2b. Performance by Stock -->
+    <div class="cc" style="margin-bottom:0">
+      <div class="chdr">
+        <div><div class="ctit">Performance by Stock</div><div class="csub">Select a stock to view history</div></div>
+        <select id="dStockSel" onchange="renderDStockChart()" style="width:160px;padding:5px 8px;font-size:11px">
+          <option value="">-- Select stock --</option>
+        </select>
+      </div>
+      <div class="cw" style="height:210px"><canvas id="dStockChart"></canvas></div>
+    </div>
+
+  </div>
+
+  <!-- 3. Performance by Theme -> Individual Stocks -->
+  <div class="cc">
+    <div class="chdr">
+      <div><div class="ctit">Stocks within Theme</div><div class="csub">Select a theme to compare individual stock performance</div></div>
+      <select id="dThemeStockSel" onchange="renderDThemeStocksChart()" style="width:180px;padding:5px 8px;font-size:11px">
+        <option value="">-- Select theme --</option>
+      </select>
+    </div>
+    <div class="cw" style="height:210px"><canvas id="dThemeStocksChart"></canvas></div>
+  </div>
+
+  <!-- 4. Top Performers -->
+  <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px" class="twoCol">
+
+    <!-- 4a. Top 10 stocks -->
+    <div class="cc" style="margin-bottom:0">
+      <div class="chdr">
+        <div><div class="ctit">Top 10 Performing Stocks</div><div class="csub">% change in portfolio value for the selected period</div></div>
+        <div class="tfbs">
+          <button class="tfb on" onclick="setTopTf('1W',this)">1W</button>
+          <button class="tfb" onclick="setTopTf('1M',this)">1M</button>
+          <button class="tfb" onclick="setTopTf('3M',this)">3M</button>
+        </div>
+      </div>
+      <div id="dTopStocks" style="min-height:180px"></div>
+    </div>
+
+    <!-- 4b. Top 3 themes -->
+    <div class="cc" style="margin-bottom:0">
+      <div class="chdr">
+        <div><div class="ctit">Top Themes</div><div class="csub">% change for period</div></div>
+      </div>
+      <div id="dTopThemes" style="min-height:180px"></div>
+    </div>
+
+  </div>
+
+  <!-- Recent Transactions -->
+  <div class="tc" style="margin-top:16px">
     <div class="thdr"><div class="ttit">Recent Transactions</div><span id="rts" style="font-size:11px;color:var(--tx3)"></span></div>
     <div class="scx"><table><thead><tr><th>Date</th><th>Type</th><th>Ticker</th><th>Name</th><th>Theme</th><th>Shares</th><th>Price</th><th>Ccy</th><th>USD Value</th></tr></thead><tbody id="rtbody"></tbody></table></div>
   </div>
+
 </div>
 
-<!-- BY STOCK -->
 <div id="pnl-stocks" class="pnl">
   <div class="tc">
     <div class="thdr">
@@ -492,60 +564,23 @@ select option { background: #fff; }
   </div>
 </div>
 
-<!-- HISTORY -->
+<!-- SNAPSHOTS -->
 <div id="pnl-history" class="pnl">
-
-  <!-- Portfolio History Chart -->
-  <div class="cc" style="margin-bottom:22px">
-    <div class="chdr">
-      <div><div class="ctit">Portfolio Value Over Time</div><div class="csub">Total USD value vs cost basis &#183; Daily snapshots</div></div>
-      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-        <div class="tfbs">
-          <button class="tfb" onclick="setHTf('1M',this)">1M</button>
-          <button class="tfb" onclick="setHTf('3M',this)">3M</button>
-          <button class="tfb on" onclick="setHTf('YTD',this)">YTD</button>
-          <button class="tfb" onclick="setHTf('ALL',this)">All</button>
-        </div>
-        <button class="btn btns btnp" onclick="doSnapshot()" id="snap-btn" title="Save today's portfolio as a snapshot">&#128247; Snapshot Now</button>
-      </div>
-    </div>
-    <div class="cw" style="height:250px"><canvas id="hPortChart"></canvas></div>
-    <div class="cleg">
-      <div class="cli"><div class="clln" style="background:var(--bl)"></div>Portfolio Value (USD)</div>
-      <div class="cli"><div class="clln" style="background:var(--tx3)"></div>Cost Basis (USD)</div>
-      <div class="cli"><div class="clln" style="background:var(--gr)"></div>Total P&amp;L</div>
-    </div>
-  </div>
-
-  <!-- Theme History Chart -->
-  <div class="cc" style="margin-bottom:22px">
-    <div class="chdr">
-      <div><div class="ctit">Performance by Theme</div><div class="csub">From first snapshot &#183; USD value per theme over time</div></div>
-      <div style="font-size:11px;color:var(--tx3)">Builds from daily snapshots going forward</div>
-    </div>
-    <div class="cw" style="height:250px"><canvas id="hThemeChart"></canvas></div>
-  </div>
-
-  <!-- Per Stock History Chart -->
-  <div class="cc" style="margin-bottom:22px">
-    <div class="chdr">
-      <div><div class="ctit">Performance by Stock</div><div class="csub">Select a stock to view its value history</div></div>
-      <select id="hStockSel" onchange="renderHStockChart()" style="width:200px;padding:6px 10px;font-size:12px">
-        <option value="">-- Select stock --</option>
-      </select>
-    </div>
-    <div class="cw" style="height:250px"><canvas id="hStockChart"></canvas></div>
-  </div>
-
-  <!-- Snapshot log -->
   <div class="mcard">
     <div class="mttl" style="justify-content:space-between">
-      <span>Snapshot Log (<span id="snap-count">0</span> saved)</span>
-      <span style="font-size:11px;color:var(--tx3);font-weight:400;text-transform:none;letter-spacing:0">Auto-snapshot daily at 20:00 UTC (03:00 WITA)</span>
+      <span>Snapshot Manager (<span id="snap-count">0</span> saved)</span>
+      <div style="display:flex;gap:8px;align-items:center;margin-left:auto;flex-wrap:wrap">
+        <span style="font-size:11px;color:var(--tx3);font-weight:400;text-transform:none;letter-spacing:0">Auto at 08:00 &amp; 15:00 WITA via Cloudflare</span>
+        <button class="btn btns" onclick="doExportSnaps()" title="Export all snapshots as JSON">&#8681; Export</button>
+        <button class="btn btns" onclick="document.getElementById('snapImportFile').click()" title="Import snapshots from JSON or Excel">&#8679; Import</button>
+        <input type="file" id="snapImportFile" accept=".json,.xlsx,.csv" style="display:none" onchange="doImportSnaps(this)"/>
+        <button class="btn btns btnp" onclick="doSnapshot()" id="snap-btn">&#128247; Snapshot Now</button>
+        <button class="btn btns btnd" onclick="doDeleteSelectedSnaps()" id="del-snaps-btn" style="display:none">&#128465; Delete Selected</button>
+      </div>
     </div>
-    <div style="max-height:200px;overflow-y:auto" id="snap-log"></div>
+    <div id="altmsg2" class="alt"></div>
+    <div style="max-height:500px;overflow-y:auto" id="snap-log"></div>
   </div>
-
 </div>
 
 </div><!-- /content -->
@@ -920,8 +955,8 @@ function goTab(el, tab) {
   else if (tab === 'themes') doRThemes();
   else if (tab === 'manage') doRManage();
   else if (tab === 'log') renderLog();
-  else if (tab === 'history') renderHistory();
-  else doRDash();
+  else if (tab === 'history') renderSnapLog();
+  else renderDashboard();
 }
 function setSt(cls, msg) {
   if (cls === null) return;
@@ -1197,7 +1232,7 @@ function tcol(t){var h=0;for(var i=0;i<t.length;i++)h=(h*31+t.charCodeAt(i))%TC.
 // ============================================================
 // RENDER ALL
 // ============================================================
-function renderAll(){doRDash();doRStocks();doRThemes();}
+function renderAll(){renderDashboard();doRStocks();doRThemes();}
 
 // ============================================================
 // DASHBOARD
@@ -1254,6 +1289,384 @@ function bChart(tv,tc){
     scales:{x:{grid:{display:false},border:{display:false},ticks:{color:'#4a5378',font:{size:10},maxTicksLimit:8}},y:{grid:{color:'rgba(255,255,255,.04)'},border:{display:false},ticks:{color:'#4a5378',font:{size:10},callback:function(v){return '$'+fN(v,0);}}}}}});
 }
 function goTf(t,btn){tf=t;var bs=document.querySelectorAll('.tfb');for(var i=0;i<bs.length;i++)bs[i].classList.remove('on');btn.classList.add('on');var R=calcPortfolio();bChart(R.totalValue,R.totalCost);}
+
+// ============================================================
+// DASHBOARD CHARTS — real data from HIST_DATA + userSnapshots
+// ============================================================
+var dPortChartObj=null, dThemeChartObj=null, dStockChartObj=null;
+var dThemeStocksChartObj=null;
+var dTf='YTD', topTf='1W';
+
+function setDTf(t,btn){
+  dTf=t;
+  var bs=document.querySelectorAll('#port-tfs .tfb');
+  for(var i=0;i<bs.length;i++)bs[i].classList.remove('on');
+  btn.classList.add('on');
+  renderDPortChart();
+}
+
+function setTopTf(t,btn){
+  topTf=t;
+  var bs=document.querySelectorAll('#pnl-dashboard .tfbs:last-of-type .tfb');
+  // Find all tfb in the top performers section
+  var allTfbs=document.querySelectorAll('#pnl-dashboard .tfb');
+  // Only reset the last tfbs group
+  btn.parentElement.querySelectorAll('.tfb').forEach(function(b){b.classList.remove('on');});
+  btn.classList.add('on');
+  renderTopPerformers();
+}
+
+// Merge Excel history + user snapshots into unified array
+function getMergedHistory(){
+  var merged={};
+  // Excel data: [date, value, costBasis, unrealized, realized]
+  for(var i=0;i<HIST_DATA.length;i++){
+    var d=HIST_DATA[i];
+    merged[d[0]]={d:d[0],v:d[1],cb:d[2],u:d[3],r:d[4],themes:null,stocks:null};
+  }
+  // User snapshots override Excel on same date
+  for(var i=0;i<userSnapshots.length;i++){
+    var s=userSnapshots[i];
+    merged[s.d]={d:s.d,v:s.v,cb:s.cb,u:s.u,r:s.r,themes:s.themes||null,stocks:s.stocks||null};
+  }
+  var arr=Object.values(merged).sort(function(a,b){return a.d<b.d?-1:a.d>b.d?1:0;});
+  return arr;
+}
+
+function filterByTf(arr,tf){
+  var now=new Date(); var cutoff=new Date();
+  if(tf==='1M')cutoff.setMonth(now.getMonth()-1);
+  else if(tf==='3M')cutoff.setMonth(now.getMonth()-3);
+  else if(tf==='YTD')cutoff=new Date(now.getFullYear(),0,1);
+  else if(tf==='1Y')cutoff.setFullYear(now.getFullYear()-1);
+  else cutoff=new Date('2020-01-01');
+  var cutStr=cutoff.toISOString().split('T')[0];
+  return arr.filter(function(d){return d.d>=cutStr;});
+}
+
+// ── 1. Portfolio Performance ──────────────────────────────────────────────
+function renderDPortChart(){
+  var all=getMergedHistory();
+  var filtered=filterByTf(all,dTf);
+  if(!filtered.length){
+    if(dPortChartObj){dPortChartObj.destroy();dPortChartObj=null;}
+    return;
+  }
+  var labels=[],vals=[],cbs=[],pnls=[];
+  for(var i=0;i<filtered.length;i++){
+    var d=filtered[i];
+    labels.push(d.d.slice(5));
+    vals.push(d.v);
+    cbs.push(d.cb);
+    pnls.push((d.u||0)+(d.r||0));
+  }
+  var ctx=document.getElementById('dPortChart').getContext('2d');
+  if(dPortChartObj)dPortChartObj.destroy();
+  var gV=ctx.createLinearGradient(0,0,0,240);
+  gV.addColorStop(0,'rgba(67,97,238,0.15)');gV.addColorStop(1,'rgba(67,97,238,0)');
+  var gP=ctx.createLinearGradient(0,0,0,240);
+  gP.addColorStop(0,'rgba(12,166,120,0.12)');gP.addColorStop(1,'rgba(12,166,120,0)');
+  dPortChartObj=new Chart(ctx,{type:'line',data:{labels:labels,datasets:[
+    {label:'Portfolio Value',data:vals,borderColor:'#4361ee',backgroundColor:gV,tension:.3,fill:true,pointRadius:0,borderWidth:2.5},
+    {label:'Cost Basis',data:cbs,borderColor:'rgba(0,0,0,0.2)',backgroundColor:'transparent',tension:.3,fill:false,pointRadius:0,borderWidth:1.5,borderDash:[6,3]},
+    {label:'Total P&L',data:pnls,borderColor:'#0ca678',backgroundColor:gP,tension:.3,fill:true,pointRadius:0,borderWidth:2,yAxisID:'y2'}
+  ]},options:{responsive:true,maintainAspectRatio:false,
+    interaction:{intersect:false,mode:'index'},
+    plugins:{legend:{display:true,position:'top',labels:{font:{size:11},color:'#4f566b',usePointStyle:true,boxWidth:8}},
+      tooltip:{backgroundColor:'rgba(26,31,54,.95)',titleColor:'#97a0b4',bodyColor:'#e2e8f8',borderColor:'rgba(0,0,0,.08)',borderWidth:1,padding:10,
+        callbacks:{label:function(c){return c.dataset.label+': $'+fN(c.raw);}}}},
+    scales:{
+      x:{grid:{display:false},border:{display:false},ticks:{color:'#97a0b4',font:{size:10},maxTicksLimit:10}},
+      y:{grid:{color:'rgba(0,0,0,.05)'},border:{display:false},position:'left',ticks:{color:'#97a0b4',font:{size:10},callback:function(v){return '$'+fN(v,0);}}},
+      y2:{grid:{display:false},border:{display:false},position:'right',ticks:{color:'#0ca678',font:{size:10},callback:function(v){return '$'+fN(v,0);}}}
+    }}});
+}
+
+// ── 2. Performance by Theme ───────────────────────────────────────────────
+function renderDThemeChart(){
+  var snaps=userSnapshots.filter(function(s){return s.themes;});
+  var ctx=document.getElementById('dThemeChart').getContext('2d');
+  if(dThemeChartObj)dThemeChartObj.destroy();
+  if(!snaps.length){
+    ctx.clearRect(0,0,9999,9999);
+    ctx.fillStyle='#97a0b4';ctx.font='12px Inter';
+    ctx.fillText('No snapshots yet. Click Snapshot Now after refreshing prices.',20,100);
+    return;
+  }
+  var labels=[],themeMap={};
+  for(var i=0;i<snaps.length;i++){
+    var s=snaps[i]; labels.push(s.d.slice(5));
+    var tk=Object.keys(s.themes);
+    for(var j=0;j<tk.length;j++){
+      if(!themeMap[tk[j]])themeMap[tk[j]]=[];
+      themeMap[tk[j]].push(s.themes[tk[j]]||0);
+    }
+  }
+  var datasets=[]; var tnames=Object.keys(themeMap);
+  for(var i=0;i<tnames.length;i++){
+    var col=TC[i%TC.length];
+    datasets.push({label:tnames[i],data:themeMap[tnames[i]],borderColor:col,backgroundColor:'transparent',tension:.3,fill:false,pointRadius:0,borderWidth:2});
+  }
+  // Build legend
+  var legEl=document.getElementById('dThemeLeg');
+  legEl.innerHTML='';
+  for(var i=0;i<tnames.length;i++){
+    var col=TC[i%TC.length];
+    legEl.innerHTML+='<span style="display:inline-flex;align-items:center;gap:4px;font-size:10px;color:'+col+'"><span style="width:10px;height:2px;background:'+col+';display:inline-block;border-radius:1px"></span>'+tnames[i]+'</span>';
+  }
+  dThemeChartObj=new Chart(ctx,{type:'line',data:{labels:labels,datasets:datasets},
+    options:{responsive:true,maintainAspectRatio:false,
+      interaction:{intersect:false,mode:'index'},
+      plugins:{legend:{display:false},
+        tooltip:{backgroundColor:'rgba(26,31,54,.95)',titleColor:'#97a0b4',bodyColor:'#e2e8f8',borderColor:'rgba(0,0,0,.08)',borderWidth:1,padding:10,
+          callbacks:{label:function(c){return c.dataset.label+': $'+fN(c.raw);}}}},
+      scales:{x:{grid:{display:false},border:{display:false},ticks:{color:'#97a0b4',font:{size:10},maxTicksLimit:8}},
+        y:{grid:{color:'rgba(0,0,0,.05)'},border:{display:false},ticks:{color:'#97a0b4',font:{size:10},callback:function(v){return '$'+fN(v,0);}}}}}});
+}
+
+// ── 3. Performance by Stock ───────────────────────────────────────────────
+function populateDStockSel(){
+  var sel=document.getElementById('dStockSel');
+  var prev=sel.value;
+  sel.innerHTML='<option value="">-- Select stock --</option>';
+  var tickerSet={};
+  for(var i=0;i<userSnapshots.length;i++){
+    if(userSnapshots[i].stocks){
+      var sk=Object.keys(userSnapshots[i].stocks);
+      for(var j=0;j<sk.length;j++)tickerSet[sk[j]]=1;
+    }
+  }
+  var tickers=Object.keys(tickerSet).sort();
+  for(var i=0;i<tickers.length;i++){
+    var o=document.createElement('option');
+    o.value=tickers[i];o.textContent=tickers[i];
+    if(tickers[i]===prev)o.selected=true;
+    sel.appendChild(o);
+  }
+  if(!tickers.length){
+    sel.innerHTML='<option value="">(Take snapshots first)</option>';
+  }
+}
+
+function renderDStockChart(){
+  var ticker=document.getElementById('dStockSel').value;
+  var ctx=document.getElementById('dStockChart').getContext('2d');
+  if(dStockChartObj)dStockChartObj.destroy();
+  if(!ticker||!userSnapshots.length){
+    ctx.clearRect(0,0,9999,9999);
+    ctx.fillStyle='#97a0b4';ctx.font='12px Inter';
+    ctx.fillText(!userSnapshots.length?'Take snapshots first':'Select a stock above',20,100);
+    return;
+  }
+  var labels=[],vals=[];
+  for(var i=0;i<userSnapshots.length;i++){
+    var s=userSnapshots[i];
+    if(s.stocks&&s.stocks[ticker]!==undefined){
+      labels.push(s.d.slice(5));
+      vals.push(s.stocks[ticker]);
+    }
+  }
+  if(!vals.length){
+    ctx.clearRect(0,0,9999,9999);
+    ctx.fillStyle='#97a0b4';ctx.font='12px Inter';
+    ctx.fillText('No snapshot data for '+ticker,20,100);
+    return;
+  }
+  var col=tcol(ticker);
+  var grad=ctx.createLinearGradient(0,0,0,210);
+  grad.addColorStop(0,col+'2a');grad.addColorStop(1,col+'00');
+  dStockChartObj=new Chart(ctx,{type:'line',data:{labels:labels,datasets:[
+    {label:ticker,data:vals,borderColor:col,backgroundColor:grad,tension:.3,fill:true,pointRadius:0,borderWidth:2.5}
+  ]},options:{responsive:true,maintainAspectRatio:false,
+    interaction:{intersect:false,mode:'index'},
+    plugins:{legend:{display:false},
+      tooltip:{backgroundColor:'rgba(26,31,54,.95)',titleColor:'#97a0b4',bodyColor:'#e2e8f8',borderColor:'rgba(0,0,0,.08)',borderWidth:1,padding:10,
+        callbacks:{label:function(c){return ticker+': $'+fN(c.raw);}}}},
+    scales:{x:{grid:{display:false},border:{display:false},ticks:{color:'#97a0b4',font:{size:10},maxTicksLimit:8}},
+      y:{grid:{color:'rgba(0,0,0,.05)'},border:{display:false},ticks:{color:'#97a0b4',font:{size:10},callback:function(v){return '$'+fN(v,0);}}}}}});
+}
+
+// ── 4. Theme -> Individual Stocks ─────────────────────────────────────────
+function populateDThemeStockSel(){
+  var sel=document.getElementById('dThemeStockSel');
+  var prev=sel.value;
+  sel.innerHTML='<option value="">-- Select theme --</option>';
+  for(var i=0;i<themes.length;i++){
+    var o=document.createElement('option');
+    o.value=themes[i];o.textContent=themes[i];
+    if(themes[i]===prev)o.selected=true;
+    sel.appendChild(o);
+  }
+}
+
+function renderDThemeStocksChart(){
+  var theme=document.getElementById('dThemeStockSel').value;
+  var ctx=document.getElementById('dThemeStocksChart').getContext('2d');
+  if(dThemeStocksChartObj)dThemeStocksChartObj.destroy();
+  if(!theme||!userSnapshots.length){
+    ctx.clearRect(0,0,9999,9999);
+    ctx.fillStyle='#97a0b4';ctx.font='12px Inter';
+    ctx.fillText(!userSnapshots.length?'Take snapshots first':'Select a theme above',20,100);
+    return;
+  }
+  // Get stocks in this theme from calcPortfolio
+  var R=calcPortfolio();
+  var themeStocks=[];
+  var pk=Object.keys(R.positions);
+  for(var i=0;i<pk.length;i++){
+    if(R.positions[pk[i]].theme===theme)themeStocks.push(pk[i]);
+  }
+  // Also check closed positions
+  var cpk=Object.keys(R.closedPositions);
+  for(var i=0;i<cpk.length;i++){
+    if(R.closedPositions[cpk[i]].theme===theme&&themeStocks.indexOf(cpk[i])===-1)themeStocks.push(cpk[i]);
+  }
+  if(!themeStocks.length){
+    ctx.clearRect(0,0,9999,9999);
+    ctx.fillStyle='#97a0b4';ctx.font='12px Inter';
+    ctx.fillText('No stocks found in theme: '+theme,20,100);
+    return;
+  }
+  var labels=[];
+  for(var i=0;i<userSnapshots.length;i++)labels.push(userSnapshots[i].d.slice(5));
+  var datasets=[];
+  for(var j=0;j<themeStocks.length;j++){
+    var ticker=themeStocks[j]; var col=tcol(ticker); var vals=[];
+    for(var i=0;i<userSnapshots.length;i++){
+      var s=userSnapshots[i];
+      vals.push(s.stocks&&s.stocks[ticker]!==undefined?s.stocks[ticker]:null);
+    }
+    if(vals.some(function(v){return v!==null;})){
+      datasets.push({label:ticker,data:vals,borderColor:col,backgroundColor:'transparent',tension:.3,fill:false,pointRadius:0,borderWidth:2,spanGaps:true});
+    }
+  }
+  if(!datasets.length){
+    ctx.clearRect(0,0,9999,9999);
+    ctx.fillStyle='#97a0b4';ctx.font='12px Inter';
+    ctx.fillText('No snapshot data for stocks in this theme yet',20,100);
+    return;
+  }
+  dThemeStocksChartObj=new Chart(ctx,{type:'line',data:{labels:labels,datasets:datasets},
+    options:{responsive:true,maintainAspectRatio:false,
+      interaction:{intersect:false,mode:'index'},
+      plugins:{legend:{display:true,position:'right',labels:{font:{size:10},color:'#4f566b',usePointStyle:true,boxWidth:8}},
+        tooltip:{backgroundColor:'rgba(26,31,54,.95)',titleColor:'#97a0b4',bodyColor:'#e2e8f8',borderColor:'rgba(0,0,0,.08)',borderWidth:1,padding:10,
+          callbacks:{label:function(c){return c.dataset.label+': $'+fN(c.raw);}}}},
+      scales:{x:{grid:{display:false},border:{display:false},ticks:{color:'#97a0b4',font:{size:10},maxTicksLimit:8}},
+        y:{grid:{color:'rgba(0,0,0,.05)'},border:{display:false},ticks:{color:'#97a0b4',font:{size:10},callback:function(v){return '$'+fN(v,0);}}}}}});
+}
+
+// ── 5. Top Performers ─────────────────────────────────────────────────────
+function getDaysBack(tf){
+  if(tf==='1W')return 7;
+  if(tf==='1M')return 30;
+  if(tf==='3M')return 90;
+  return 30;
+}
+
+function getSnapAtDaysBack(days){
+  var cutoff=new Date();
+  cutoff.setDate(cutoff.getDate()-days);
+  var cutStr=cutoff.toISOString().split('T')[0];
+  // Find closest snapshot at or before the cutoff
+  var best=null;
+  for(var i=0;i<userSnapshots.length;i++){
+    if(userSnapshots[i].d<=cutStr)best=userSnapshots[i];
+    else break;
+  }
+  return best;
+}
+
+function renderTopPerformers(){
+  var days=getDaysBack(topTf);
+  var tfLabel=topTf==='1W'?'this week':topTf==='1M'?'this month':'last 3 months';
+  var snapOld=getSnapAtDaysBack(days);
+  var snapNow=userSnapshots.length?userSnapshots[userSnapshots.length-1]:null;
+
+  // ── Top Stocks ──
+  var stocksEl=document.getElementById('dTopStocks');
+  if(!snapOld||!snapNow||!snapNow.stocks){
+    stocksEl.innerHTML='<div class="emp" style="padding:24px">Not enough snapshots for '+tfLabel+'. Need '+days+' days of data.</div>';
+  } else {
+    var changes=[];
+    var tickers=Object.keys(snapNow.stocks);
+    for(var i=0;i<tickers.length;i++){
+      var t=tickers[i];
+      var valNow=snapNow.stocks[t]||0;
+      var valOld=snapOld.stocks&&snapOld.stocks[t]?snapOld.stocks[t]:null;
+      if(valOld&&valOld>0){
+        var pct=((valNow-valOld)/valOld)*100;
+        changes.push({ticker:t,pct:pct,valNow:valNow,valOld:valOld});
+      }
+    }
+    changes.sort(function(a,b){return b.pct-a.pct;});
+    var top=changes.slice(0,10);
+    var h='<div style="padding:4px 0">';
+    for(var i=0;i<top.length;i++){
+      var c=top[i]; var col=tcol(c.ticker);
+      var isPos=c.pct>=0;
+      var barW=Math.min(Math.abs(c.pct)*2,100);
+      h+='<div style="display:flex;align-items:center;gap:8px;padding:5px 12px;border-bottom:1px solid var(--bd)">';
+      h+='<span style="width:18px;text-align:right;font-size:10px;color:var(--tx3);font-weight:600">'+(i+1)+'</span>';
+      h+='<span class="tav" style="width:22px;height:22px;border-radius:5px;background:'+col+'22;color:'+col+';border:1px solid '+col+'33;font-size:8px;flex-shrink:0">'+ini(c.ticker)+'</span>';
+      h+='<span style="font-size:11px;font-weight:600;min-width:70px">'+c.ticker+'</span>';
+      h+='<div style="flex:1;height:6px;background:var(--bg4);border-radius:3px;overflow:hidden">';
+      h+='<div style="height:100%;width:'+barW+'%;background:'+(isPos?'var(--gr)':'var(--rd)')+';border-radius:3px"></div></div>';
+      h+='<span class="mn" style="font-size:11px;font-weight:700;min-width:55px;text-align:right;color:'+(isPos?'var(--gr)':'var(--rd)')+'">'+fP(c.pct)+'</span>';
+      h+='</div>';
+    }
+    h+='</div>';
+    stocksEl.innerHTML=h;
+  }
+
+  // ── Top Themes ──
+  var themesEl=document.getElementById('dTopThemes');
+  if(!snapOld||!snapNow||!snapNow.themes){
+    themesEl.innerHTML='<div class="emp" style="padding:24px;font-size:11px">Need more snapshots</div>';
+  } else {
+    var tchanges=[];
+    var tnames=Object.keys(snapNow.themes);
+    for(var i=0;i<tnames.length;i++){
+      var tn=tnames[i];
+      var vNow=snapNow.themes[tn]||0;
+      var vOld=snapOld.themes&&snapOld.themes[tn]?snapOld.themes[tn]:null;
+      if(vOld&&vOld>0){
+        var pct2=((vNow-vOld)/vOld)*100;
+        tchanges.push({name:tn,pct:pct2,vNow:vNow});
+      }
+    }
+    tchanges.sort(function(a,b){return b.pct-a.pct;});
+    var top3=tchanges.slice(0,3);
+    var h='<div style="padding:4px 0">';
+    for(var i=0;i<top3.length;i++){
+      var c=top3[i]; var col=TC[i*4%TC.length]; var isPos=c.pct>=0;
+      h+='<div style="padding:10px 14px;border-bottom:1px solid var(--bd)">';
+      h+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">';
+      h+='<span style="font-size:11px;font-weight:600;color:var(--tx)">'+c.name+'</span>';
+      h+='<span style="font-size:13px;font-weight:700;color:'+(isPos?'var(--gr)':'var(--rd)')+'">'+fP(c.pct)+'</span>';
+      h+='</div>';
+      h+='<div style="font-size:10px;color:var(--tx3)">$'+fN(c.vNow)+' current value</div>';
+      h+='<div style="height:4px;background:var(--bg4);border-radius:2px;margin-top:6px;overflow:hidden">';
+      h+='<div style="height:100%;width:'+Math.min(Math.abs(c.pct)*3,100)+'%;background:'+(isPos?'var(--gr)':'var(--rd)')+';border-radius:2px"></div></div>';
+      h+='</div>';
+    }
+    if(!top3.length)h+='<div class="emp" style="padding:16px;font-size:11px">Need more snapshots</div>';
+    h+='</div>';
+    themesEl.innerHTML=h;
+  }
+}
+
+// ── Main dashboard render ─────────────────────────────────────────────────
+function renderDashboard(){
+  doRDash(); // metric cards + recent transactions
+  renderDPortChart();
+  renderDThemeChart();
+  populateDStockSel();
+  renderDStockChart();
+  populateDThemeStockSel();
+  renderDThemeStocksChart();
+  renderTopPerformers();
+}
 
 // ============================================================
 // BY STOCK
@@ -1960,16 +2373,30 @@ function renderHStockChart() {
 function renderSnapLog() {
   var el=document.getElementById('snap-log');
   var cnt=document.getElementById('snap-count');
+  if(!cnt)return;
   cnt.textContent=userSnapshots.length;
-  if(!userSnapshots.length){el.innerHTML='<div class="emp">No snapshots yet. Click "Snapshot Now" after refreshing prices.</div>';return;}
+  var delBtn=document.getElementById('del-snaps-btn');
+  if(!userSnapshots.length){
+    el.innerHTML='<div class="emp">No snapshots yet. Click "Snapshot Now" after refreshing prices.</div>';
+    return;
+  }
   var h='<table style="width:100%;font-size:11px;border-collapse:collapse">';
-  h+='<tr style="background:var(--bg3)"><th style="padding:6px 10px;text-align:left;color:var(--tx3)">Date</th><th style="padding:6px 10px;text-align:right;color:var(--tx3)">Value</th><th style="padding:6px 10px;text-align:right;color:var(--tx3)">Cost Basis</th><th style="padding:6px 10px;text-align:right;color:var(--tx3)">Unreal P&L</th><th style="padding:6px 10px;text-align:right;color:var(--tx3)">Real P&L</th><th style="padding:6px 10px;text-align:right;color:var(--tx3)">Stocks</th></tr>';
-  var snaps=[...userSnapshots].reverse();
+  h+='<thead><tr style="background:var(--bg3)">';
+  h+='<th style="padding:6px 10px;width:32px"><input type="checkbox" id="snap-chk-all" onclick="toggleAllSnaps(this)" style="cursor:pointer;accent-color:var(--bl)"/></th>';
+  h+='<th style="padding:6px 10px;text-align:left;color:var(--tx3)">Date</th>';
+  h+='<th style="padding:6px 10px;text-align:right;color:var(--tx3)">Value</th>';
+  h+='<th style="padding:6px 10px;text-align:right;color:var(--tx3)">Cost Basis</th>';
+  h+='<th style="padding:6px 10px;text-align:right;color:var(--tx3)">Unreal P&L</th>';
+  h+='<th style="padding:6px 10px;text-align:right;color:var(--tx3)">Real P&L</th>';
+  h+='<th style="padding:6px 10px;text-align:right;color:var(--tx3)">Stocks</th>';
+  h+='</tr></thead><tbody>';
+  var snaps=userSnapshots.slice().reverse();
   for(var i=0;i<snaps.length;i++){
     var s=snaps[i];
     var stocks=s.stocks?Object.keys(s.stocks).length:0;
     h+='<tr style="border-bottom:1px solid var(--bd)">';
-    h+='<td style="padding:6px 10px">'+s.d+'</td>';
+    h+='<td style="padding:6px 10px;text-align:center"><input type="checkbox" class="snap-chk" data-date="'+s.d+'" onchange="onSnapChkChange()" style="cursor:pointer;accent-color:var(--rd)"/></td>';
+    h+='<td style="padding:6px 10px;font-weight:500">'+s.d+'</td>';
     h+='<td style="padding:6px 10px;text-align:right;font-family:monospace">$'+fN(s.v)+'</td>';
     h+='<td style="padding:6px 10px;text-align:right;font-family:monospace">$'+fN(s.cb)+'</td>';
     h+='<td style="padding:6px 10px;text-align:right;font-family:monospace;color:'+(s.u>=0?'var(--gr)':'var(--rd)')+'">'+( s.u>=0?'+':'')+'$'+fN(s.u)+'</td>';
@@ -1977,8 +2404,35 @@ function renderSnapLog() {
     h+='<td style="padding:6px 10px;text-align:right;color:var(--tx3)">'+stocks+'</td>';
     h+='</tr>';
   }
-  h+='</table>';
+  h+='</tbody></table>';
   el.innerHTML=h;
+}
+
+function toggleAllSnaps(chk){
+  var chks=document.querySelectorAll('.snap-chk');
+  for(var i=0;i<chks.length;i++)chks[i].checked=chk.checked;
+  onSnapChkChange();
+}
+
+function onSnapChkChange(){
+  var chks=document.querySelectorAll('.snap-chk:checked');
+  var btn=document.getElementById('del-snaps-btn');
+  if(btn)btn.style.display=chks.length?'inline-flex':'none';
+}
+
+function doDeleteSelectedSnaps(){
+  var chks=document.querySelectorAll('.snap-chk:checked');
+  if(!chks.length)return;
+  var dates={};
+  for(var i=0;i<chks.length;i++)dates[chks[i].getAttribute('data-date')]=true;
+  var count=Object.keys(dates).length;
+  if(!confirm('Delete '+count+' snapshot'+(count>1?'s':'')+' ? This cannot be undone.'))return;
+  userSnapshots=userSnapshots.filter(function(s){return !dates[s.d];});
+  saveSnapshots();
+  renderSnapLog();
+  renderDashboard();
+  var altEl=document.getElementById('altmsg2');
+  if(altEl){altEl.innerHTML='✓ Deleted '+count+' snapshot'+(count>1?'s':'');altEl.className='alt ok';clearTimeout(altEl._t);altEl._t=setTimeout(function(){altEl.style.display='none';},3000);}
 }
 
 // ============================================================
@@ -1987,6 +2441,62 @@ function renderSnapLog() {
 // ============================================================
 var cachedPriceTs = null; // timestamp of last background refresh
 
+function loadLocalPrices() {
+  // Load prices from localStorage instantly — no network needed
+  try {
+    var raw = localStorage.getItem(LS + '_prices');
+    if (!raw) return;
+    var d = JSON.parse(raw);
+    var prices = d.prices || {};
+    var keys = Object.keys(prices);
+    var loaded = 0;
+    for (var i = 0; i < keys.length; i++) {
+      var ticker = keys[i];
+      if (prices[ticker] && prices[ticker].price) {
+        lp[ticker] = prices[ticker];
+        loaded++;
+      }
+    }
+    if (loaded > 0) {
+      var ts = d.ts ? new Date(d.ts).toLocaleString('en-US', {month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '';
+      setSt('live', 'Cached · ' + loaded + ' prices · ' + ts);
+      addLog('ok', 'Loaded ' + loaded + ' prices from local cache (' + ts + ')');
+      renderAll();
+    }
+  } catch(e) {}
+}
+
+function checkAndAutoRefresh() {
+  // If no API key, skip
+  var key = document.getElementById('akey').value.trim();
+  if (!key) return;
+  // Check age of cached prices
+  try {
+    var raw = localStorage.getItem(LS + '_prices');
+    if (!raw) {
+      // No cache at all - auto refresh after short delay
+      addLog('info', 'No cached prices found — auto-refreshing in 3 seconds…');
+      setTimeout(function() {
+        if (!busy) doRefresh();
+      }, 3000);
+      return;
+    }
+    var d = JSON.parse(raw);
+    var ts = d.ts ? new Date(d.ts) : null;
+    if (!ts) return;
+    var ageHours = (new Date() - ts) / 3600000;
+    if (ageHours > 8) {
+      addLog('info', 'Cached prices are ' + Math.round(ageHours) + 'h old — auto-refreshing in 3 seconds…');
+      setSt('ld', 'Prices ' + Math.round(ageHours) + 'h old — auto-refreshing…');
+      setTimeout(function() {
+        if (!busy) doRefresh();
+      }, 3000);
+    } else {
+      addLog('info', 'Cached prices are ' + Math.round(ageHours * 60) + ' min old — no auto-refresh needed.');
+    }
+  } catch(e) {}
+}
+
 function loadCachedPrices() {
   if (!sbConnected || !SB_URL || !SB_KEY) return;
   var url = SB_URL.replace(/\/$/, '') + '/rest/v1/portfolio?id=eq.prices&select=data,updated_at';
@@ -1994,12 +2504,25 @@ function loadCachedPrices() {
     .then(function(r) { return r.json(); })
     .then(function(rows) {
       if (!rows.length || !rows[0].data) {
-        addLog('info', 'No cached prices yet — click Refresh Prices or wait for auto-update.');
+        addLog('info', 'No cached prices yet — Cloudflare cron runs at 08:00 & 15:00 WITA.');
         return;
       }
       var d = rows[0].data;
       var prices = d.prices || {};
       var updatedAt = rows[0].updated_at || d.ts || null;
+
+      // Check if Supabase has NEWER prices than localStorage
+      var localRaw = null;
+      try { localRaw = localStorage.getItem(LS + '_prices'); } catch(e) {}
+      var localTs = localRaw ? (JSON.parse(localRaw).ts || '') : '';
+      var sbTs = d.ts || updatedAt || '';
+      var sbIsNewer = !localTs || sbTs > localTs;
+
+      if (!sbIsNewer) {
+        addLog('info', 'Local cache is up to date, Supabase not newer.');
+        return;
+      }
+
       var keys = Object.keys(prices);
       var loaded = 0;
       for (var i = 0; i < keys.length; i++) {
@@ -2013,37 +2536,148 @@ function loadCachedPrices() {
         }
       }
       cachedPriceTs = updatedAt;
+
       if (loaded > 0) {
+        // Also save to localStorage so next open is instant
+        try { localStorage.setItem(LS + '_prices', JSON.stringify({prices: prices, ts: sbTs})); } catch(e) {}
         var ts = updatedAt ? new Date(updatedAt).toLocaleString('en-US', {month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}) : 'unknown time';
         setSt('live', 'Auto-updated · ' + loaded + ' prices · ' + ts);
-        addLog('ok', 'Loaded ' + loaded + ' cached prices from ' + ts);
+        addLog('ok', 'Loaded ' + loaded + ' newer prices from Supabase (' + ts + ')');
         renderAll();
       }
     })
     .catch(function(e) {
-      addLog('warn', 'Could not load cached prices: ' + e.message);
+      addLog('warn', 'Could not load cached prices from Supabase: ' + e.message);
     });
 }
 
 // Save current live prices to Supabase 'prices' row (called after manual refresh)
 function saveCachedPrices() {
-  if (!sbConnected || !SB_URL || !SB_KEY) return;
   var priceData = {};
   var keys = Object.keys(lp);
   for (var i = 0; i < keys.length; i++) {
     var t = keys[i];
     if (lp[t] && lp[t].price) priceData[t] = lp[t];
   }
-  var payload = {id: 'prices', data: {prices: priceData, ts: new Date().toISOString()}, updated_at: new Date().toISOString()};
-  var url = SB_URL.replace(/\/$/, '') + '/rest/v1/portfolio';
-  fetch(url, {method:'POST',
-    headers: Object.assign({}, sbHeaders(), {'Prefer':'resolution=merge-duplicates,return=minimal'}),
-    body: JSON.stringify(payload)
-  }).then(function(r) {
-    if (r.ok) addLog('ok', 'Prices cached to Supabase for background use.');
-  }).catch(function(e) {
-    addLog('warn', 'Could not cache prices: ' + e.message);
-  });
+  var cacheObj = {prices: priceData, ts: new Date().toISOString()};
+  // Always save to localStorage for instant load next time
+  try { localStorage.setItem(LS + '_prices', JSON.stringify(cacheObj)); } catch(e) {}
+  // Also save to Supabase if connected (for cross-device sync)
+  if (sbConnected && SB_URL && SB_KEY) {
+    var payload = {id: 'prices', data: cacheObj, updated_at: new Date().toISOString()};
+    var url = SB_URL.replace(/\/$/, '') + '/rest/v1/portfolio';
+    fetch(url, {method:'POST',
+      headers: Object.assign({}, sbHeaders(), {'Prefer':'resolution=merge-duplicates,return=minimal'}),
+      body: JSON.stringify(payload)
+    }).then(function(r) {
+      if (r.ok) addLog('ok', 'Prices cached to Supabase and localStorage.');
+    }).catch(function(e) {
+      addLog('warn', 'Supabase price cache failed (localStorage ok): ' + e.message);
+    });
+  } else {
+    addLog('ok', 'Prices cached to localStorage (' + keys.length + ' tickers).');
+  }
+}
+
+// ============================================================
+// SNAPSHOT EXPORT / IMPORT
+// ============================================================
+function doExportSnaps() {
+  if (!userSnapshots.length) {
+    var altEl = document.getElementById('altmsg2');
+    if (altEl) { altEl.innerHTML = '✗ No snapshots to export.'; altEl.className = 'alt er'; clearTimeout(altEl._t); altEl._t = setTimeout(function(){altEl.style.display='none';}, 3000); }
+    return;
+  }
+  // Export as JSON with metadata
+  var exportObj = {
+    version: '1.4',
+    exported: new Date().toISOString(),
+    count: userSnapshots.length,
+    snapshots: userSnapshots
+  };
+  var json = JSON.stringify(exportObj, null, 2);
+  var blob = new Blob([json], {type: 'application/json;charset=utf-8;'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'portfolio_snapshots_' + today() + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  addLog('ok', 'Exported ' + userSnapshots.length + ' snapshots to JSON.');
+}
+
+function doImportSnaps(input) {
+  var file = input.files[0];
+  if (!file) return;
+  var altEl = document.getElementById('altmsg2');
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var text = e.target.result;
+      var imported = [];
+      // Try JSON format first
+      if (file.name.endsWith('.json')) {
+        var obj = JSON.parse(text);
+        // Support both {snapshots:[...]} wrapper and plain array
+        var arr = Array.isArray(obj) ? obj : (obj.snapshots || []);
+        for (var i = 0; i < arr.length; i++) {
+          var s = arr[i];
+          if (s.d && s.v) imported.push(s);
+        }
+      }
+      // CSV format: date, value, costBasis, unrealized, realized
+      else if (file.name.endsWith('.csv')) {
+        var lines = text.split('\n');
+        for (var i = 1; i < lines.length; i++) {
+          var line = lines[i].replace(/\r/g,'').trim();
+          if (!line) continue;
+          var cols = line.split(',');
+          if (cols.length >= 2) {
+            var date = cols[0].trim().replace(/^"|"$/g,'');
+            var val = parseFloat(cols[1].replace(/[$,"]/g,''));
+            if (date && !isNaN(val)) {
+              imported.push({
+                d: date, v: val,
+                cb: cols[2] ? parseFloat(cols[2].replace(/[$,"]/g,'')) : val,
+                u: cols[3] ? parseFloat(cols[3].replace(/[$,"]/g,'')) : 0,
+                r: cols[4] ? parseFloat(cols[4].replace(/[$,"]/g,'')) : 0,
+                themes: {}, stocks: {}
+              });
+            }
+          }
+        }
+      }
+      if (!imported.length) {
+        if (altEl) { altEl.innerHTML = '✗ No valid snapshots found in file.'; altEl.className = 'alt er'; clearTimeout(altEl._t); altEl._t = setTimeout(function(){altEl.style.display='none';},4000); }
+        input.value = ''; return;
+      }
+      // Merge with existing — skip duplicates by date
+      var existing = {};
+      for (var i = 0; i < userSnapshots.length; i++) existing[userSnapshots[i].d] = true;
+      var added = 0;
+      for (var i = 0; i < imported.length; i++) {
+        if (!existing[imported[i].d]) {
+          userSnapshots.push(imported[i]);
+          added++;
+        }
+      }
+      userSnapshots.sort(function(a,b){return a.d<b.d?-1:a.d>b.d?1:0;});
+      saveSnapshots();
+      renderSnapLog();
+      renderDashboard();
+      input.value = '';
+      var msg = '✓ Imported ' + added + ' snapshots (' + (imported.length-added) + ' duplicates skipped).';
+      addLog('ok', msg);
+      if (altEl) { altEl.innerHTML = msg; altEl.className = 'alt ok'; clearTimeout(altEl._t); altEl._t = setTimeout(function(){altEl.style.display='none';},4000); }
+    } catch(err) {
+      if (altEl) { altEl.innerHTML = '✗ Import failed: ' + err.message; altEl.className = 'alt er'; clearTimeout(altEl._t); altEl._t = setTimeout(function(){altEl.style.display='none';},4000); }
+      addLog('error', 'Snapshot import error: ' + err.message);
+      input.value = '';
+    }
+  };
+  reader.readAsText(file);
 }
 
 // ============================================================
@@ -2052,9 +2686,11 @@ function saveCachedPrices() {
 loadSettings();
 doLocalLoad();
 loadSnapshots();
+loadLocalPrices(); // instantly apply cached prices from last session
+setTimeout(checkAndAutoRefresh, 2000); // auto-refresh if cache is stale (>8h old)
 setTimeout(checkAutoSnapshot, 5000); // check 5s after load
 document.getElementById('txdate').value=today();
-doRDash();
+renderDashboard();
 doRManage();
 addLog('info','Tracker loaded. '+txns.length+' transactions, '+themes.length+' themes.');
 if(SB_URL&&SB_KEY){
