@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Stock Portfolio Tracker v1.5</title>
+<title>Stock Portfolio Tracker v1.7</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -325,7 +325,7 @@ select option { background: #fff; }
 <header>
   <div class="logo">
     <div class="lmark">P</div>
-    <div class="ltext">Stock <span>Portfolio</span> <span style="font-size:10px;color:var(--tx3);font-weight:400;margin-left:2px">v1.5</span></div>
+    <div class="ltext">Stock <span>Portfolio</span> <span style="font-size:10px;color:var(--tx3);font-weight:400;margin-left:2px">v1.7</span></div>
   </div>
   <div class="hright">
     <div class="spill"><div class="dot" id="sdot"></div><span id="smsg">Ready</span></div>
@@ -2697,6 +2697,7 @@ addLog('info','Tracker loaded. '+txns.length+' transactions, '+themes.length+' t
 if(SB_URL&&SB_KEY){
   addLog('info','Supabase credentials found \u2014 reconnecting\u2026');
   doConnect();
+  setTimeout(loadSnapshotsFromSupabase, 3000); // load snapshots after connect settles
 } else {
   addLog('warn','No Supabase configured. Data saved locally only. Go to Setup Guide tab to enable cross-device sync.');
 }
