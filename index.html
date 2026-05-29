@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Stock Portfolio Tracker v1.7</title>
+<title>Stock Portfolio Tracker v1.8</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -325,7 +325,7 @@ select option { background: #fff; }
 <header>
   <div class="logo">
     <div class="lmark">P</div>
-    <div class="ltext">Stock <span>Portfolio</span> <span style="font-size:10px;color:var(--tx3);font-weight:400;margin-left:2px">v1.7</span></div>
+    <div class="ltext">Stock <span>Portfolio</span> <span style="font-size:10px;color:var(--tx3);font-weight:400;margin-left:2px">v1.8</span></div>
   </div>
   <div class="hright">
     <div class="spill"><div class="dot" id="sdot"></div><span id="smsg">Ready</span></div>
@@ -987,9 +987,11 @@ function fetchYahoo(ticker) {
   function parsePrice(m) {
     var price = m.regularMarketPrice;
     var currency = m.currency;
-    if (currency === 'GBp') { price = price / 100; currency = 'GBP'; }
-    if (currency === 'ZAc') { price = price / 100; currency = 'ZAR'; }
-    var prev = m.chartPreviousClose || price;
+    var divisor = 1;
+    if (currency === 'GBp') { divisor = 100; currency = 'GBP'; }
+    if (currency === 'ZAc') { divisor = 100; currency = 'ZAR'; }
+    price = price / divisor;
+    var prev = (m.chartPreviousClose || price * divisor) / divisor;
     return {price:price, prev:prev, change:price-prev,
             changePct:prev>0?((price-prev)/prev)*100:0, live:true, src:'yahoo'};
   }
